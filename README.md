@@ -12,7 +12,7 @@ Aplicación independiente para administrar el flujo de servicio técnico. Este r
 1. Crea un proyecto Supabase.
 2. Copia `.env.example` a `.env.local` y completa las variables de Supabase, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `FROM_EMAIL` y `NEXT_PUBLIC_APP_URL` (URL pública de la aplicación; en local usa `http://localhost:3000`). La clave service role y Resend solo se usan en el servidor.
 3. Ejecuta en orden los archivos SQL de `supabase/migrations` desde el SQL Editor de Supabase.
-4. Crea usuarios desde Supabase Auth y crea su fila en `public.profiles` con rol `admin`, `supervisor` o `tecnico`.
+4. Para el primer acceso, crea una cuenta inicial de administrador en Supabase Auth y registra una única fila en `public.profiles` con su UUID, nombre, rol `admin` y `active=true`. Después, los administradores podrán crear las demás cuentas desde **Usuarios y técnicos** en la WebApp; no será necesario volver a registrar UUID manualmente.
 5. Ejecuta `npm install`, `npm run dev` y abre `http://localhost:3000`.
 
 ## Funcionalidad implementada
