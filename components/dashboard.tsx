@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AlertCircle, ClipboardList, RefreshCw, Search, Wrench, Users, Cog, Package, CreditCard, BarChart3 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import NewOrderPage from "@/app/ordenes/nueva/page";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, type ServiceOrder } from "@/lib/data/orders";
 
 const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: boolean }[] = [
@@ -27,6 +28,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<ServiceOrder | null>(null);
+  const [showNewOrder, setShowNewOrder] = useState(false);
   const [userLabel, setUserLabel] = useState("Equipo de servicio");
   const [role, setRole] = useState("");
   const [roleReady, setRoleReady] = useState(false);
@@ -105,7 +107,7 @@ export function Dashboard() {
         <section className="card orders-card" id="ordenes">
           <div className="section-head">
             <div><h2>Órdenes de servicio</h2><p>Seguimiento de equipos y trabajos en taller</p></div>
-            <div className="section-actions">{(role==="admin"||role==="supervisor")&&<a className="primary new-order-button" href="/ordenes/nueva">＋ Nueva orden</a>}<button className="secondary" onClick={() => void loadOrders()} disabled={loading}><RefreshCw size={15} /> Actualizar</button></div>
+            <div className="section-actions">{(role==="admin"||role==="supervisor")&&<button type="button" className="primary new-order-button" onClick={() => setShowNewOrder(true)}>＋ Nueva orden</button>}<button className="secondary" onClick={() => void loadOrders()} disabled={loading}><RefreshCw size={15} /> Actualizar</button></div>
           </div>
           <div className="toolbar">
             <div className="tabs">{ORDER_STATUSES.map((tab) => <button key={tab.value} onClick={() => setActive(tab.value)} className={`tab ${active === tab.value ? "active" : ""}`}>{tab.label}{tab.value === "todas" ? <span className="tab-count">{orders.length}</span> : <span className="tab-count">{count(tab.value)}</span>}</button>)}</div>
@@ -130,6 +132,8 @@ export function Dashboard() {
         </section>
         <div className="footer">Ferpromaq · Plataforma de servicio técnico</div>
       </main>
+
+      {showNewOrder && <NewOrderPage onClose={() => setShowNewOrder(false)} onCreated={() => { setShowNewOrder(false); void loadOrders(); }} />}
 
       {selected && <div className="drawerback" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
         <aside className="drawer compact-drawer"><div className="drawerhead"><div><div className="eyebrow">ORDEN DE SERVICIO</div><h2>#{selected.order_number}</h2></div><button className="close" onClick={() => setSelected(null)}>Cerrar ×</button></div>
