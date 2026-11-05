@@ -41,7 +41,8 @@ export function Dashboard() {
     void supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
       const { data: profile } = await supabase.from("profiles").select("full_name,role").eq("id", data.user.id).maybeSingle();
-      if (profile?.full_name) setUserLabel(profile.full_name);\n      if (profile?.role) setRole(profile.role);
+      if (profile?.full_name) setUserLabel(profile.full_name);
+      if (profile?.role) setRole(profile.role);
     });
   }, [loadOrders]);
 
