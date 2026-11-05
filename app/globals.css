@@ -59,3 +59,89 @@ html,body{height:100%;min-height:100%}
   .sidebar{display:none}
   .main{height:100dvh;overflow-y:auto;padding:22px 16px}
 }
+
+
+/* Compact density system: reduce excess whitespace consistently across the app. */
+:root{--space-unit:4px}
+.shell{grid-template-columns:236px minmax(0,1fr)}
+.sidebar{padding:20px 14px;gap:16px}
+.sidebar-navigation{display:flex;flex-direction:column;gap:4px}
+.sidebar-navigation>.navlabel{margin-bottom:4px}
+.navitem{padding:9px 10px;gap:9px;border-radius:8px;font-size:13px;min-height:36px}
+.navlabel{padding:0 10px;font-size:9px}
+.sidebar-user{margin-top:auto}
+.main{padding:20px 24px}
+.topbar{margin-bottom:18px}
+.heading{font-size:24px}
+.eyebrow{margin-bottom:4px;font-size:10px}
+.muted{line-height:1.4}
+.card{padding:15px;border-radius:12px}
+.stats{gap:10px;margin-bottom:14px}
+.stat-card{padding:13px 15px}
+.statvalue{font-size:25px;margin:7px 0 2px}
+.statfoot{font-size:10px}
+.orders th{padding:10px 9px}
+.orders td{padding:11px 9px}
+.toolbar{gap:8px;margin:12px 0}
+.tab{padding:7px 9px;font-size:11px}
+.search{padding:8px 10px;font-size:12px}
+.section-head{gap:10px}
+.section-head h2{font-size:16px;margin-bottom:3px}
+.section-head p{font-size:11px}
+.empty{min-height:130px;padding:28px}
+.footer{margin-top:12px}
+.module-grid{gap:12px;grid-template-columns:minmax(230px,300px) minmax(0,1fr)}
+.module-form,.module-list{padding:15px}
+.module-form h2,.module-list h2{font-size:15px;margin-bottom:10px}
+.module-form .field{margin:6px 0}
+.field{gap:4px;margin:7px 0}
+.field label{font-size:11px}
+.field input,.field select,.field textarea,
+.module-form input,.module-form select{padding:8px 9px;font-size:12px;border-radius:8px}
+.form-grid{gap:4px 10px}
+.form-actions{gap:7px}
+.primary,.secondary{padding:8px 12px;font-size:11px;border-radius:8px}
+.notice{padding:9px 11px;margin:10px 0;font-size:11px}
+.module-list .tabs{margin:7px 0 10px}
+.module-list .orders{min-width:560px}
+.detail-page-head{margin-bottom:14px}
+.detail-page-head .muted{font-size:12px}
+.detail-tabs{margin-bottom:12px}
+.detail-tabs button{padding:9px 12px;font-size:11px}
+.detail-content{margin-bottom:12px}
+.detail-columns{gap:10px;margin-top:10px}
+.detail-columns .card{padding:13px}
+.detail-content h2{font-size:16px}
+.detail-content>p{font-size:12px}
+.detail-content textarea{padding:9px;font-size:12px}
+.sectiontitle{font-size:14px;margin:16px 0 8px}
+.part-row{padding:11px 0;gap:10px}
+.part-actions{gap:5px}
+.small-action{padding:6px 8px}
+.payment-form{padding:13px;margin:12px 0 16px}
+.status-control{padding:12px;margin-bottom:12px;gap:8px}
+.new-order-page{max-width:1120px}
+.new-order-page .back-link{margin:0 0 12px}
+.new-order-page .detail-page-head{margin-bottom:12px}
+.new-order-form{gap:12px;padding:16px}
+.new-order-form section{padding-bottom:12px}
+.new-order-form section h2{font-size:14px;margin:0 0 8px}
+.new-order-form section .tabs{margin:6px 0 8px}
+.new-order-form .field{margin:6px 0;gap:4px}
+.new-order-form .field input,.new-order-form .field select,.new-order-form textarea{padding:8px 9px;font-size:12px}
+.new-order-form textarea{min-height:76px}
+.new-order-form .form-grid{gap:3px 12px}
+.new-order-form .form-actions{padding-top:2px}
+@media(max-width:900px){
+ .shell{grid-template-columns:minmax(0,1fr)}
+ .main{padding:16px}
+ .module-grid{grid-template-columns:1fr}
+ .new-order-page{padding:16px}
+}
+@media(max-width:640px){
+ .card{padding:12px}
+ .stats{gap:8px}
+ .stat-card{padding:11px}
+ .heading{font-size:21px}
+ .new-order-form{padding:12px}
+}
