@@ -9,7 +9,7 @@ type ClientRow = { id: string; name: string; rut: string | null };
 type TechnicianRow = { id: string; full_name: string };
 type IntakeType = "warranty" | "no_warranty" | "commissioning";
 
-export default function NewOrderPage() {
+export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => void; onCreated?: () => void }) {
   const router = useRouter();
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [technicians, setTechnicians] = useState<TechnicianRow[]>([]);
@@ -97,7 +97,7 @@ export default function NewOrderPage() {
       };
       const { error: saveError } = await supabase.from("service_orders").update(details).eq("id", createdOrderId);
       if (saveError) throw new Error("La orden se creó, pero faltó guardar sus datos de ingreso: " + saveError.message);
-      router.replace("/ordenes/" + createdOrderId);
+      if (onCreated) onCreated(); else router.replace("/ordenes/" + createdOrderId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear la orden.");
       if (createdOrderId) setError((current) => current + " Número interno: " + createdOrderId);
@@ -115,7 +115,7 @@ export default function NewOrderPage() {
     <div className="new-order-modal" role="dialog" aria-modal="true" aria-labelledby="new-order-title">
       <header className="new-order-modal-head">
         <div><div className="eyebrow">FERPROMAQ / OPERACIONES</div><h1 id="new-order-title">Nueva orden de servicio</h1><p>Completa los datos para registrar el ingreso.</p></div>
-        <button type="button" className="new-order-close" aria-label="Cerrar" onClick={() => router.push("/")}><X size={18}/></button>
+        <button type="button" className="new-order-close" aria-label="Cerrar" onClick={() => onClose ? onClose() : router.push("/")}><X size={18}/></button>
       </header>
       {error && <div className="notice error new-order-error">{error}</div>}
       <form className="new-order-form" onSubmit={submit}>
@@ -162,7 +162,7 @@ export default function NewOrderPage() {
       </section>
 
         </div>
-      <div className="form-actions"><button type="button" className="secondary" onClick={() => router.push("/")}>Cancelar</button><button type="submit" className="primary" disabled={loading || !role || role === "tecnico" || (needsInvoice && !validDocument)}><Save size={14}/>{loading ? "Creando…" : "Crear orden"}</button></div>
+      <div className="form-actions"><button type="button" className="secondary" onClick={() => onClose ? onClose() : router.push("/")}>Cancelar</button><button type="submit" className="primary" disabled={loading || !role || role === "tecnico" || (needsInvoice && !validDocument)}><Save size={14}/>{loading ? "Creando…" : "Crear orden"}</button></div>
       </form>
     </div>
   </main>;
