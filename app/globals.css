@@ -536,3 +536,103 @@ html,body{height:100%;min-height:100%}
 }
 .new-order-modal .client-section>.field{margin-top:5px}
 .new-order-modal .client-section>.field select{max-width:100%}
+
+
+/* Nueva orden: distribución estable en grilla, sin solapamientos. */
+.new-order-modal .new-order-form{display:flex;flex-direction:column;gap:0;min-width:0}
+.new-order-modal .new-order-modal-body{
+  display:grid;
+  grid-template-columns:minmax(0,5fr) minmax(0,7fr);
+  grid-template-areas:"intake intake" "client equipment";
+  gap:16px 22px;
+  align-items:start;
+  min-width:0;
+  padding:16px 22px 14px;
+}
+.new-order-modal .new-order-modal-body>.intake-section{grid-area:intake;min-width:0}
+.new-order-modal .new-order-modal-body>.client-section{grid-area:client;min-width:0;padding:0 18px 0 0;border-right:1px solid #edf0f3;align-self:stretch}
+.new-order-modal .new-order-modal-body>.equipment-section{grid-area:equipment;min-width:0;padding:0;border:0}
+.new-order-modal .new-order-modal-body>section{display:block;width:100%;min-width:0;margin:0;padding-bottom:12px}
+.new-order-modal .new-order-modal-body>section h2{display:block;margin:0 0 9px;line-height:1.35}
+.new-order-modal .client-section>.tabs{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:stretch;
+  justify-content:stretch;
+  gap:7px;
+  width:100%;
+  min-height:0;
+  margin:0 0 12px;
+  padding:0;
+  overflow:visible;
+}
+.new-order-modal .client-section>.tabs>.tab{
+  display:flex;
+  position:static;
+  width:100%;
+  min-width:0;
+  min-height:36px;
+  align-items:center;
+  justify-content:center;
+  margin:0;
+  padding:8px 7px;
+  white-space:normal;
+  text-align:center;
+  line-height:1.25;
+  border:1px solid #dce3e9;
+  border-radius:8px;
+  font-size:11px;
+}
+.new-order-modal .client-section>.field,
+.new-order-modal .equipment-section .field{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;width:100%;min-width:0;margin:0 0 10px}
+.new-order-modal .client-section .form-grid,
+.new-order-modal .equipment-section .equipment-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:0 12px;
+  width:100%;
+  min-width:0;
+  align-items:start;
+}
+.new-order-modal .client-section .form-grid .full,
+.new-order-modal .equipment-section .equipment-grid .intake-wide{grid-column:1/-1}
+.new-order-modal .field label{display:block;min-width:0;line-height:1.35;white-space:normal}
+.new-order-modal .field input:not([type="file"]):not([type="radio"]),
+.new-order-modal .field select,
+.new-order-modal textarea{
+  display:block;
+  width:100%;
+  max-width:none;
+  min-width:0;
+  min-height:36px;
+  margin:0;
+  padding:8px 10px;
+  line-height:1.35;
+}
+.new-order-modal .equipment-section .intake-wide textarea{min-height:64px}
+.new-order-modal .client-section .muted{display:block;line-height:1.4;margin-top:6px}
+.new-order-modal .intake-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;align-items:start}
+.new-order-modal .upload-control{width:100%;max-width:none;min-width:0;min-height:36px}
+.new-order-modal .form-actions{display:flex;justify-content:flex-end;gap:9px;padding:12px 22px;border-top:1px solid #e8edf2}
+@media(max-width:760px){
+  .new-order-modal .new-order-modal-body{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:"intake" "client" "equipment";
+    gap:12px;
+    padding:14px 16px;
+  }
+  .new-order-modal .new-order-modal-body>.client-section{
+    padding:0 0 12px;
+    border-right:0;
+    border-bottom:1px solid #edf0f3;
+  }
+  .new-order-modal .new-order-modal-body>.equipment-section{padding-bottom:10px}
+}
+@media(max-width:480px){
+  .new-order-modal .new-order-modal-body>.intake-section .intake-fields,
+  .new-order-modal .new-order-modal-body>.client-section .form-grid,
+  .new-order-modal .new-order-modal-body>.equipment-section .equipment-grid{grid-template-columns:minmax(0,1fr)}
+  .new-order-modal .new-order-modal-body .form-grid .full,
+  .new-order-modal .new-order-modal-body .equipment-grid .intake-wide{grid-column:auto}
+  .new-order-modal .form-actions{padding:10px 16px}
+}
