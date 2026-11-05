@@ -146,7 +146,7 @@ export default function NewOrderPage() {
       </section>
       <section>
         <h2>Equipo y recepción</h2>
-        <div className="intake-fields">
+        <div className="intake-fields equipment-grid">
           <div className="field"><label>Tipo de equipo *</label><input required value={equipmentType} onChange={e => setEquipmentType(e.target.value)} placeholder="Generador, motosierra…"/></div>
           <div className="field"><label>Marca</label><input value={brand} onChange={e => setBrand(e.target.value)}/></div>
           <div className="field"><label>Modelo</label><input value={model} onChange={e => setModel(e.target.value)}/></div>
