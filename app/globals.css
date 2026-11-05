@@ -863,7 +863,7 @@ html,body{height:100%;min-height:100%}
     box-sizing:border-box;
   }
   .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control{
-    padding:4px 8px;
+    padding:8px 10px;
   }
   .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control strong{
     font-size:10px;
