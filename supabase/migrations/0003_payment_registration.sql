@@ -40,6 +40,9 @@ begin
     if jsonb_typeof(p_part_allocations) <> 'array' or jsonb_array_length(p_part_allocations)=0 then
       raise exception 'Debes distribuir el pago entre repuestos autorizados';
     end if;
+    if exists (select 1 from jsonb_to_recordset(p_part_allocations) as x(part_id uuid, amount numeric) group by part_id having count(*) > 1) then
+      raise exception 'No repitas un mismo repuesto en la distribución del pago';
+    end if;
     for v_allocation in select * from jsonb_to_recordset(p_part_allocations) as x(part_id uuid, amount numeric) loop
       if v_allocation.amount is null or v_allocation.amount <= 0 then raise exception 'Monto de asignación inválido'; end if;
       select * into v_part from public.parts_requests
