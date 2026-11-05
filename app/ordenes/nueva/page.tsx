@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Upload } from "lucide-react";
+import { ArrowLeft, Save, Upload, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 type ClientRow = { id: string; name: string; rut: string | null };
@@ -111,11 +111,15 @@ export default function NewOrderPage() {
   const photoLabel = intakeType === "warranty" ? "Foto del documento de garantía" : "Foto de la factura de compra";
   const validDocument = documentFile && ["image/jpeg","image/png","image/webp"].includes(documentFile.type) && documentFile.size <= 8 * 1024 * 1024;
 
-  return <main className="main new-order-page">
-    <button className="back-link" onClick={() => router.push("/")}><ArrowLeft size={15}/> Volver a órdenes</button>
-    <header className="detail-page-head"><div><div className="eyebrow">FERPROMAQ / OPERACIONES</div><h1 className="heading">Nueva orden</h1><p className="muted">Registra el ingreso, cliente y equipo.</p></div></header>
-    {error && <div className="notice error">{error}</div>}
-    <form className="card new-order-form" onSubmit={submit}>
+  return <main className="new-order-overlay">
+    <div className="new-order-modal" role="dialog" aria-modal="true" aria-labelledby="new-order-title">
+      <header className="new-order-modal-head">
+        <div><div className="eyebrow">FERPROMAQ / OPERACIONES</div><h1 id="new-order-title">Nueva orden de servicio</h1><p>Completa los datos para registrar el ingreso.</p></div>
+        <button type="button" className="new-order-close" aria-label="Cerrar" onClick={() => router.push("/")}><X size={18}/></button>
+      </header>
+      {error && <div className="notice error new-order-error">{error}</div>}
+      <form className="new-order-form" onSubmit={submit}>
+        <div className="new-order-modal-body">
       <section className="intake-section">
         <h2>Tipo de ingreso</h2>
         <div className="intake-options">
@@ -156,7 +160,10 @@ export default function NewOrderPage() {
           <div className="field intake-wide"><label>Problema informado *</label><textarea required rows={2} value={problem} onChange={e => setProblem(e.target.value)} placeholder="Describe brevemente lo que informa el cliente…"/></div>
         </div>
       </section>
+
+        </div>
       <div className="form-actions"><button type="button" className="secondary" onClick={() => router.push("/")}>Cancelar</button><button type="submit" className="primary" disabled={loading || !role || role === "tecnico" || (needsInvoice && !validDocument)}><Save size={14}/>{loading ? "Creando…" : "Crear orden"}</button></div>
-    </form>
+      </form>
+    </div>
   </main>;
 }
