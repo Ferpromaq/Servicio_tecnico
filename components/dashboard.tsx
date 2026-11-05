@@ -125,7 +125,7 @@ export function Dashboard() {
           <h3 className="sectiontitle">Problema informado</h3><p>{selected.problem_description}</p>
           <p className="muted">Ingreso: {formatOrderDate(selected.received_at)}</p>
           <p className="muted">Técnico: {selected.assigned?.full_name ?? "Sin asignar"}</p>
-          <div className="notice"><AlertCircle size={16}/> El detalle editable y las acciones de la orden se habilitarán en el siguiente módulo de desarrollo.</div>
+          <a className="primary full-detail-link" href={`/ordenes/${selected.id}`}>Abrir ficha completa de la orden</a>
         </aside>
       </div>}
     </div>
