@@ -812,3 +812,68 @@ html,body{height:100%;min-height:100%}
   .new-order-modal .intake-heading{flex-wrap:wrap;gap:4px 10px}
   .new-order-modal .intake-heading .intake-note{text-align:left}
 }
+
+
+/* Tipo de ingreso: conservar la misma fila y las mismas posiciones al cambiar de modalidad. */
+@media(min-width:761px){
+  .new-order-modal .new-order-modal-body>.intake-section{
+    grid-template-columns:
+      repeat(3,minmax(0,1fr))
+      minmax(150px,.85fr)
+      minmax(220px,1.2fr);
+    grid-template-rows:auto 56px auto;
+    align-items:center;
+  }
+  .new-order-modal .intake-section>.intake-options>.intake-option{
+    grid-row:2;
+    height:56px;
+    min-height:56px;
+    box-sizing:border-box;
+    align-self:center;
+  }
+  .new-order-modal .intake-section>.intake-fields>.field{
+    grid-row:2;
+    height:56px;
+    min-height:56px;
+    margin:0;
+    display:grid;
+    grid-template-rows:24px 30px;
+    gap:2px;
+    align-content:center;
+    align-self:center;
+    min-width:0;
+    box-sizing:border-box;
+  }
+  .new-order-modal .intake-section>.intake-fields>.field>label{
+    height:24px;
+    min-height:24px;
+    overflow:hidden;
+    display:flex;
+    align-items:flex-end;
+    font-size:10px;
+    line-height:1.1;
+  }
+  .new-order-modal .intake-section>.intake-fields>.field>input,
+  .new-order-modal .intake-section>.intake-fields>.field>select,
+  .new-order-modal .intake-section>.intake-fields>.upload-control{
+    width:100%;
+    max-width:100%;
+    height:30px;
+    min-height:30px;
+    box-sizing:border-box;
+  }
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control{
+    padding:4px 8px;
+  }
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control strong{
+    font-size:10px;
+    line-height:1.1;
+  }
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control small{
+    font-size:9px;
+    line-height:1.1;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+}
