@@ -62,6 +62,7 @@ export function ModuleShell({ title, description, children }: { title: string; d
         return;
       }
       setRole(profile.role ?? "");
+      setRoleReady(true);
       setProfileWarning("");
     }
 
