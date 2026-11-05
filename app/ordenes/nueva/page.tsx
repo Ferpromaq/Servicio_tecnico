@@ -128,11 +128,11 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
           <label className={intakeType === "commissioning" ? "intake-option selected" : "intake-option"}><input type="radio" name="intakeType" checked={intakeType === "commissioning"} onChange={() => { setIntakeType("commissioning"); setDocumentFile(null); }}/> <span><strong>Puesta en marcha</strong><small>Sin cobro de servicio</small></span></label>
         </div>
         {needsInvoice ? <div className="intake-fields">
-          <div className="field"><label>Número de factura *</label><input required value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} placeholder="N° de factura"/></div>
+          <div className="field"><label>Número de Folio *</label><input required value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} placeholder="N° de Folio"/></div>
           <div className="field upload-field"><label>{photoLabel} *</label><input id="intake-document" className="file-input-hidden" type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setDocumentFile(e.target.files?.[0] ?? null)}/><label className="upload-control" htmlFor="intake-document"><Upload size={17}/><span><strong>{documentFile ? "Cambiar fotografía" : "Seleccionar fotografía"}</strong><small>{documentFile ? documentFile.name : "JPG, PNG o WEBP · máximo 8 MB"}</small></span></label></div>
         </div> : <div className="intake-fields">
           <div className="field"><label>Tipo de comprobante *</label><select value={diagnosisReceiptType} onChange={e => setDiagnosisReceiptType(e.target.value)}><option value="boleta">Boleta</option><option value="factura">Factura</option></select></div>
-          <div className="field"><label>Número de boleta o factura *</label><input required value={diagnosisReceiptNumber} onChange={e => setDiagnosisReceiptNumber(e.target.value)} placeholder="N° de Folio"/></div>
+          <div className="field"><label>Número de Folio *</label><input required value={diagnosisReceiptNumber} onChange={e => setDiagnosisReceiptNumber(e.target.value)} placeholder="N° de Folio"/></div>
         </div>}
         {documentFile && !validDocument && <p className="file-selected file-error">El archivo debe ser JPG, PNG o WEBP y pesar máximo 8 MB.</p>}
       </section>
