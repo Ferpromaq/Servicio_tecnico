@@ -31,3 +31,19 @@
 /* Customer self-service authorization */
 .auth-page{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#f5f7fa,#fff4ed)}.auth-card{width:min(520px,100%);background:#fff;border:1px solid var(--line);border-radius:18px;padding:34px;box-shadow:0 18px 60px #17212b12}.auth-mark{width:52px;height:52px;border-radius:14px;background:#fff0e8;color:var(--orange);display:grid;place-items:center;margin-bottom:22px}.auth-card h1{font-size:25px;letter-spacing:-.5px;margin:0 0 10px}.auth-card>.muted{font-size:13px;line-height:1.6}.auth-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.auth-actions button{flex:1;min-width:150px}.auth-card .notice{line-height:1.55}
 @media(max-width:520px){.auth-card{padding:24px}.auth-actions{flex-direction:column}.auth-actions button{width:100%}}
+
+/* Independent modules */
+.module-grid{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:18px;align-items:start}
+.module-form,.module-list{padding:20px;min-width:0}
+.module-form h2,.module-list h2{font-size:16px;font-weight:750;margin:0 0 16px}
+.module-form .field{margin-bottom:12px}
+.module-form .form-actions{margin-top:16px}
+.module-list .section-head{gap:14px;flex-wrap:wrap}
+.module-list .section-head>input{max-width:280px}
+.module-list .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+.module-list .tablewrap{overflow:auto}
+.module-list .orders{min-width:620px}
+.module-list select{border:1px solid var(--line);border-radius:8px;padding:7px;background:#fff;font:inherit;font-size:12px}
+.error-text{color:#bd3d35;font-size:12px;margin:8px 0}
+.module-list>.primary{display:inline-flex;text-decoration:none;margin-top:12px}
+@media(max-width:900px){.module-grid{grid-template-columns:1fr}}
