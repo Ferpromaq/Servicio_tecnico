@@ -5,7 +5,7 @@ import { AlertCircle, ClipboardList, RefreshCw, Search, Wrench, Users, Cog, Pack
 import { supabase } from "@/lib/supabase";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, type ServiceOrder } from "@/lib/data/orders";
 
-const nav = [
+const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: boolean }[] = [
   { label: "Panel general", icon: ClipboardList, href: "/" },
   { label: "Órdenes de servicio", icon: Wrench, href: "/#ordenes" },
 ];
@@ -38,7 +38,7 @@ export function Dashboard() {
     if (!supabase) return;
     void supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
-      const { data: profile } = await supabase.from("profiles").select("full_name,role").eq("id", data.user.id).maybeSingle();
+      const { data: profile } = await client.from("profiles").select("full_name,role").eq("id", data.user.id).maybeSingle();
       if (profile?.full_name) setUserLabel(profile.full_name);
       if (profile?.role) setRole(profile.role);
     });
