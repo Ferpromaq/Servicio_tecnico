@@ -7,7 +7,7 @@ import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, ty
 
 const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: boolean }[] = [
   { label: "Panel general", icon: ClipboardList, href: "/" },
-  { label: "Órdenes de servicio", icon: Wrench, href: "/#ordenes" },
+  { label: "Órdenes de servicio", icon: Wrench, href: "/ordenes" },
   { label: "Clientes", icon: Users, href: "/clientes" },
   { label: "Equipos", icon: Cog, href: "/equipos" },
   { label: "Repuestos", icon: Package, href: "/repuestos" },
