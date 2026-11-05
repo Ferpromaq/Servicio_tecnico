@@ -116,7 +116,7 @@ export default function NewOrderPage() {
     <header className="detail-page-head"><div><div className="eyebrow">FERPROMAQ / OPERACIONES</div><h1 className="heading">Nueva orden</h1><p className="muted">Registra el ingreso, cliente y equipo.</p></div></header>
     {error && <div className="notice error">{error}</div>}
     <form className="card new-order-form" onSubmit={submit}>
-      <section>
+      <section className="intake-section">
         <h2>Tipo de ingreso</h2>
         <div className="intake-options">
           <label className={intakeType === "warranty" ? "intake-option selected" : "intake-option"}><input type="radio" name="intakeType" checked={intakeType === "warranty"} onChange={() => { setIntakeType("warranty"); setDocumentFile(null); }}/> <span><strong>Con garantía</strong><small>Factura y foto de garantía</small></span></label>
@@ -133,7 +133,7 @@ export default function NewOrderPage() {
         {documentFile && !validDocument && <p className="file-selected file-error">El archivo debe ser JPG, PNG o WEBP y pesar máximo 8 MB.</p>}
         {intakeType === "commissioning" && <p className="intake-note">La puesta en marcha queda registrada con diagnóstico e instalación en $0.</p>}
       </section>
-      <section>
+      <section className="client-section">
         <h2>Cliente</h2>
         <div className="tabs"><button type="button" className={clientMode === "existing" ? "tab active" : "tab"} onClick={() => setClientMode("existing")}>Cliente existente</button><button type="button" className={clientMode === "new" ? "tab active" : "tab"} onClick={() => setClientMode("new")}>Nuevo cliente</button></div>
         {clientMode === "existing" ? <div className="field"><label>Seleccionar cliente *</label><select required value={clientId} onChange={e => setClientId(e.target.value)}><option value="">Selecciona un cliente</option>{clients.map(client => <option key={client.id} value={client.id}>{client.name}{client.rut ? " · " + client.rut : ""}</option>)}</select>{clients.length === 0 && <small className="muted">No hay clientes registrados. Cambia a Nuevo cliente.</small>}</div> : <div className="form-grid">
@@ -144,7 +144,7 @@ export default function NewOrderPage() {
           <div className="field full"><label>Dirección</label><input value={clientAddress} onChange={e => setClientAddress(e.target.value)}/></div>
         </div>}
       </section>
-      <section>
+      <section className="equipment-section">
         <h2>Equipo y recepción</h2>
         <div className="intake-fields equipment-grid">
           <div className="field"><label>Tipo de equipo *</label><input required value={equipmentType} onChange={e => setEquipmentType(e.target.value)} placeholder="Generador, motosierra…"/></div>
