@@ -135,7 +135,6 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
           <div className="field"><label>Número de boleta o factura *</label><input required value={diagnosisReceiptNumber} onChange={e => setDiagnosisReceiptNumber(e.target.value)} placeholder="N° del pago de diagnóstico"/></div>
         </div>}
         {documentFile && !validDocument && <p className="file-selected file-error">El archivo debe ser JPG, PNG o WEBP y pesar máximo 8 MB.</p>}
-        {intakeType === "commissioning" && }
       </section>
       <section className="client-section">
         <h2>Cliente</h2>
