@@ -235,3 +235,35 @@ html,body{height:100%;min-height:100%}
  .new-order-form .equipment-grid .intake-wide textarea,
  .new-order-form .upload-control{max-width:100%;width:100%}
 }
+
+
+/* Ajuste definitivo: reducir físicamente cada control del formulario Nueva orden. */
+.new-order-form .field{width:fit-content;max-width:100%}
+.new-order-form .field input:not([type="file"]):not([type="radio"]){
+  width:190px;max-width:100%
+}
+.new-order-form .field select{width:170px;max-width:100%}
+.new-order-form .intake-fields{grid-template-columns:repeat(2,minmax(0,220px));}
+.new-order-form .intake-fields .field input{width:150px}
+.new-order-form .intake-fields .field select{width:150px}
+.new-order-form .form-grid{grid-template-columns:repeat(2,minmax(0,230px))}
+.new-order-form .form-grid .field input{width:210px}
+.new-order-form .form-grid .field.full input{width:280px}
+.new-order-form > section > .field select{width:280px}
+.new-order-form .equipment-grid{grid-template-columns:repeat(3,minmax(0,200px))}
+.new-order-form .equipment-grid .field input{width:180px}
+.new-order-form .equipment-grid .field select{width:165px}
+.new-order-form .equipment-grid .intake-wide{width:100%}
+.new-order-form .equipment-grid .intake-wide textarea{width:100%;max-width:460px}
+.new-order-form .upload-control{width:260px;max-width:100%}
+@media(max-width:640px){
+ .new-order-form .intake-fields,
+ .new-order-form .equipment-grid,
+ .new-order-form .form-grid{grid-template-columns:minmax(0,1fr)}
+ .new-order-form .field{width:100%}
+ .new-order-form .field input:not([type="file"]):not([type="radio"]),
+ .new-order-form .field select,
+ .new-order-form .form-grid .field.full input,
+ .new-order-form .equipment-grid .intake-wide textarea,
+ .new-order-form .upload-control{width:100%;max-width:100%}
+}
