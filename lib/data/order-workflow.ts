@@ -90,3 +90,20 @@ export async function markPartMilestone(partId: string, milestone: "received" | 
   const { error } = await client.rpc("mark_part_milestone", { p_part_id: partId, p_milestone: milestone });
   if (error) throw error;
 }
+
+
+export async function transitionOrderStatus(input: {
+  orderId: string;
+  status: "recepcion" | "diagnostico" | "en_reparacion" | "listas" | "entregadas" | "rechazadas";
+  forcedDelivery?: boolean;
+  reason?: string;
+}) {
+  const client = await requireSupabase();
+  const { error } = await client.rpc("transition_order_status", {
+    p_order_id: input.orderId,
+    p_new_status: input.status,
+    p_forced_delivery: input.forcedDelivery ?? false,
+    p_reason: input.reason ?? null,
+  });
+  if (error) throw error;
+}
