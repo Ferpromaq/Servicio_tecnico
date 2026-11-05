@@ -20,6 +20,7 @@ export function ModuleShell({ title, description, children }: { title: string; d
   const path = usePathname();
   const router = useRouter();
   const [role, setRole] = useState("");
+  const [roleReady, setRoleReady] = useState(false);
   const [profileWarning, setProfileWarning] = useState("");
 
   useEffect(() => {
@@ -57,7 +58,7 @@ export function ModuleShell({ title, description, children }: { title: string; d
       }
       if (profile.active === false) {
         await client.auth.signOut();
-        if (!cancelled) router.replace("/login");
+        if (!cancelled) { setRoleReady(true); router.replace("/login"); }
         return;
       }
       setRole(profile.role ?? "");
@@ -74,7 +75,7 @@ export function ModuleShell({ title, description, children }: { title: string; d
         <Link className="brand" href="/">FERPRO<span>MAQ</span></Link>
         <div className="sidebar-navigation">
           <div className="navlabel">Espacio de trabajo</div>
-          {links.filter(item => !item.admin || role === "admin").map(({ href, label, icon: Icon }) => {
+          {links.filter(item => !item.admin || !roleReady || role === "admin").map(({ href, label, icon: Icon }) => {
             const isActive = href === "/#ordenes"
               ? path === "/" 
               : path === href || (href !== "/" && path.startsWith(`${href}/`));
