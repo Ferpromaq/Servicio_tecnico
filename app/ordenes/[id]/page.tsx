@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Check, ClipboardList, PackagePlus, RefreshCw, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { authorizePart, getOrderWorkflow, markPartMilestone, requestPart, saveDiagnosis, type OrderEvent, type OrderPayment, type PartRequest } from "@/lib/data/order-workflow";
+import { authorizePart, getOrderWorkflow, markPartMilestone, requestPart, saveDiagnosis, transitionOrderStatus, type OrderEvent, type OrderPayment, type PartRequest } from "@/lib/data/order-workflow";
 import { registerOrderPayment } from "@/lib/data/payments";
 import { orderStatusLabel, type ServiceOrder } from "@/lib/data/orders";
 
@@ -31,6 +31,9 @@ export default function OrderDetailPage() {
   const [paymentReference, setPaymentReference] = useState("");
   const [paymentPartId, setPaymentPartId] = useState("");
   const [receiptReceived, setReceiptReceived] = useState(false);
+  const [nextStatus, setNextStatus] = useState<"recepcion"|"diagnostico"|"en_reparacion"|"listas"|"entregadas"|"rechazadas">("diagnostico");
+  const [forcedDelivery, setForcedDelivery] = useState(false);
+  const [forcedReason, setForcedReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -44,6 +47,7 @@ export default function OrderDetailPage() {
         .eq("id", params.id).single();
       if (orderError) throw orderError;
       setOrder(row as unknown as ServiceOrder);
+      setNextStatus(row.status);
       setDiagnosis(row.diagnosis ?? "");
       setRepairNotes(row.repair_notes ?? "");
       const workflow = await getOrderWorkflow(params.id);
@@ -81,6 +85,7 @@ export default function OrderDetailPage() {
       <nav className="detail-tabs">{[["resumen","Resumen"],["diagnostico","Diagnóstico"],["repuestos","Repuestos"],["pagos","Pagos"],["historial","Historial"]].map(([value,label])=><button key={value} className={tab===value?"active":""} onClick={()=>setTab(value)}>{label}</button>)}</nav>
 
       {tab === "resumen" && <section className="detail-content">
+        {(role==="admin"||role==="supervisor") && <div className="card status-control"><div><h2>Gestión del estado</h2><p className="muted">Los cambios se registran automáticamente en el historial.</p></div><div className="status-form"><select value={nextStatus} onChange={e=>setNextStatus(e.target.value as typeof nextStatus)}><option value="recepcion">Recepción</option><option value="diagnostico">Diagnóstico</option><option value="en_reparacion">En reparación</option><option value="listas">Lista para entrega</option><option value="entregadas">Entregada</option><option value="rechazadas">Rechazada</option></select><button className="primary" disabled={busy||nextStatus===order.status||(forcedDelivery&&(nextStatus!=="listas"||!forcedReason.trim()))} onClick={()=>void run(()=>transitionOrderStatus({orderId:order.id,status:nextStatus,forcedDelivery,reason:forcedReason}),"Estado de la orden actualizado")}>Actualizar estado</button></div>{nextStatus==="listas" && <div className="forced-control"><label className="checkline"><input type="checkbox" checked={forcedDelivery} onChange={e=>setForcedDelivery(e.target.checked)}/> Entrega forzada porque el cliente rechazó la reparación</label>{forcedDelivery&&<div className="field"><label>Motivo obligatorio</label><textarea rows={2} value={forcedReason} onChange={e=>setForcedReason(e.target.value)} placeholder="Describe por qué se deja lista para entrega…"/></div>}</div>}</div>}
         <div className="detailgrid"><div className="detailbox"><small>Estado actual</small><strong>{orderStatusLabel(order.status)}</strong></div><div className="detailbox"><small>Prioridad</small><strong>{order.priority}</strong></div><div className="detailbox"><small>Repuestos solicitados</small><strong>{parts.length}</strong></div><div className="detailbox"><small>Pagos registrados</small><strong>{money(totalPaid)}</strong></div></div>
         <div className="detail-columns"><article className="card"><h3 className="sectiontitle">Cliente y equipo</h3><p><strong>{order.clients?.name ?? "Sin cliente"}</strong></p><p className="muted">{order.clients?.rut ?? "RUT no registrado"}</p><hr/><p>{[order.machines?.brand,order.machines?.model,order.machines?.equipment_type].filter(Boolean).join(" · ") || "Equipo no especificado"}</p><p className="muted">Serie: {order.machines?.serial_number ?? "No registrada"}</p><p className="muted">Técnico: {order.assigned?.full_name ?? "Sin asignar"}</p></article><article className="card"><h3 className="sectiontitle">Problema informado</h3><p>{order.problem_description}</p><h3 className="sectiontitle">Resumen económico</h3><div className="summary-line"><span>Total repuestos registrados</span><strong>{money(totalParts)}</strong></div><div className="summary-line"><span>Pagos registrados</span><strong>{money(totalPaid)}</strong></div></article></div>
       </section>}
