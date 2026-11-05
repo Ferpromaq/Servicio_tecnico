@@ -20,6 +20,7 @@ export function Dashboard() {
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<ServiceOrder | null>(null);
   const [userLabel, setUserLabel] = useState("Equipo de servicio");
+  const [role, setRole] = useState("");
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -39,8 +40,8 @@ export function Dashboard() {
     if (!supabase) return;
     void supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
-      const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", data.user.id).maybeSingle();
-      if (profile?.full_name) setUserLabel(profile.full_name);
+      const { data: profile } = await supabase.from("profiles").select("full_name,role").eq("id", data.user.id).maybeSingle();
+      if (profile?.full_name) setUserLabel(profile.full_name);\n      if (profile?.role) setRole(profile.role);
     });
   }, [loadOrders]);
 
@@ -91,7 +92,7 @@ export function Dashboard() {
         <section className="card orders-card">
           <div className="section-head">
             <div><h2>Órdenes de servicio</h2><p>Seguimiento de equipos y trabajos en taller</p></div>
-            <button className="secondary" onClick={() => void loadOrders()} disabled={loading}><RefreshCw size={15} /> Actualizar</button>
+            <div className="section-actions">{(role==="admin"||role==="supervisor")&&<a className="primary new-order-button" href="/ordenes/nueva">＋ Nueva orden</a>}<button className="secondary" onClick={() => void loadOrders()} disabled={loading}><RefreshCw size={15} /> Actualizar</button></div>
           </div>
           <div className="toolbar">
             <div className="tabs">{ORDER_STATUSES.map((tab) => <button key={tab.value} onClick={() => setActive(tab.value)} className={`tab ${active === tab.value ? "active" : ""}`}>{tab.label}{tab.value === "todas" ? <span className="tab-count">{orders.length}</span> : <span className="tab-count">{count(tab.value)}</span>}</button>)}</div>
