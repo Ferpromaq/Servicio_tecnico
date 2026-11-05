@@ -24,3 +24,5 @@
 
 
 .part-flags{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}.part-flags label{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#647384}.part-flags input{accent-color:var(--orange)}
+
+.navlink{text-decoration:none}.navlink:hover{background:#243443;color:#fff}.orders-card{scroll-margin-top:24px}
