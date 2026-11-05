@@ -137,7 +137,7 @@ export default function UsersPage() {
             </select>
           </div>
           {error && <p className="error-text" role="alert">{error}</p>}
-          {success && <p className="success-text" role="status">{success}</p>}
+          {success && <p className="notice success" role="status">{success}</p>}
           <button className="primary" disabled={busy}>
             {busy ? "Creando usuario…" : "Crear usuario"}
           </button>
