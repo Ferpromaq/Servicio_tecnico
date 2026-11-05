@@ -781,3 +781,10 @@ html,body{height:100%;min-height:100%}
     padding:6px 9px;
   }
 }
+
+
+/* Selects de Nueva orden: reducir ligeramente el ancho sin alterar los demás campos. */
+.new-order-modal .field select{
+  width:calc(100% - 8px);
+  max-width:calc(100% - 8px);
+}
