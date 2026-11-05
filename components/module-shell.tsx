@@ -77,9 +77,7 @@ export function ModuleShell({ title, description, children }: { title: string; d
         <div className="sidebar-navigation">
           <div className="navlabel">Espacio de trabajo</div>
           {links.filter(item => !item.admin || !roleReady || role === "admin").map(({ href, label, icon: Icon }) => {
-            const isActive = href === "/ordenes"
-              ? path === "/" 
-              : path === href || (href !== "/" && path.startsWith(`${href}/`));
+            const isActive = path === href || (href !== "/" && path.startsWith(href + "/"));
             return (
               <Link key={href} href={href} className={`navitem navlink ${isActive ? "active" : ""}`}>
                 <Icon size={17} />{label}
