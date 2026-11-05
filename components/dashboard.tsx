@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertCircle, ClipboardList, Clock3, Package, RefreshCw, Search, Wrench } from "lucide-react";
+import { AlertCircle, ClipboardList, RefreshCw, Search, Wrench } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, type ServiceOrder } from "@/lib/data/orders";
 
