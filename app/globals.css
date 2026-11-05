@@ -849,7 +849,7 @@ html,body{height:100%;min-height:100%}
     min-height:24px;
     overflow:hidden;
     display:flex;
-    align-items:flex-end;
+    align-items:flex-start;
     font-size:10px;
     line-height:1.1;
   }
