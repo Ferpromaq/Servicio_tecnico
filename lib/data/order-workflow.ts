@@ -130,3 +130,12 @@ export async function updateOrderCosts(orderId: string, diagnosisAmount: number,
   });
   if (error) throw error;
 }
+
+
+export async function updatePartCoverage(partId: string, warrantyCovered: boolean, clientContacted: boolean) {
+  const client = await requireSupabase();
+  const { error } = await client.rpc("update_part_coverage", {
+    p_part_id: partId, p_warranty_covered: warrantyCovered, p_client_contacted: clientContacted,
+  });
+  if (error) throw error;
+}
