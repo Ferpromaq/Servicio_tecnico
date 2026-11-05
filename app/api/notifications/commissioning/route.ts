@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const sessionClient = createServerClient(url, anonKey, {
     cookies: {
       getAll: () => cookieStore.getAll(),
-      setAll: (items) => items.forEach(({ name, value, options }) => cookieStore.set(name, value, options)),
+      setAll: (items: {name:string;value:string;options?:any}[]) => items.forEach(({ name, value, options }) => cookieStore.set(name, value, options)),
     },
   });
   const { data: { user } } = await sessionClient.auth.getUser();
