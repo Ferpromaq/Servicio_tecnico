@@ -72,12 +72,19 @@ export function ModuleShell({ title, description, children }: { title: string; d
     <div className="shell">
       <aside className="sidebar">
         <Link className="brand" href="/">FERPRO<span>MAQ</span></Link>
-        <div className="navlabel">Espacio de trabajo</div>
-        {links.filter(item => !item.admin || role === "admin").map(({ href, label, icon: Icon }) => (
-          <Link key={href} href={href} className={`navitem navlink ${path === href ? "active" : ""}`}>
-            <Icon size={17} />{label}
-          </Link>
-        ))}
+        <div className="sidebar-navigation">
+          <div className="navlabel">Espacio de trabajo</div>
+          {links.filter(item => !item.admin || role === "admin").map(({ href, label, icon: Icon }) => {
+            const isActive = href === "/#ordenes"
+              ? path === "/" 
+              : path === href || (href !== "/" && path.startsWith(`${href}/`));
+            return (
+              <Link key={href} href={href} className={`navitem navlink ${isActive ? "active" : ""}`}>
+                <Icon size={17} />{label}
+              </Link>
+            );
+          })}
+        </div>
         <div className="sidebar-user">
           <div className="navlabel">Sesión activa</div>
           <button className="navitem navbutton" onClick={() => {
