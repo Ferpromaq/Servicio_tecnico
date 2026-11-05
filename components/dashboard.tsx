@@ -25,6 +25,7 @@ export function Dashboard() {
   const [selected, setSelected] = useState<ServiceOrder | null>(null);
   const [userLabel, setUserLabel] = useState("Equipo de servicio");
   const [role, setRole] = useState("");
+  const [roleReady, setRoleReady] = useState(false);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -44,10 +45,11 @@ export function Dashboard() {
     const client = supabase;
     if (!client) return;
     void client.auth.getUser().then(async ({ data }) => {
-      if (!data.user) return;
+      if (!data.user) { setRoleReady(true); return; }
       const { data: profile } = await client.from("profiles").select("full_name,role").eq("id", data.user.id).maybeSingle();
       if (profile?.full_name) setUserLabel(profile.full_name);
       if (profile?.role) setRole(profile.role);
+      setRoleReady(true);
     });
   }, [loadOrders]);
 
@@ -67,7 +69,7 @@ export function Dashboard() {
         <div className="brand">FERPRO<span>MAQ</span></div>
         <div>
           <div className="navlabel">Espacio de trabajo</div>
-          {nav.filter(item => !item.admin || role === "admin").map(({ label, icon: Icon, href }, index) => (
+          {nav.filter(item => !item.admin || !roleReady || role === "admin").map(({ label, icon: Icon, href }, index) => (
             <a key={label} href={href} className={`navitem navlink ${index === 0 ? "active" : ""}`}><Icon size={17} />{label}</a>
           ))}
         </div>
