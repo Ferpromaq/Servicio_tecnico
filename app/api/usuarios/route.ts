@@ -29,11 +29,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Solo un administrador puede crear usuarios." }, { status: 403 });
     }
 
-    const body = await request.json();
-    const fullName = typeof body.fullName === "string" ? body.fullName.trim() : "";
-    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-    const password = typeof body.password === "string" ? body.password : "";
-    const role = body.role as AppRole;
+    const body: unknown = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ error: "Los datos enviados no son válidos." }, { status: 400 });
+    }
+    const input = body as Record<string, unknown>;
+    const fullName = typeof input.fullName === "string" ? input.fullName.trim() : "";
+    const email = typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
+    const password = typeof input.password === "string" ? input.password : "";
+    const role = input.role as AppRole;
 
     if (fullName.length < 2 || fullName.length > 120) {
       return NextResponse.json({ error: "Ingresa un nombre de entre 2 y 120 caracteres." }, { status: 400 });
