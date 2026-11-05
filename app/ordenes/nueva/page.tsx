@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, UploadCloud } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 type ClientRow = { id: string; name: string; rut: string | null };
@@ -109,7 +109,7 @@ export default function NewOrderPage() {
   if (role === "tecnico") return null;
   const needsInvoice = intakeType === "warranty" || intakeType === "commissioning";
   const photoLabel = intakeType === "warranty" ? "Foto del documento de garantía" : "Foto de la factura de compra";
-  const validDocument = documentFile && documentFile.type.startsWith("image/") && documentFile.size <= 8 * 1024 * 1024;
+  const validDocument = documentFile && ["image/jpeg","image/png","image/webp"].includes(documentFile.type) && documentFile.size <= 8 * 1024 * 1024;
 
   return <main className="main new-order-page">
     <button className="back-link" onClick={() => router.push("/")}><ArrowLeft size={15}/> Volver a órdenes</button>
