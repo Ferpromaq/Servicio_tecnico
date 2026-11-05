@@ -71,15 +71,12 @@ export function Dashboard() {
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">FERPRO<span>MAQ</span></div>
-        <div>
-          <div className="navlabel">Espacio de trabajo</div>
-          <div className="sidebar-navigation">
+        <div className="sidebar-navigation">
             <div className="navlabel">Espacio de trabajo</div>
             {nav.filter(item => !item.admin || !roleReady || role === "admin").map(({ label, icon: Icon, href }) => {
               const isActive = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
               return <Link key={label} href={href} className={"navitem navlink " + (isActive ? "active" : "")}><Icon size={17} />{label}</Link>;
             })}
-          </div>
         </div>
         <div className="sidebar-user">
           <div className="navlabel">Sesión activa</div>
