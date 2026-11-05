@@ -41,3 +41,15 @@ begin
     jsonb_build_object('diagnosis_amount',case when v_commissioning then 0 else p_diagnosis_amount end,'installation_amount',case when v_commissioning then 0 else p_installation_amount end));
 end;
 $$;
+
+-- La puesta en marcha solo requiere el número de factura y nunca genera cobros.
+create or replace function public.update_order_warranty(p_order_id uuid,p_warranty_entry boolean,p_warranty_covers_damage boolean,p_receipt_type text,p_receipt_number text,p_receipt_date date,p_commissioning boolean default false) returns void language plpgsql security definer set search_path=public as $$
+declare v_role public.app_role;
+begin
+ select role into v_role from public.profiles where id=auth.uid() and active=true;
+ if v_role not in ('admin','supervisor') then raise exception 'No tienes permiso para modificar la garantía'; end if;
+ if p_commissioning and nullif(trim(coalesce(p_receipt_number,'')),'') is null then raise exception 'Puesta en Marcha requiere el número de factura de compra'; end if;
+ update public.service_orders set commissioning=coalesce(p_commissioning,false),intake_type=case when p_commissioning then 'commissioning' when coalesce(p_warranty_entry,false) then 'warranty' else 'no_warranty' end,warranty_entry=case when p_commissioning then true else coalesce(p_warranty_entry,false) end,warranty_covers_damage=coalesce(p_warranty_covers_damage,false),receipt_type=nullif(trim(coalesce(p_receipt_type,'')),''),receipt_number=nullif(trim(coalesce(p_receipt_number,'')),''),receipt_date=p_receipt_date,diagnosis_amount=case when p_commissioning then 0 else diagnosis_amount end,installation_amount=case when p_commissioning then 0 else installation_amount end,updated_at=now() where id=p_order_id;
+ if not found then raise exception 'La orden no existe'; end if;
+ insert into public.order_events(order_id,event_type,description,actor_id) values(p_order_id,'garantia',case when p_commissioning then 'Orden marcada como Puesta en Marcha' else 'Datos de garantía actualizados' end,auth.uid());
+end; $$;
