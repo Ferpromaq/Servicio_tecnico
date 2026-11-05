@@ -1014,7 +1014,14 @@ html,body{height:100%;min-height:100%}
 }
 
 
-/* El selector de tipo de comprobante mantiene el mismo fondo blanco que los folios. */
+/* Inputs y select de comprobantes con la misma superficie blanca y borde visible. */
+.new-order-modal .intake-section > .intake-fields > .field > input,
 .new-order-modal .intake-section > .intake-fields > .field > select{
-  background:#fff !important;
+  background-color:#fff !important;
+  border:1px solid #dce3e9 !important;
+  border-radius:5px !important;
+  box-shadow:none !important;
+}
+.new-order-modal .intake-section > .intake-fields > .field > select{
+  color:#263238;
 }
