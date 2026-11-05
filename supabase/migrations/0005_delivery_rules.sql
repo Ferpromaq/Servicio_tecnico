@@ -37,6 +37,7 @@ begin
   end if;
 
   if p_new_status='entregadas' then
+    if v_order.status <> 'listas' then raise exception 'La orden debe estar lista para entrega antes de marcarla como entregada'; end if;
     v_warranty_active := coalesce(v_order.warranty_entry,false)
       and v_order.receipt_date is not null
       and v_order.receipt_date between current_date - interval '6 months' and current_date;
