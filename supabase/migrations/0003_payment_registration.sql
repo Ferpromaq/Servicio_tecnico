@@ -29,8 +29,7 @@ begin
   if not found then raise exception 'La orden no existe'; end if;
   v_warranty_active := coalesce(v_order.warranty_entry,false)
     and v_order.receipt_date is not null
-    and v_order.receipt_date between current_date - interval '6 months' and current_date
-    and coalesce(v_order.warranty_covers_damage,false);
+    and v_order.receipt_date between current_date - interval '6 months' and current_date;
 
   if p_payment_type='diagnostico' then
     if v_warranty_active then raise exception 'El diagnóstico está cubierto por garantía'; end if;
