@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 
 const links = [
   { href: "/", label: "Panel general", icon: ClipboardList },
-  { href: "/#ordenes", label: "Órdenes de servicio", icon: Wrench },
+  { href: "/ordenes", label: "Órdenes de servicio", icon: Wrench },
   { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/equipos", label: "Equipos", icon: Cog },
   { href: "/repuestos", label: "Repuestos", icon: Package },
@@ -77,7 +77,7 @@ export function ModuleShell({ title, description, children }: { title: string; d
         <div className="sidebar-navigation">
           <div className="navlabel">Espacio de trabajo</div>
           {links.filter(item => !item.admin || !roleReady || role === "admin").map(({ href, label, icon: Icon }) => {
-            const isActive = href === "/#ordenes"
+            const isActive = href === "/ordenes"
               ? path === "/" 
               : path === href || (href !== "/" && path.startsWith(`${href}/`));
             return (
