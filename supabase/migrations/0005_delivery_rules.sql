@@ -82,7 +82,7 @@ begin
     values(p_order_id,'entrega_forzada','Orden lista para entrega por rechazo del cliente: '||trim(p_reason),auth.uid(),jsonb_build_object('reason',trim(p_reason)));
   end if;
 end;
-$;
+$$;
 
 revoke all on function public.transition_order_status(uuid,public.order_status,boolean,text) from public;
 grant execute on function public.transition_order_status(uuid,public.order_status,boolean,text) to authenticated;
