@@ -20,12 +20,17 @@ Aplicación independiente para administrar el flujo de servicio técnico. Este r
 - Panel que consulta órdenes reales desde `service_orders`, clientes, máquinas y técnico asignado.
 - Filtros por estado, búsqueda y contadores derivados de datos reales.
 - Vista rápida de información de la orden.
+- Ficha de orden con pestañas de resumen, diagnóstico, repuestos, pagos e historial.
 - Servicios tipados para consultar repuestos, pagos e historial.
+- Registro de diagnóstico y solicitudes de repuestos desde la ficha.
+- Autorización de repuestos exclusiva para administradores; recepción e instalación registrables por el equipo.
+- Registro de pagos restringido a admin/supervisor, con control de saldo de diagnóstico y distribución de pagos entre repuestos autorizados.
+- Pipeline de GitHub Actions para ejecutar TypeScript y build.
 - Funciones SQL transaccionales para registrar diagnósticos, solicitar repuestos, autorizar/rechazar repuestos y registrar recepción/instalación.
 - Restricción de autorización de repuestos para que solo admin pueda aprobar o rechazar.
 
 ## Pendiente antes de producción
-- Completar pantallas de detalle y formularios de órdenes, diagnóstico, repuestos y pagos.
+- Completar creación y edición administrativa de órdenes y clientes.
 - Implementar cálculos y validaciones de garantía, regla de abono del 60% y condiciones de entrega.
 - Completar notificaciones por correo y plantillas.
 - Revisar y probar RLS y funciones RPC con cuentas reales de los tres roles.
