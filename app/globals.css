@@ -877,3 +877,13 @@ html,body{height:100%;min-height:100%}
     white-space:nowrap;
   }
 }
+
+
+/* Igualar el ancho de los folios entre garantía, puesta en marcha y sin garantía. */
+@media(min-width:761px){
+  .new-order-modal .intake-section>.intake-fields>.field>input{
+    width:150px;
+    max-width:100%;
+    justify-self:start;
+  }
+}
