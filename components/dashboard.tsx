@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { AlertCircle, ClipboardList, RefreshCw, Search, Wrench, Users, Cog, Package, CreditCard, BarChart3 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, type ServiceOrder } from "@/lib/data/orders";
@@ -17,6 +19,8 @@ const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: bo
 ];
 
 export function Dashboard() {
+  const pathname = usePathname();
+  const isOrdersPage = pathname === "/ordenes";
   const [orders, setOrders] = useState<ServiceOrder[]>([]);
   const [active, setActive] = useState<string>("todas");
   const [query, setQuery] = useState("");
@@ -69,9 +73,13 @@ export function Dashboard() {
         <div className="brand">FERPRO<span>MAQ</span></div>
         <div>
           <div className="navlabel">Espacio de trabajo</div>
-          {nav.filter(item => !item.admin || !roleReady || role === "admin").map(({ label, icon: Icon, href }, index) => (
-            <a key={label} href={href} className={`navitem navlink ${index === 0 ? "active" : ""}`}><Icon size={17} />{label}</a>
-          ))}
+          <div className="sidebar-navigation">
+            <div className="navlabel">Espacio de trabajo</div>
+            {nav.filter(item => !item.admin || !roleReady || role === "admin").map(({ label, icon: Icon, href }) => {
+              const isActive = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
+              return <Link key={label} href={href} className={"navitem navlink " + (isActive ? "active" : "")}><Icon size={17} />{label}</Link>;
+            })}
+          </div>
         </div>
         <div className="sidebar-user">
           <div className="navlabel">Sesión activa</div>
@@ -82,11 +90,11 @@ export function Dashboard() {
 
       <main className="main">
         <header className="topbar">
-          <div><div className="eyebrow">FERPROMAQ / OPERACIONES</div><h1 className="heading">Panel de servicio técnico</h1></div>
+          <div><div className="eyebrow">FERPROMAQ / OPERACIONES</div><h1 className="heading">{isOrdersPage ? "Órdenes de servicio" : "Panel de servicio técnico"}</h1></div>
           <div className="user-chip"><div><strong>{userLabel}</strong><div className="eyebrow">Servicio técnico</div></div><div className="avatar">{userLabel.slice(0, 1).toUpperCase()}</div></div>
         </header>
 
-        <section className="stats">
+        {!isOrdersPage && <section className="stats">
           {[
             ["Órdenes activas", activeCount, "En curso"],
             ["En diagnóstico", count("diagnostico"), "Pendientes de evaluación"],
@@ -95,7 +103,7 @@ export function Dashboard() {
           ].map(([label, value, foot]) => (
             <div className="card stat-card" key={String(label)}><div className="statlabel">{label}</div><div className="statvalue">{loading ? "—" : value}</div><div className="statfoot">{foot}</div></div>
           ))}
-        </section>
+        </section>}
 
         <section className="card orders-card" id="ordenes">
           <div className="section-head">
