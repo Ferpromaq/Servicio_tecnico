@@ -29,13 +29,14 @@ Aplicación independiente para administrar el flujo de servicio técnico. Este r
 - Cambio de estado restringido a admin/supervisor, con auditoría de entrega forzada y validación de diagnóstico, 60% de repuestos y costo de instalación antes de entregar.
 - Gestión de garantía y costos; Puesta en Marcha obliga a registrar boleta/factura y fecha, y dispara un aviso por correo al técnico asignado.
 - Pipeline de GitHub Actions para ejecutar TypeScript y build.
-- Funciones SQL transaccionales para registrar diagnósticos, solicitar repuestos, autorizar/rechazar repuestos y registrar recepción/instalación.
+- Funciones SQL transaccionales para registrar diagnósticos, solicitar repuestos, autorizar/rechazar repuestos, marcar cobertura de garantía y registrar recepción/instalación.
 - Restricción de autorización de repuestos para que solo admin pueda aprobar o rechazar.
 
 ## Pendiente antes de producción
-- Completar edición administrativa de órdenes y clientes, y automatizar avisos por correo al técnico asignado.
-- Completar la configuración de garantía por repuesto y validar el flujo completo de pagos y entrega con casos reales.
-- Completar notificaciones por correo y plantillas.
+- Completar edición administrativa de órdenes y clientes.
+- Implementar la autorización de repuestos por parte del cliente mediante correo y enlace seguro.
+- Validar el flujo completo de pagos, garantía y entrega con casos reales.
+- Completar plantillas y notificaciones al cliente para autorización de repuestos.
 - Revisar y probar RLS y funciones RPC con cuentas reales de los tres roles.
 - Configurar y ejecutar pruebas, lint y compilación en un entorno con las variables de Supabase.
 
