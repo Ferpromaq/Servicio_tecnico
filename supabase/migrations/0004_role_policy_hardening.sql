@@ -29,6 +29,11 @@ begin
   if new.status <> 'pendiente' or new.authorized_at is not null or new.authorized_by is not null then
     raise exception 'Los repuestos nuevos deben quedar pendientes de autorización';
   end if;
+  new.created_by := auth.uid();
+  if public.current_role() = 'tecnico' then
+    new.warranty_covered := false;
+    new.client_contacted := false;
+  end if;
   return new;
 end;
 $$;
