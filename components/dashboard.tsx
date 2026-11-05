@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertCircle, ClipboardList, RefreshCw, Search, Wrench } from "lucide-react";
+import { AlertCircle, ClipboardList, RefreshCw, Search, Wrench, Users, Cog, Package, CreditCard, BarChart3 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, type ServiceOrder } from "@/lib/data/orders";
 
@@ -60,7 +60,7 @@ export function Dashboard() {
         <div className="brand">FERPRO<span>MAQ</span></div>
         <div>
           <div className="navlabel">Espacio de trabajo</div>
-          {nav.map(({ label, icon: Icon, href }, index) => (
+          {nav.filter(item => !item.admin || role === "admin").map(({ label, icon: Icon, href }, index) => (
             <a key={label} href={href} className={`navitem navlink ${index === 0 ? "active" : ""}`}><Icon size={17} />{label}</a>
           ))}
         </div>
