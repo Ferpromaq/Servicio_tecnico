@@ -8,6 +8,12 @@ import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, ty
 const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: boolean }[] = [
   { label: "Panel general", icon: ClipboardList, href: "/" },
   { label: "Órdenes de servicio", icon: Wrench, href: "/#ordenes" },
+  { label: "Clientes", icon: Users, href: "/clientes" },
+  { label: "Equipos", icon: Cog, href: "/equipos" },
+  { label: "Repuestos", icon: Package, href: "/repuestos" },
+  { label: "Pagos", icon: CreditCard, href: "/pagos" },
+  { label: "Usuarios y técnicos", icon: Users, href: "/usuarios", admin: true },
+  { label: "Reportes", icon: BarChart3, href: "/reportes" },
 ];
 
 export function Dashboard() {
@@ -35,8 +41,9 @@ export function Dashboard() {
 
   useEffect(() => {
     void loadOrders();
-    if (!supabase) return;
-    void supabase.auth.getUser().then(async ({ data }) => {
+    const client = supabase;
+    if (!client) return;
+    void client.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
       const { data: profile } = await client.from("profiles").select("full_name,role").eq("id", data.user.id).maybeSingle();
       if (profile?.full_name) setUserLabel(profile.full_name);
