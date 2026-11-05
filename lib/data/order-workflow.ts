@@ -107,3 +107,26 @@ export async function transitionOrderStatus(input: {
   });
   if (error) throw error;
 }
+
+
+export async function updateOrderWarranty(input: {
+  orderId: string; warrantyEntry: boolean; warrantyCoversDamage: boolean;
+  receiptType: string; receiptNumber: string; receiptDate: string; commissioning: boolean;
+}) {
+  const client = await requireSupabase();
+  const { error } = await client.rpc("update_order_warranty", {
+    p_order_id: input.orderId, p_warranty_entry: input.warrantyEntry,
+    p_warranty_covers_damage: input.warrantyCoversDamage, p_receipt_type: input.receiptType,
+    p_receipt_number: input.receiptNumber, p_receipt_date: input.receiptDate || null,
+    p_commissioning: input.commissioning,
+  });
+  if (error) throw error;
+}
+
+export async function updateOrderCosts(orderId: string, diagnosisAmount: number, installationAmount: number) {
+  const client = await requireSupabase();
+  const { error } = await client.rpc("update_order_costs", {
+    p_order_id: orderId, p_diagnosis_amount: diagnosisAmount, p_installation_amount: installationAmount,
+  });
+  if (error) throw error;
+}
