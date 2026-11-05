@@ -19,8 +19,8 @@ function Bar({ className = "" }: { className?: string }) {
 
 function SkeletonTable({ rows = 6, columns = 4 }: { rows?: number; columns?: number }) {
   return <div className="skeleton-table">
-    <div className="skeleton-table-row skeleton-table-head">{Array.from({length:columns},(_,i)=><Bar key={i} className="skeleton-cell"/>)}</div>
-    {Array.from({length:rows},(_,i)=><div className="skeleton-table-row" key={i}>{Array.from({length:columns},(_,j)=><Bar key={j} className="skeleton-cell"/>)}</div>)}
+    <div className="skeleton-table-row skeleton-table-head" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>{Array.from({length:columns},(_,i)=><Bar key={i} className="skeleton-cell"/>)}</div>
+    {Array.from({length:rows},(_,i)=><div className="skeleton-table-row" key={i} style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>{Array.from({length:columns},(_,j)=><Bar key={j} className="skeleton-cell"/>)}</div>)}
   </div>;
 }
 
