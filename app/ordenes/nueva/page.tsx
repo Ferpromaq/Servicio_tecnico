@@ -121,7 +121,7 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
       <form className="new-order-form" onSubmit={submit}>
         <div className="new-order-modal-body">
       <section className="intake-section">
-        <h2>Tipo de ingreso</h2>
+        <div className="intake-heading"><h2>Tipo de ingreso</h2><p className="intake-note">{intakeType === "commissioning" ? "La puesta en marcha queda registrada con diagnóstico e instalación en $0." : ""}</p></div>
         <div className="intake-options">
           <label className={intakeType === "warranty" ? "intake-option selected" : "intake-option"}><input type="radio" name="intakeType" checked={intakeType === "warranty"} onChange={() => { setIntakeType("warranty"); setDocumentFile(null); }}/> <span><strong>Con garantía</strong><small>Factura y foto de garantía</small></span></label>
           <label className={intakeType === "no_warranty" ? "intake-option selected" : "intake-option"}><input type="radio" name="intakeType" checked={intakeType === "no_warranty"} onChange={() => { setIntakeType("no_warranty"); setDocumentFile(null); }}/> <span><strong>Sin garantía</strong><small>Comprobante del diagnóstico</small></span></label>
@@ -135,7 +135,7 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
           <div className="field"><label>Número de boleta o factura *</label><input required value={diagnosisReceiptNumber} onChange={e => setDiagnosisReceiptNumber(e.target.value)} placeholder="N° del pago de diagnóstico"/></div>
         </div>}
         {documentFile && !validDocument && <p className="file-selected file-error">El archivo debe ser JPG, PNG o WEBP y pesar máximo 8 MB.</p>}
-        {intakeType === "commissioning" && <p className="intake-note">{intakeType === "commissioning" ? "La puesta en marcha queda registrada con diagnóstico e instalación en $0." : "\u00a0"}</p>}
+        {intakeType === "commissioning" && }
       </section>
       <section className="client-section">
         <h2>Cliente</h2>
