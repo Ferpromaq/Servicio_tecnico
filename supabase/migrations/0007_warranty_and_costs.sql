@@ -45,7 +45,7 @@ declare v_role public.app_role;
 begin
   select role into v_role from public.profiles where id=auth.uid() and active=true;
   if v_role not in ('admin','supervisor') then raise exception 'No tienes permiso para modificar los valores de la orden'; end if;
-  if p_diagnosis_amount < 0 or p_installation_amount < 0 then raise exception 'Los montos no pueden ser negativos'; end if;
+  if p_diagnosis_amount is null or p_installation_amount is null or p_diagnosis_amount < 0 or p_installation_amount < 0 then raise exception 'Los montos no pueden ser negativos'; end if;
   update public.service_orders
      set diagnosis_amount=p_diagnosis_amount,installation_amount=p_installation_amount,updated_at=now()
    where id=p_order_id;
