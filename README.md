@@ -18,6 +18,7 @@ Aplicación independiente para administrar el flujo de servicio técnico. Este r
 ## Funcionalidad implementada
 - Inicio de sesión con Supabase Auth y protección de rutas.
 - Panel que consulta órdenes reales desde `service_orders`, clientes, máquinas y técnico asignado.
+- Alta de órdenes con cliente existente o nuevo, equipo, prioridad y asignación de técnico, mediante una operación SQL transaccional.
 - Filtros por estado, búsqueda y contadores derivados de datos reales.
 - Vista rápida de información de la orden.
 - Ficha de orden con pestañas de resumen, diagnóstico, repuestos, pagos e historial.
@@ -25,13 +26,14 @@ Aplicación independiente para administrar el flujo de servicio técnico. Este r
 - Registro de diagnóstico y solicitudes de repuestos desde la ficha.
 - Autorización de repuestos exclusiva para administradores; recepción e instalación registrables por el equipo.
 - Registro de pagos restringido a admin/supervisor, con control de saldo de diagnóstico y distribución de pagos entre repuestos autorizados.
+- Cambio de estado restringido a admin/supervisor, con auditoría de entrega forzada y validación de diagnóstico, 60% de repuestos y costo de instalación antes de entregar.
 - Pipeline de GitHub Actions para ejecutar TypeScript y build.
 - Funciones SQL transaccionales para registrar diagnósticos, solicitar repuestos, autorizar/rechazar repuestos y registrar recepción/instalación.
 - Restricción de autorización de repuestos para que solo admin pueda aprobar o rechazar.
 
 ## Pendiente antes de producción
-- Completar creación y edición administrativa de órdenes y clientes.
-- Implementar cálculos y validaciones de garantía, regla de abono del 60% y condiciones de entrega.
+- Completar edición administrativa de órdenes y clientes, y automatizar avisos por correo al técnico asignado.
+- Completar la configuración de garantía por repuesto y validar el flujo completo de pagos y entrega con casos reales.
 - Completar notificaciones por correo y plantillas.
 - Revisar y probar RLS y funciones RPC con cuentas reales de los tres roles.
 - Configurar y ejecutar pruebas, lint y compilación en un entorno con las variables de Supabase.
