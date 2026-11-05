@@ -12,3 +12,7 @@
 
 
 .payment-form{border:1px solid var(--line);background:#fbfcfd;border-radius:12px;padding:18px;margin:18px 0 24px}.payment-form h2{margin-bottom:12px}.payment-form .detail-columns{margin-top:0;gap:10px}.payment-form .field{margin:6px 0}.payment-form select,.payment-form input{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px;background:#fff;font-size:12px}.payment-form .checkline{padding:6px 0 14px}
+
+
+.status-control{margin-bottom:18px;padding:17px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.status-control h2{margin:0 0 5px}.status-control p{margin:0;font-size:11px}.status-form{display:flex;align-items:center;gap:8px}.status-form select{border:1px solid var(--line);border-radius:9px;padding:10px;background:#fff;font-size:12px}.status-form .primary{white-space:nowrap}.forced-control{grid-column:1/-1;border-top:1px solid var(--line);padding-top:8px}.forced-control .field{margin:6px 0}.forced-control textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;font-size:12px}
+@media(max-width:760px){.status-control{grid-template-columns:1fr}.status-form{align-items:stretch;flex-direction:column}.status-form select,.status-form button{width:100%}}
