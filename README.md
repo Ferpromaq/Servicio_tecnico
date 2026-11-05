@@ -28,6 +28,7 @@ Aplicación independiente para administrar el flujo de servicio técnico. Este r
 - Registro de pagos restringido a admin/supervisor, con control de saldo de diagnóstico y distribución de pagos entre repuestos autorizados.
 - Cambio de estado restringido a admin/supervisor, con auditoría de entrega forzada y validación de diagnóstico, 60% de repuestos y costo de instalación antes de entregar.
 - Gestión de garantía y costos; Puesta en Marcha obliga a registrar boleta/factura y fecha, y dispara un aviso por correo al técnico asignado.
+- Solicitud de autorización de repuestos al cliente por correo Resend, con enlace aleatorio de un solo uso, vencimiento a 7 días, hash SHA-256 almacenado en Supabase y consumo atómico mediante RPC.
 - Pipeline de GitHub Actions para ejecutar TypeScript y build.
 - Funciones SQL transaccionales para registrar diagnósticos, solicitar repuestos, autorizar/rechazar repuestos, marcar cobertura de garantía y registrar recepción/instalación.
 - Restricción de autorización de repuestos para que solo admin pueda aprobar o rechazar.
