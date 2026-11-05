@@ -65,3 +65,23 @@ $$;
 
 revoke all on function public.consume_part_client_authorization(text, text) from public, anon, authenticated;
 grant execute on function public.consume_part_client_authorization(text, text) to service_role;
+
+
+-- La RPC usa service_role para procesar el enlace público; el trigger de seguridad
+-- debe permitir esa operación interna, sin ampliar permisos a usuarios normales.
+create or replace function public.guard_part_authorization()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.status in ('autorizado','rechazado')
+     and old.status is distinct from new.status
+     and coalesce(auth.role(), '') <> 'service_role'
+     and public.current_role() is distinct from 'admin'::public.app_role then
+    raise exception 'Solo un administrador puede autorizar o rechazar repuestos';
+  end if;
+  return new;
+end;
+$$;
