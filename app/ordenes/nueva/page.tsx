@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Upload, X } from "lucide-react";
+import { Save, Upload, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 type ClientRow = { id: string; name: string; rut: string | null };
