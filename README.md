@@ -27,6 +27,7 @@ Aplicación independiente para administrar el flujo de servicio técnico. Este r
 - Autorización de repuestos exclusiva para administradores; recepción e instalación registrables por el equipo.
 - Registro de pagos restringido a admin/supervisor, con control de saldo de diagnóstico y distribución de pagos entre repuestos autorizados.
 - Cambio de estado restringido a admin/supervisor, con auditoría de entrega forzada y validación de diagnóstico, 60% de repuestos y costo de instalación antes de entregar.
+- Gestión de garantía y costos; Puesta en Marcha obliga a registrar boleta/factura y fecha, y dispara un aviso por correo al técnico asignado.
 - Pipeline de GitHub Actions para ejecutar TypeScript y build.
 - Funciones SQL transaccionales para registrar diagnósticos, solicitar repuestos, autorizar/rechazar repuestos y registrar recepción/instalación.
 - Restricción de autorización de repuestos para que solo admin pueda aprobar o rechazar.
@@ -38,4 +39,4 @@ Aplicación independiente para administrar el flujo de servicio técnico. Este r
 - Revisar y probar RLS y funciones RPC con cuentas reales de los tres roles.
 - Configurar y ejecutar pruebas, lint y compilación en un entorno con las variables de Supabase.
 
-**No conectar a producción ni cargar datos reales hasta completar las pruebas de seguridad por rol.**
+**No conectar a producción ni cargar datos reales hasta completar las pruebas de seguridad por rol. Configura también `RESEND_API_KEY` y `FROM_EMAIL` para activar correos.**
