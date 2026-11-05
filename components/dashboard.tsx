@@ -6,10 +6,8 @@ import { supabase } from "@/lib/supabase";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, type ServiceOrder } from "@/lib/data/orders";
 
 const nav = [
-  { label: "Panel general", icon: ClipboardList },
-  { label: "Órdenes de servicio", icon: Wrench },
-  { label: "Repuestos", icon: Package },
-  { label: "Pagos", icon: Clock3 },
+  { label: "Panel general", icon: ClipboardList, href: "/" },
+  { label: "Órdenes de servicio", icon: Wrench, href: "/#ordenes" },
 ];
 
 export function Dashboard() {
@@ -62,8 +60,8 @@ export function Dashboard() {
         <div className="brand">FERPRO<span>MAQ</span></div>
         <div>
           <div className="navlabel">Espacio de trabajo</div>
-          {nav.map(({ label, icon: Icon }, index) => (
-            <div key={label} className={`navitem ${index === 0 ? "active" : ""}`}><Icon size={17} />{label}</div>
+          {nav.map(({ label, icon: Icon, href }, index) => (
+            <a key={label} href={href} className={`navitem navlink ${index === 0 ? "active" : ""}`}><Icon size={17} />{label}</a>
           ))}
         </div>
         <div className="sidebar-user">
@@ -90,7 +88,7 @@ export function Dashboard() {
           ))}
         </section>
 
-        <section className="card orders-card">
+        <section className="card orders-card" id="ordenes">
           <div className="section-head">
             <div><h2>Órdenes de servicio</h2><p>Seguimiento de equipos y trabajos en taller</p></div>
             <div className="section-actions">{(role==="admin"||role==="supervisor")&&<a className="primary new-order-button" href="/ordenes/nueva">＋ Nueva orden</a>}<button className="secondary" onClick={() => void loadOrders()} disabled={loading}><RefreshCw size={15} /> Actualizar</button></div>
