@@ -687,3 +687,53 @@ html,body{height:100%;min-height:100%}
 @media(max-width:480px){
   .new-order-modal{width:100vw}
 }
+
+
+/* Tipo de ingreso: usar una sola grilla horizontal y aprovechar el espacio libre. */
+@media(min-width:761px){
+  .new-order-modal .new-order-modal-body>.intake-section{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    align-items:stretch;
+    column-gap:12px;
+    row-gap:8px;
+  }
+  .new-order-modal .new-order-modal-body>.intake-section>h2{
+    grid-column:1/-1;
+    margin-bottom:0;
+  }
+  .new-order-modal .intake-section>.intake-options,
+  .new-order-modal .intake-section>.intake-fields{display:contents}
+  .new-order-modal .intake-section>.intake-options>.intake-option{
+    grid-row:2;
+    min-width:0;
+    min-height:58px;
+    padding:8px 9px;
+    align-self:stretch;
+  }
+  .new-order-modal .intake-section>.intake-fields>.field{
+    grid-row:2;
+    min-width:0;
+    margin:0;
+    align-self:center;
+  }
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control{
+    min-height:36px;
+    padding:6px 8px;
+  }
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control small{
+    overflow-wrap:anywhere;
+  }
+  .new-order-modal .intake-section>.intake-note,
+  .new-order-modal .intake-section>.file-selected{
+    grid-column:1/-1;
+    margin:0;
+  }
+}
+@media(max-width:760px){
+  .new-order-modal .new-order-modal-body>.intake-section{
+    display:block;
+  }
+  .new-order-modal .intake-section>.intake-options{display:grid}
+  .new-order-modal .intake-section>.intake-fields{display:grid}
+}
