@@ -20,3 +20,48 @@ create index if not exists part_client_authorizations_expiry_idx
 
 alter table public.part_client_authorizations enable row level security;
 -- Sin políticas para anon/authenticated: solo el service_role puede gestionar tokens.
+
+
+-- Consumo atómico: impide reutilizar el enlace y evita decisiones simultáneas.
+create or replace function public.consume_part_client_authorization(
+  p_token_hash text,
+  p_decision text
+) returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_authorization public.part_client_authorizations%rowtype;
+  v_updated_id uuid;
+begin
+  if p_decision not in ('autorizado', 'rechazado') then
+    raise exception 'Decisión inválida';
+  end if;
+
+  update public.part_client_authorizations
+     set used_at = now(), decision = p_decision
+   where token_hash = p_token_hash
+     and used_at is null
+     and expires_at > now()
+  returning * into v_authorization;
+
+  if not found then
+    raise exception 'Enlace inválido, vencido o ya utilizado';
+  end if;
+
+  update public.parts_requests
+     set status = p_decision
+   where id = v_authorization.part_id
+     and order_id = v_authorization.order_id
+     and status = 'pendiente'
+  returning id into v_updated_id;
+
+  if v_updated_id is null then
+    raise exception 'El repuesto ya no está pendiente de autorización';
+  end if;
+end;
+$$;
+
+revoke all on function public.consume_part_client_authorization(text, text) from public, anon, authenticated;
+grant execute on function public.consume_part_client_authorization(text, text) to service_role;
