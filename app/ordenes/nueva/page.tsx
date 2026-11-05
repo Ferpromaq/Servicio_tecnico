@@ -135,7 +135,7 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
           <div className="field"><label>Número de boleta o factura *</label><input required value={diagnosisReceiptNumber} onChange={e => setDiagnosisReceiptNumber(e.target.value)} placeholder="N° del pago de diagnóstico"/></div>
         </div>}
         {documentFile && !validDocument && <p className="file-selected file-error">El archivo debe ser JPG, PNG o WEBP y pesar máximo 8 MB.</p>}
-        {intakeType === "commissioning" && <p className="intake-note">La puesta en marcha queda registrada con diagnóstico e instalación en $0.</p>}
+        {intakeType === "commissioning" && <p className="intake-note">{intakeType === "commissioning" ? "La puesta en marcha queda registrada con diagnóstico e instalación en $0." : "\u00a0"}</p>}
       </section>
       <section className="client-section">
         <h2>Cliente</h2>
