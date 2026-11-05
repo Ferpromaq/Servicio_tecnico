@@ -790,47 +790,25 @@ html,body{height:100%;min-height:100%}
 }
 
 
-/* Ingreso: altura uniforme para opciones, campos y selector de fotografía. */
-.new-order-modal .intake-section>.intake-options>.intake-option,
-.new-order-modal .intake-section>.intake-fields>.field{
-  height:82px;
-  min-height:82px;
-  box-sizing:border-box;
-}
-.new-order-modal .intake-section>.intake-options>.intake-option{
-  align-items:center;
-}
-.new-order-modal .intake-section>.intake-fields>.field{
-  display:grid;
-  grid-template-rows:28px 36px;
-  align-content:start;
-  gap:4px;
-}
-.new-order-modal .intake-section>.intake-fields>.field>label{
+/* Título de ingreso: la nota de puesta en marcha comparte la línea del encabezado. */
+.new-order-modal .intake-heading{
+  grid-column:1/-1;
   display:flex;
-  align-items:flex-end;
-  min-height:28px;
-  line-height:1.25;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  min-width:0;
 }
-.new-order-modal .intake-section>.intake-fields>.field>input,
-.new-order-modal .intake-section>.intake-fields>.field>select{
-  height:36px;
-  min-height:36px;
-  box-sizing:border-box;
-}
-.new-order-modal .intake-section>.intake-fields>.upload-field .upload-control{
-  height:36px;
-  min-height:36px;
-  box-sizing:border-box;
-}
-.new-order-modal .intake-section>.intake-note{
-  min-height:18px;
+.new-order-modal .intake-heading h2{margin:0;flex:0 0 auto}
+.new-order-modal .intake-heading .intake-note{
   margin:0;
-  line-height:18px;
+  min-width:0;
+  color:#718096;
+  font-size:10px;
+  line-height:1.35;
+  text-align:right;
 }
 @media(max-width:760px){
-  .new-order-modal .intake-section>.intake-note{
-    min-height:18px;
-    line-height:18px;
-  }
+  .new-order-modal .intake-heading{flex-wrap:wrap;gap:4px 10px}
+  .new-order-modal .intake-heading .intake-note{text-align:left}
 }
