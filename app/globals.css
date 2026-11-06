@@ -591,8 +591,8 @@ html,body{height:100%;min-height:100%}
   translate: 100% 0;
 }
 
-/* Sistema único de transición para los drawers de órdenes.
-   data-open controla entrada y salida; el DOM permanece montado durante el cierre. */
+/* Control explícito de apertura y cierre de los drawers.
+   El panel entra y sale con transform; el overlay solo cambia opacity. */
 .drawerback,
 .detail-drawer-layer {
   opacity: 0 !important;
@@ -600,21 +600,20 @@ html,body{height:100%;min-height:100%}
   transition: opacity 250ms ease-out !important;
   animation: none !important;
 }
-.drawerback[data-open="true"],
-.detail-drawer-layer[data-open="true"] {
+.drawerback.is-open,
+.detail-drawer-layer.is-open {
   opacity: 1 !important;
   pointer-events: auto;
 }
 .drawerback > .drawer,
 .detail-drawer-panel {
   transform: translate3d(100%, 0, 0) !important;
-  translate: 0 0 !important;
   transition: transform 350ms cubic-bezier(.32,.72,0,1) !important;
   animation: none !important;
   will-change: transform;
 }
-.drawerback[data-open="true"] > .drawer,
-.detail-drawer-layer[data-open="true"] > .detail-drawer-panel {
+.drawerback.is-open > .drawer,
+.detail-drawer-layer.is-open > .detail-drawer-panel {
   transform: translate3d(0, 0, 0) !important;
 }
 @media (prefers-reduced-motion: reduce) {
