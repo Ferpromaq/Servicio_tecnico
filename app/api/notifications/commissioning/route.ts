@@ -45,8 +45,12 @@ export async function POST(request: Request) {
   const email = technician?.user?.email;
   if (technicianError || !email) return NextResponse.json({ error: "El técnico asignado no tiene un correo disponible." }, { status: 422 });
 
-  const clientName = Array.isArray(order.clients) ? order.clients[0]?.name : order.clients?.name;
-  const machine = Array.isArray(order.machines) ? order.machines[0] : order.machines;
+  const relations = order as unknown as {
+    clients: { name: string } | { name: string }[] | null;
+    machines: { equipment_type: string | null; brand: string | null; model: string | null } | { equipment_type: string | null; brand: string | null; model: string | null }[] | null;
+  };
+  const clientName = Array.isArray(relations.clients) ? relations.clients[0]?.name : relations.clients?.name;
+  const machine = Array.isArray(relations.machines) ? relations.machines[0] : relations.machines;
   const equipment = [machine?.brand, machine?.model, machine?.equipment_type].filter(Boolean).join(" ");
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
