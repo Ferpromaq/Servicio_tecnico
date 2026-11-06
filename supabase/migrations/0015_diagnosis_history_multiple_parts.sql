@@ -23,10 +23,11 @@ create policy "staff read diagnosis reports"
 on public.order_diagnosis_reports for select to authenticated
 using (public.is_staff());
 
+drop function if exists public.save_order_diagnosis(uuid, text, text);
+
 create or replace function public.save_order_diagnosis(
   p_order_id uuid,
-  p_diagnosis text,
-  p_repair_notes text default null
+  p_diagnosis text
 ) returns void
 language plpgsql security definer set search_path = public
 as $$
@@ -41,7 +42,6 @@ begin
 
   update public.service_orders
      set diagnosis = trim(p_diagnosis),
-         repair_notes = coalesce(p_repair_notes, repair_notes),
          updated_at = now()
    where id = p_order_id;
   if not found then raise exception 'La orden no existe'; end if;
@@ -98,8 +98,8 @@ begin
 end;
 $$;
 
-revoke all on function public.save_order_diagnosis(uuid,text,text) from public;
-grant execute on function public.save_order_diagnosis(uuid,text,text) to authenticated;
+revoke all on function public.save_order_diagnosis(uuid,text) from public;
+grant execute on function public.save_order_diagnosis(uuid,text) to authenticated;
 revoke all on function public.request_order_parts(uuid,jsonb) from public;
 grant execute on function public.request_order_parts(uuid,jsonb) to authenticated;
 
