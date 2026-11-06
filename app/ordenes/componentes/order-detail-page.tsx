@@ -8,7 +8,7 @@ import { ArrowLeft, Check, ClipboardList, PackagePlus, RefreshCw, Save } from "l
 import { supabase } from "@/lib/supabase";
 import { authorizePart, getOrderWorkflow, markPartMilestone, requestPart, saveDiagnosis, transitionOrderStatus, updateOrderCosts, updateOrderWarranty, updatePartCoverage, type OrderEvent, type OrderPayment, type PartRequest } from "@/app/ordenes/servicios/order-workflow";
 import { registerOrderPayment } from "@/app/ordenes/servicios/payments";
-import { orderStatusLabel, type ServiceOrder } from "@/lib/data/orders";
+import { orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
 
 type Role = "admin" | "supervisor" | "tecnico";
 
