@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import OrderDetailPage from "@/app/ordenes/componentes/order-detail-page";
@@ -31,6 +31,10 @@ export function Dashboard() {
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<ServiceOrder | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [summaryClosing, setSummaryClosing] = useState(false);
+  const [detailClosing, setDetailClosing] = useState(false);
+  const summaryCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const detailCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [drawerEvents, setDrawerEvents] = useState<OrderEvent[]>([]);
   const [drawerLoading, setDrawerLoading] = useState(false);
   const [drawerError, setDrawerError] = useState("");
@@ -67,7 +71,7 @@ export function Dashboard() {
     url.searchParams.set("orden", String(selected.order_number));
     url.searchParams.set("ficha", "1");
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
-    setDetailOpen(true);
+    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);\n    setDetailClosing(false);\n    setDetailOpen(true);
   };
 
   const closeFullDetail = () => {
@@ -244,7 +248,7 @@ export function Dashboard() {
 
       {showNewOrder && <NewOrderModal onClose={() => setShowNewOrder(false)} onCreated={() => { setShowNewOrder(false); void loadOrders(); }} />}
 
-      {selected && <div className="drawerback" onMouseDown={(event) => { if (event.target === event.currentTarget) closeOrderDrawers(); }}>
+      {selected && <div className={`drawerback ${summaryClosing ? "is-closing" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeOrderDrawers(); }}>
         <aside className="drawer compact-drawer">
           <div className="drawerhead drawer-order-head">
             <div><div className="drawer-kicker">FERPROMAQ <span>·</span> ORDEN DE SERVICIO</div><h2>#{selected.order_number}</h2></div>
@@ -307,7 +311,7 @@ export function Dashboard() {
         </aside>
       </div>}
 
-      {selected && detailOpen && <div className="detail-drawer-layer" onMouseDown={(event) => { if (event.target === event.currentTarget) closeFullDetail(); }}>
+      {selected && detailOpen && <div className={`detail-drawer-layer ${detailClosing ? "is-closing" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeFullDetail(); }}>
         <aside className="detail-drawer-panel" role="dialog" aria-modal="true" aria-label={`Ficha completa de la orden ${selected.order_number}`}>
           <OrderDetailPage orderNumber={String(selected.order_number)} embedded onClose={closeFullDetail} />
         </aside>
