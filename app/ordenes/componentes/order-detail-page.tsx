@@ -12,6 +12,18 @@ import { orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/ord
 
 type Role = "admin" | "supervisor" | "tecnico";
 
+function readableSupabaseError(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message;
+  if (error && typeof error === "object") {
+    const value = error as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown };
+    const parts = [value.message, value.details, value.hint]
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+    const code = typeof value.code === "string" ? value.code : "";
+    if (parts.length) return [code, ...parts].filter(Boolean).join(" · ");
+  }
+  return fallback;
+}
+
 export default function OrderDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -55,9 +67,10 @@ export default function OrderDetailPage() {
     setBusy(true); setError("");
     try {
       const { data: row, error: orderError } = await supabase.from("service_orders")
-        .select("id,order_number,status,priority,problem_description,diagnosis,repair_notes,diagnosis_amount,installation_amount,warranty_entry,warranty_covers_damage,receipt_type,receipt_number,receipt_date,commissioning,intake_type,warranty_photo_path,purchase_invoice_photo_path,diagnosis_receipt_type,diagnosis_receipt_number,forced_delivery,forced_delivery_reason,forced_delivery_at,forced_by:profiles!service_orders_forced_delivery_by_fkey(full_name),received_at,clients(name,rut),machines(equipment_type,brand,model,serial_number),assigned:profiles!service_orders_assigned_technician_fkey(full_name)")
-        .eq("id", params.id).single();
+        .select("id,order_number,status,priority,problem_description,diagnosis,repair_notes,diagnosis_amount,installation_amount,warranty_entry,warranty_covers_damage,receipt_type,receipt_number,receipt_date,commissioning,intake_type,warranty_photo_path,purchase_invoice_photo_path,diagnosis_receipt_type,diagnosis_receipt_number,forced_delivery,forced_delivery_reason,forced_delivery_at,forced_by:profiles!service_orders_forced_delivery_by_fkey(full_name),received_at,clients:clients!service_orders_client_id_fkey(name,rut),machines:machines!service_orders_machine_id_fkey(equipment_type,brand,model,serial_number),assigned:profiles!service_orders_assigned_technician_fkey(full_name)")
+        .eq("id", params.id).maybeSingle();
       if (orderError) throw orderError;
+      if (!row) throw new Error("La orden no existe o tu usuario no tiene permiso para consultar sus datos.");
       setOrder(row as unknown as ServiceOrder);
       setNextStatus(row.status);
       setDiagnosis(row.diagnosis ?? "");
@@ -76,12 +89,16 @@ export default function OrderDetailPage() {
       if (row.purchase_invoice_photo_path) { const { data: file } = await supabase.storage.from("order-documents").createSignedUrl(row.purchase_invoice_photo_path, 3600); if (file?.signedUrl) setPurchaseInvoicePhotoUrl(file.signedUrl); }
       const workflow = await getOrderWorkflow(params.id);
       setParts(workflow.parts); setPayments(workflow.payments); setEvents(workflow.events);
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user) {
-        const { data: profile } = await supabase.from("profiles").select("role").eq("id", userData.user.id).maybeSingle();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData.session?.user;
+      if (user) {
+        const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+        if (profileError) throw profileError;
         setRole(profile?.role as Role ?? null);
       }
-    } catch (err) { setError(err instanceof Error ? err.message : "No se pudo cargar la orden."); }
+    } catch (err) {
+      setError("No se pudo cargar la orden: " + readableSupabaseError(err, "Error inesperado al consultar Supabase."));
+    }
     finally { setBusy(false); }
   }, [params.id]);
 
@@ -90,7 +107,7 @@ export default function OrderDetailPage() {
   async function run(action: () => Promise<unknown>, success: string) {
     setBusy(true); setError(""); setNotice("");
     try { await action(); setNotice(success); await load(); }
-    catch (err) { setError(err instanceof Error ? err.message : "No se pudo completar la operación."); }
+    catch (err) { setError(readableSupabaseError(err, "No se pudo completar la operación.")); }
     finally { setBusy(false); }
   }
 
