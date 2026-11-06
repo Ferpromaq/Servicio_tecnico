@@ -206,3 +206,32 @@ html,body{height:100%;min-height:100%}
   .main{padding-left:8px;padding-right:8px}
 }
 @media(hover:none){button,.navitem,.tab,.mobile-nav-item{-webkit-tap-highlight-color:transparent}input,select,textarea{font-size:16px!important}}
+
+
+/* Desktop density: use available width and remove oversized vertical rhythm. */
+@media(min-width:901px){
+  .main{padding:16px 22px}
+  .topbar{margin-bottom:12px}
+  .heading{font-size:22px}
+  .card{padding:12px;border-radius:10px}
+  .stats{gap:8px;margin-bottom:10px}
+  .stat-card{padding:10px 12px}
+  .statvalue{font-size:22px;margin:5px 0 1px}
+  .toolbar{margin:8px 0;gap:7px}
+  .orders th{padding:8px 9px}
+  .orders td{padding:9px}
+  .module-grid{grid-template-columns:minmax(220px,270px) minmax(0,1fr);gap:10px}
+  .module-form,.module-list{padding:12px}
+  .module-form h2,.module-list h2{font-size:14px;margin-bottom:8px}
+  .module-form .field{margin:5px 0}
+  .module-form input,.module-form select,.module-form textarea{padding:7px 8px;font-size:11px}
+  .module-list .tabs{margin:6px 0 8px}
+  .sectiontitle{font-size:13px;margin:10px 0 6px}
+  .empty{min-height:90px;padding:18px}
+  .new-order-form{gap:9px;padding:12px}
+  .new-order-form section{padding-bottom:9px}
+  .new-order-form section h2{font-size:13px;margin-bottom:6px}
+  .new-order-form .field{margin:4px 0}
+  .new-order-form .field input,.new-order-form .field select,.new-order-form textarea{padding:7px 8px;font-size:11px}
+  .new-order-form textarea{min-height:64px}
+}
