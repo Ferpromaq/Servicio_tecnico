@@ -14,7 +14,7 @@ type Role = "admin" | "supervisor" | "tecnico";
 
 export default function OrderDetailPage({ orderNumber, embedded = false, onClose }: { orderNumber?: string; embedded?: boolean; onClose?: () => void }) {
   const params = useParams<{ id: string }>();
-  const resolvedOrderNumber = orderNumber ?? params.id; 
+  const resolvedOrderNumber = orderNumber ?? params.id;
   const router = useRouter();
   const [order, setOrder] = useState<ServiceOrder | null>(null);
   const [parts, setParts] = useState<PartRequest[]>([]);
@@ -135,7 +135,7 @@ export default function OrderDetailPage({ orderNumber, embedded = false, onClose
   const partsPaid = payments.filter(payment => payment.payment_type === "repuestos").reduce((sum, payment) => sum + Number(payment.amount), 0);
   const minimumPartsPayment = eligiblePartsTotal * 0.6;
 
-  if (!order && !error) return <main className="main"><div className="empty">Cargando ficha de la orden…</div></main>;
+  if (!order && !error) return <main className={embedded ? "detail-drawer-content detail-page" : "main detail-page"}><div className="empty">Cargando ficha de la orden…</div></main>;
 
   return <main className={embedded ? "detail-drawer-content detail-page" : "main detail-page"}>
     <button className="back-link" onClick={() => onClose ? onClose() : router.push("/ordenes")}><ArrowLeft size={16}/> {embedded ? "Volver al resumen" : "Volver a órdenes"}</button>
