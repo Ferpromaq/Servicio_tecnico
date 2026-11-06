@@ -518,3 +518,57 @@ html,body{height:100%;min-height:100%}
     animation-duration:.01ms !important;
   }
 }
+
+
+/* Drawers de órdenes: transición real controlada por las clases is-open/is-closing. */
+.drawerback {
+  opacity: 0;
+  animation: none !important;
+  transition: opacity 360ms ease-in-out !important;
+}
+.drawerback > .drawer {
+  transform: translate3d(100%, 0, 0) !important;
+  animation: none !important;
+  transition: transform 360ms ease-in-out !important;
+  will-change: transform;
+}
+.drawerback.is-open {
+  opacity: 1;
+}
+.drawerback.is-open > .drawer {
+  transform: translate3d(0, 0, 0) !important;
+}
+.drawerback.is-closing {
+  opacity: 0;
+  pointer-events: none;
+}
+.drawerback.is-closing > .drawer {
+  transform: translate3d(100%, 0, 0) !important;
+}
+
+.detail-drawer-layer {
+  opacity: 0;
+  animation: none !important;
+  transition: opacity 360ms ease-in-out !important;
+}
+.detail-drawer-panel {
+  transform: translate3d(100%, 0, 0) !important;
+  animation: none !important;
+  transition: transform 360ms ease-in-out !important;
+  will-change: transform;
+}
+.detail-drawer-layer.is-open {
+  opacity: 1;
+}
+.detail-drawer-layer.is-open > .detail-drawer-panel {
+  transform: translate3d(0, 0, 0) !important;
+}
+.detail-drawer-layer.is-closing {
+  opacity: 0;
+  pointer-events: none;
+}
+.detail-drawer-layer.is-closing > .detail-drawer-panel {
+  transform: translate3d(100%, 0, 0) !important;
+}
+
+/* Mantener la animación solicitada también si el sistema reduce movimiento. */

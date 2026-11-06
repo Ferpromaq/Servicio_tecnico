@@ -76,11 +76,11 @@ export function Dashboard() {
       summaryCloseTimer.current = setTimeout(() => {
         setSelected(null);
         setSummaryClosing(false);
-      }, 560);
+      }, 360);
       detailCloseTimer.current = setTimeout(() => {
         setDetailOpen(false);
         setDetailClosing(false);
-      }, 560);
+      }, 360);
       return;
     }
 
@@ -99,7 +99,7 @@ export function Dashboard() {
       detailCloseTimer.current = setTimeout(() => {
         setDetailOpen(false);
         setDetailClosing(false);
-      }, 560);
+      }, 360);
     } else {
       setDetailClosing(false);
       setDetailOpen(false);
@@ -139,7 +139,7 @@ export function Dashboard() {
     detailCloseTimer.current = setTimeout(() => {
       setDetailOpen(false);
       setDetailClosing(false);
-    }, 560);
+    }, 360);
   };
 
   const closeOrderDrawers = () => {
@@ -154,12 +154,12 @@ export function Dashboard() {
     summaryCloseTimer.current = setTimeout(() => {
       setSelected(null);
       setSummaryClosing(false);
-    }, 560);
+    }, 360);
     if (detailOpen) {
       detailCloseTimer.current = setTimeout(() => {
         setDetailOpen(false);
         setDetailClosing(false);
-      }, 560);
+      }, 360);
     } else {
       setDetailOpen(false);
     }
@@ -323,7 +323,7 @@ export function Dashboard() {
 
       {showNewOrder && <NewOrderModal onClose={() => setShowNewOrder(false)} onCreated={() => { setShowNewOrder(false); void loadOrders(); }} />}
 
-      {selected && <div className={`drawerback ${summaryClosing ? "is-closing" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeOrderDrawers(); }}>
+      {selected && <div className={`drawerback ${summaryVisible ? "is-open" : ""} ${summaryClosing ? "is-closing" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeOrderDrawers(); }}>
         <aside className="drawer compact-drawer">
           <div className="drawerhead drawer-order-head">
             <div><div className="drawer-kicker">FERPROMAQ <span>·</span> ORDEN DE SERVICIO</div><h2>#{selected.order_number}</h2></div>
@@ -386,7 +386,7 @@ export function Dashboard() {
         </aside>
       </div>}
 
-      {selected && detailOpen && <div className={`detail-drawer-layer ${detailClosing ? "is-closing" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeFullDetail(); }}>
+      {selected && detailOpen && <div className={`detail-drawer-layer ${detailVisible ? "is-open" : ""} ${detailClosing ? "is-closing" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeFullDetail(); }}>
         <aside className="detail-drawer-panel" role="dialog" aria-modal="true" aria-label={`Ficha completa de la orden ${selected.order_number}`}>
           <OrderDetailPage orderNumber={String(selected.order_number)} embedded onClose={closeFullDetail} />
         </aside>
