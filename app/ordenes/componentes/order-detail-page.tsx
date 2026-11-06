@@ -12,8 +12,9 @@ import { orderPriorityClass, orderPriorityLabel, orderStatusLabel, type ServiceO
 
 type Role = "admin" | "supervisor" | "tecnico";
 
-export default function OrderDetailPage() {
+export default function OrderDetailPage({ orderNumber, embedded = false, onClose }: { orderNumber?: string; embedded?: boolean; onClose?: () => void }) {
   const params = useParams<{ id: string }>();
+  const resolvedOrderNumber = orderNumber ?? params.id;
   const router = useRouter();
   const [order, setOrder] = useState<ServiceOrder | null>(null);
   const [parts, setParts] = useState<PartRequest[]>([]);
@@ -53,8 +54,8 @@ export default function OrderDetailPage() {
 
   const load = useCallback(async () => {
     if (!supabase) { setError("Configura Supabase para consultar esta orden."); return; }
-    const orderNumber = Number(params.id);
-    if (!Number.isSafeInteger(orderNumber) || orderNumber <= 0) {
+    const numericOrderNumber = Number(resolvedOrderNumber);
+    if (!Number.isSafeInteger(numericOrderNumber) || numericOrderNumber <= 0) {
       setError("El número de orden de la dirección no es válido.");
       return;
     }
@@ -64,7 +65,7 @@ export default function OrderDetailPage() {
       // de que PostgREST resuelva todas las relaciones en una sola consulta.
       const { data: baseRow, error: orderError } = await supabase.from("service_orders")
         .select("*")
-        .eq("order_number", Number(params.id))
+        .eq("order_number", numericOrderNumber)
         .maybeSingle();
       if (orderError) throw orderError;
       if (!baseRow) throw new Error("La orden no existe o no tienes permiso para consultarla.");
@@ -116,7 +117,7 @@ export default function OrderDetailPage() {
       }
     } catch (err) { setError(err instanceof Error ? err.message : "No se pudo cargar la orden."); }
     finally { setBusy(false); }
-  }, [params.id]);
+  }, [resolvedOrderNumber]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -134,10 +135,10 @@ export default function OrderDetailPage() {
   const partsPaid = payments.filter(payment => payment.payment_type === "repuestos").reduce((sum, payment) => sum + Number(payment.amount), 0);
   const minimumPartsPayment = eligiblePartsTotal * 0.6;
 
-  if (!order && !error) return <main className="main"><div className="empty">Cargando ficha de la orden…</div></main>;
+  if (!order && !error) return <main className={embedded ? "detail-drawer-content detail-page" : "main detail-page"}><div className="empty">Cargando ficha de la orden…</div></main>;
 
-  return <main className="main detail-page">
-    <button className="back-link" onClick={() => router.push("/")}><ArrowLeft size={16}/> Volver a órdenes</button>
+  return <main className={embedded ? "detail-drawer-content detail-page" : "main detail-page"}>
+    <button className="back-link" onClick={() => onClose ? onClose() : router.push("/ordenes")}><ArrowLeft size={16}/> {embedded ? "Volver al resumen" : "Volver a órdenes"}</button>
     {error && <div className="notice error">{error}</div>}
     {notice && <div className="notice success"><Check size={16}/>{notice}</div>}
     {order && <>

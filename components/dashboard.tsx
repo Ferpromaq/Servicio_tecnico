@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import OrderDetailPage from "@/app/ordenes/componentes/order-detail-page";
 import { AlertCircle, CalendarDays, ClipboardList, RefreshCw, Search, Wrench, Users, UserRound, Cog, Package, CreditCard, BarChart3, Hash } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import NewOrderModal from "@/app/ordenes/componentes/new-order-modal";
@@ -29,6 +30,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<ServiceOrder | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [drawerEvents, setDrawerEvents] = useState<OrderEvent[]>([]);
   const [drawerLoading, setDrawerLoading] = useState(false);
   const [drawerError, setDrawerError] = useState("");
@@ -36,6 +38,53 @@ export function Dashboard() {
   const [userLabel, setUserLabel] = useState("Equipo de servicio");
   const [role, setRole] = useState("");
   const [roleReady, setRoleReady] = useState(false);
+
+  const syncDrawerFromUrl = useCallback(() => {
+    const params = new URLSearchParams(window.location.search);
+    const orderNumber = Number(params.get("orden"));
+    if (!Number.isSafeInteger(orderNumber) || orderNumber <= 0) {
+      setSelected(null);
+      setDetailOpen(false);
+      return;
+    }
+    const match = orders.find((order) => order.order_number === orderNumber) ?? null;
+    setSelected(match);
+    setDetailOpen(Boolean(match) && params.get("ficha") === "1");
+  }, [orders]);
+
+  const openOrderSummary = (order: ServiceOrder) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("orden", String(order.order_number));
+    url.searchParams.delete("ficha");
+    window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    setSelected(order);
+    setDetailOpen(false);
+  };
+
+  const openFullDetail = () => {
+    if (!selected) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("orden", String(selected.order_number));
+    url.searchParams.set("ficha", "1");
+    window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    setDetailOpen(true);
+  };
+
+  const closeFullDetail = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("ficha");
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    setDetailOpen(false);
+  };
+
+  const closeOrderDrawers = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("orden");
+    url.searchParams.delete("ficha");
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    setSelected(null);
+    setDetailOpen(false);
+  };
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -62,6 +111,13 @@ export function Dashboard() {
       setRoleReady(true);
     });
   }, [loadOrders]);
+
+  useEffect(() => {
+    if (loading) return;
+    syncDrawerFromUrl();
+    window.addEventListener("popstate", syncDrawerFromUrl);
+    return () => window.removeEventListener("popstate", syncDrawerFromUrl);
+  }, [loading, syncDrawerFromUrl]);
 
   useEffect(() => {
     if (!selected) {
@@ -169,7 +225,7 @@ export function Dashboard() {
 
           {error && <div className="notice error"><AlertCircle size={17}/><div><strong>No se pudieron cargar las órdenes</strong><p>{error}</p><button onClick={() => void loadOrders()}>Reintentar</button></div></div>}
           <div className="tablewrap"><table className="orders"><thead><tr><th>Orden</th><th>Cliente</th><th>Equipo</th><th>Estado</th><th>Prioridad</th><th>Ingreso</th></tr></thead>
-            <tbody>{filtered.map((order) => <tr key={order.id} onClick={() => setSelected(order)}>
+            <tbody>{filtered.map((order) => <tr key={order.id} onClick={() => openOrderSummary(order)}>
               <td className="orderid">#{order.order_number}</td>
               <td><div className="client">{order.clients?.name ?? "Cliente sin nombre"}</div><div className="subline">{order.clients?.rut ?? "—"}</div></td>
               <td><div>{[order.machines?.brand, order.machines?.model].filter(Boolean).join(" ") || order.machines?.equipment_type || "Equipo no especificado"}</div><div className="subline">{order.machines?.serial_number ?? ""}</div></td>
@@ -188,11 +244,11 @@ export function Dashboard() {
 
       {showNewOrder && <NewOrderModal onClose={() => setShowNewOrder(false)} onCreated={() => { setShowNewOrder(false); void loadOrders(); }} />}
 
-      {selected && <div className="drawerback" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
+      {selected && <div className="drawerback" onMouseDown={(event) => { if (event.target === event.currentTarget) closeOrderDrawers(); }}>
         <aside className="drawer compact-drawer">
           <div className="drawerhead drawer-order-head">
             <div><div className="drawer-kicker">FERPROMAQ <span>·</span> ORDEN DE SERVICIO</div><h2>#{selected.order_number}</h2></div>
-            <button className="close" onClick={() => setSelected(null)} aria-label="Cerrar detalle">×</button>
+            <button className="close" onClick={closeOrderDrawers} aria-label="Cerrar detalle">×</button>
           </div>
 
           <div className="drawer-status-strip" aria-label="Estado y prioridad de la orden">
@@ -247,7 +303,13 @@ export function Dashboard() {
                 ))}
               </div>}
           </div>
-          <a className="primary full-detail-link" href={`/ordenes/${selected.order_number}`}>Abrir ficha completa <span aria-hidden="true">→</span></a>
+          <button type="button" className="primary full-detail-link" onClick={openFullDetail}>Abrir ficha completa <span aria-hidden="true">→</span></button>
+        </aside>
+      </div>}
+
+      {selected && detailOpen && <div className="detail-drawer-layer" onMouseDown={(event) => { if (event.target === event.currentTarget) closeFullDetail(); }}>
+        <aside className="detail-drawer-panel" role="dialog" aria-modal="true" aria-label={`Ficha completa de la orden ${selected.order_number}`}>
+          <OrderDetailPage orderNumber={String(selected.order_number)} embedded onClose={closeFullDetail} />
         </aside>
       </div>}
     </div>
