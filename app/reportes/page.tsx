@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 import Link from "next/link";
-import {ModuleShell} from "@/components/module-shell";
+import {ModuleShell} from "@/components/layout/module-shell";
 import {supabase} from "@/lib/supabase";
 type Summary={orders:number;open:number;ready:number;delivered:number;clients:number;machines:number;parts:number;payments:number;total:number};
 const initial:Summary={orders:0,open:0,ready:0,delivered:0,clients:0,machines:0,parts:0,payments:0,total:0};

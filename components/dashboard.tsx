@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { AlertCircle, ClipboardList, RefreshCw, Search, Wrench, Users, Cog, Package, CreditCard, BarChart3 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import NewOrderModal from "@/app/ordenes/componentes/new-order-modal";
-import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, type ServiceOrder } from "@/lib/data/orders";
+import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
 
 const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: boolean }[] = [
   { label: "Panel general", icon: ClipboardList, href: "/" },

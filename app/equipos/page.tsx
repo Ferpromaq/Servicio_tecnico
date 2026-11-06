@@ -1,6 +1,6 @@
 "use client";
 import { useEffect,useState } from "react";
-import { ModuleShell } from "@/components/module-shell";
+import { ModuleShell } from "@/components/layout/module-shell";
 import { supabase } from "@/lib/supabase";
 type Machine={id:string;client_id:string;equipment_type:string;brand:string|null;model:string|null;serial_number:string|null;description:string|null;clients?:{name:string}|null};
 const empty={client_id:"",equipment_type:"",brand:"",model:"",serial_number:"",description:""};

@@ -32,16 +32,17 @@ export function ModuleShell({ title, description, children }: { title: string; d
       return;
     }
 
+    const db = client as NonNullable<typeof client>;
     let cancelled = false;
     async function verifySession() {
-      const { data: authData, error: authError } = await client.auth.getUser();
+      const { data: authData, error: authError } = await db.auth.getUser();
       if (cancelled) return;
       if (authError || !authData.user) {
         router.replace("/login");
         return;
       }
 
-      const { data: profile, error: profileError } = await client
+      const { data: profile, error: profileError } = await db
         .from("profiles")
         .select("role,active")
         .eq("id", authData.user.id)

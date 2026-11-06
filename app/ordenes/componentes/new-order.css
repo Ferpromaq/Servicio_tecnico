@@ -1,0 +1,984 @@
+/* Compact intake form and conditional document fields */
+.new-order-form{gap:10px;padding:13px}
+.new-order-form section{padding-bottom:10px}
+.new-order-form section h2{margin:0 0 7px;font-size:13px}
+.new-order-form .field{margin:4px 0;gap:3px}
+.new-order-form .field label{font-size:10px;font-weight:650;color:#596979}
+.new-order-form .field input,.new-order-form .field select,.new-order-form textarea{padding:7px 9px;font-size:12px;min-height:32px}
+.new-order-form textarea{min-height:54px}
+.intake-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:6px 0 9px}
+.intake-option{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;min-width:0}
+.intake-option.selected{border-color:var(--orange);background:#fff7f2;box-shadow:inset 0 0 0 1px var(--orange)}
+.intake-option input{accent-color:var(--orange);margin:0}
+.intake-option span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.intake-option strong{font-size:11px}
+.intake-option small{font-size:9px;color:var(--muted)}
+.intake-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 12px}
+.intake-wide{grid-column:1/-1}
+.file-selected,.intake-note{font-size:10px;color:#657585;margin:5px 0 0}
+.intake-note{color:#218653}
+.new-order-form .form-actions{padding-top:2px}
+@media(max-width:640px){.intake-options{grid-template-columns:1fr}.intake-fields{grid-template-columns:1fr}.intake-wide{grid-column:auto}}
+
+
+/* New order: narrower controls and a clear document picker */
+.new-order-page{max-width:980px}
+.new-order-form{align-items:stretch}
+.new-order-form .field input,
+.new-order-form .field select,
+.new-order-form textarea{max-width:380px;width:100%}
+.new-order-form .intake-fields{grid-template-columns:repeat(2,minmax(0,360px));align-items:start;gap:5px 18px}
+.new-order-form .equipment-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.new-order-form .equipment-grid .field input,
+.new-order-form .equipment-grid .field select{max-width:100%}
+.new-order-form .form-grid{grid-template-columns:repeat(2,minmax(0,360px));align-items:start}
+.new-order-form .form-grid .full{grid-column:1/-1}
+.new-order-form .field input[type="file"]{max-width:100%}
+.file-input-hidden{position:absolute;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.upload-field{min-width:0}
+.upload-control{display:flex;align-items:center;gap:10px;width:min(100%,360px);min-height:54px;padding:9px 12px;border:1px dashed #cbd5df;border-radius:9px;background:#fafbfd;color:#526272;cursor:pointer;transition:border-color .15s,background .15s}
+.upload-control:hover{border-color:var(--orange);background:#fff8f4}
+.upload-control>svg{flex:0 0 auto;color:var(--orange)}
+.upload-control span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.upload-control strong{font-size:11px;color:#344454}
+.upload-control small{font-size:10px;color:var(--muted);overflow-wrap:anywhere}
+.file-error{color:#bd3d35}
+@media(max-width:760px){
+ .new-order-form .equipment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+ .new-order-form .intake-fields,.new-order-form .equipment-grid,.new-order-form .form-grid{grid-template-columns:1fr}
+ .new-order-form .field input,.new-order-form .field select,.new-order-form textarea,.upload-control{max-width:100%;width:100%}
+ .new-order-form .form-grid .full{grid-column:auto}
+}
+
+ 
+/* Nueva orden: controles dimensionados según el dato que contienen. */
+.new-order-form .field{min-width:0;align-content:start}
+.new-order-form .field input:not([type="file"]):not([type="radio"]){
+  width:100%;max-width:260px;min-width:0
+}
+.new-order-form .field select{width:100%;max-width:230px;min-width:0}
+.new-order-form .intake-fields{grid-template-columns:repeat(2,minmax(0,280px));gap:5px 14px}
+.new-order-form .intake-fields .field input,
+.new-order-form .intake-fields .field select{max-width:220px}
+.new-order-form .form-grid{grid-template-columns:repeat(2,minmax(0,260px));gap:3px 14px}
+.new-order-form .form-grid .field input{max-width:250px}
+.new-order-form .form-grid .field.full input{max-width:360px}
+.new-order-form > section > .field{max-width:360px}
+.new-order-form > section > .field select{max-width:340px}
+.new-order-form .equipment-grid{grid-template-columns:repeat(3,minmax(0,250px));gap:5px 14px}
+.new-order-form .equipment-grid .field input,
+.new-order-form .equipment-grid .field select{max-width:230px}
+.new-order-form .equipment-grid .intake-wide textarea{width:100%;max-width:540px}
+.new-order-form .upload-control{width:100%;max-width:300px}
+@media(max-width:760px){
+ .new-order-form .equipment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .new-order-form .equipment-grid .field input,
+ .new-order-form .equipment-grid .field select{max-width:100%}
+}
+@media(max-width:640px){
+ .new-order-form .intake-fields,
+ .new-order-form .equipment-grid,
+ .new-order-form .form-grid{grid-template-columns:minmax(0,1fr)}
+ .new-order-form .field input:not([type="file"]):not([type="radio"]),
+ .new-order-form .field select,
+ .new-order-form .form-grid .field.full input,
+ .new-order-form .equipment-grid .intake-wide textarea,
+ .new-order-form .upload-control{max-width:100%;width:100%}
+}
+
+
+/* Ajuste definitivo: reducir físicamente cada control del formulario Nueva orden. */
+.new-order-form .field{width:fit-content;max-width:100%}
+.new-order-form .field input:not([type="file"]):not([type="radio"]){
+  width:190px;max-width:100%
+}
+.new-order-form .field select{width:170px;max-width:100%}
+.new-order-form .intake-fields{grid-template-columns:repeat(2,minmax(0,220px));}
+.new-order-form .intake-fields .field input{width:150px}
+.new-order-form .intake-fields .field select{width:150px}
+.new-order-form .form-grid{grid-template-columns:repeat(2,minmax(0,230px))}
+.new-order-form .form-grid .field input{width:210px}
+.new-order-form .form-grid .field.full input{width:280px}
+.new-order-form > section > .field select{width:280px}
+.new-order-form .equipment-grid{grid-template-columns:repeat(3,minmax(0,200px))}
+.new-order-form .equipment-grid .field input{width:180px}
+.new-order-form .equipment-grid .field select{width:165px}
+.new-order-form .equipment-grid .intake-wide{width:100%}
+.new-order-form .equipment-grid .intake-wide textarea{width:100%;max-width:460px}
+.new-order-form .upload-control{width:260px;max-width:100%}
+@media(max-width:640px){
+ .new-order-form .intake-fields,
+ .new-order-form .equipment-grid,
+ .new-order-form .form-grid{grid-template-columns:minmax(0,1fr)}
+ .new-order-form .field{width:100%}
+ .new-order-form .field input:not([type="file"]):not([type="radio"]),
+ .new-order-form .field select,
+ .new-order-form .form-grid .field.full input,
+ .new-order-form .equipment-grid .intake-wide textarea,
+ .new-order-form .upload-control{width:100%;max-width:100%}
+}
+
+
+/* Rediseño del formulario Nueva orden: distribución en dos columnas y controles proporcionados. */
+.new-order-page{max-width:1240px}
+.new-order-page .detail-page-head{margin-bottom:14px}
+.new-order-form{
+  display:grid;
+  grid-template-columns:minmax(0,.88fr) minmax(0,1.12fr);
+  grid-template-areas:"intake intake" "client equipment" "actions actions";
+  align-items:start;
+  gap:14px 20px;
+  padding:18px;
+}
+.new-order-form .intake-section{grid-area:intake;min-width:0}
+.new-order-form .client-section{grid-area:client;min-width:0;border-bottom:0;border-right:1px solid var(--line);padding:0 18px 0 0}
+.new-order-form .equipment-section{grid-area:equipment;min-width:0;border-bottom:0;padding:0}
+.new-order-form .form-actions{grid-area:actions;border-top:1px solid var(--line);padding-top:12px}
+.new-order-form section h2{font-size:14px;font-weight:750;margin:0 0 9px}
+.new-order-form .field{width:100%;max-width:100%;min-width:0;margin:5px 0;gap:4px}
+.new-order-form .field label{font-size:10px;font-weight:650;color:#5d6b79}
+.new-order-form .field input:not([type="file"]):not([type="radio"]),
+.new-order-form .field select,
+.new-order-form textarea{
+  width:100%;max-width:320px;min-width:0;min-height:34px;
+  padding:8px 10px;border:1px solid var(--line);border-radius:8px;
+  font-size:12px;background:#fff;
+}
+.new-order-form .client-section>.field select{max-width:100%}
+.new-order-form .client-section .form-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 10px
+}
+.new-order-form .client-section .form-grid .field input{max-width:100%}
+.new-order-form .client-section .form-grid .full{grid-column:1/-1}
+.new-order-form .intake-options{
+  display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px
+}
+.new-order-form .intake-option{
+  flex:0 1 205px;min-width:175px;max-width:220px;
+  min-height:52px;padding:8px 10px;gap:8px;border-radius:8px
+}
+.new-order-form .intake-option strong{font-size:11px}
+.new-order-form .intake-option small{font-size:9px;line-height:1.3}
+.new-order-form .intake-fields{
+  display:grid;grid-template-columns:repeat(2,minmax(0,260px));gap:5px 14px;align-items:start
+}
+.new-order-form .intake-fields .field input,
+.new-order-form .intake-fields .field select{max-width:250px}
+.new-order-form .upload-control{width:100%;max-width:300px;min-height:42px;padding:7px 10px}
+.new-order-form .equipment-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px
+}
+.new-order-form .equipment-grid .field input,
+.new-order-form .equipment-grid .field select{max-width:100%}
+.new-order-form .equipment-grid .intake-wide{grid-column:1/-1;width:100%}
+.new-order-form .equipment-grid .intake-wide textarea{max-width:100%;min-height:70px;resize:vertical}
+.new-order-form .tabs{gap:5px;margin:0 0 8px}
+.new-order-form .tabs .tab{padding:6px 9px;font-size:10px}
+.new-order-form .form-actions .primary,
+.new-order-form .form-actions .secondary{padding:9px 14px;font-size:11px}
+@media(max-width:820px){
+  .new-order-form{grid-template-columns:minmax(0,1fr);grid-template-areas:"intake" "client" "equipment" "actions";gap:12px}
+  .new-order-form .client-section{border-right:0;border-bottom:1px solid var(--line);padding:0 0 12px}
+  .new-order-form .equipment-section{border-bottom:1px solid var(--line);padding-bottom:12px}
+}
+@media(max-width:560px){
+  .new-order-form{padding:12px}
+  .new-order-form .intake-options{display:grid;grid-template-columns:1fr}
+  .new-order-form .intake-option{max-width:none;width:100%;min-width:0}
+  .new-order-form .intake-fields,
+  .new-order-form .client-section .form-grid,
+  .new-order-form .equipment-grid{grid-template-columns:minmax(0,1fr)}
+  .new-order-form .equipment-grid .intake-wide,
+  .new-order-form .client-section .form-grid .full{grid-column:auto}
+  .new-order-form .field input:not([type="file"]):not([type="radio"]),
+  .new-order-form .field select,
+  .new-order-form textarea,
+  .new-order-form .upload-control{max-width:100%;width:100%}
+}
+
+
+/* Nueva orden: experiencia modal compacta inspirada en un flujo guiado. */
+.new-order-overlay{
+  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(15,23,42,.76);backdrop-filter:blur(5px);
+  overflow-y:auto
+}
+.new-order-modal{
+  display:flex;flex-direction:column;width:100%;max-width:700px;max-height:92vh;
+  overflow:hidden;border:1px solid #334155;border-radius:17px;background:#0f172a;
+  color:#e2e8f0;box-shadow:0 24px 80px rgba(0,0,0,.5)
+}
+.new-order-modal-head{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+  padding:18px 21px 14px;border-bottom:1px solid #263449;flex:0 0 auto
+}
+.new-order-modal-head .eyebrow{color:#94a3b8;font-size:9px;letter-spacing:1.2px}
+.new-order-modal-head h1{margin:0;color:#f8fafc;font-size:20px;font-weight:750;letter-spacing:-.4px}
+.new-order-modal-head p{margin:5px 0 0;color:#94a3b8;font-size:11px}
+.new-order-close{
+  display:grid;place-items:center;flex:0 0 auto;width:32px;height:32px;
+  border:1px solid #334155;border-radius:8px;background:#1e293b;color:#cbd5e1
+}
+.new-order-close:hover{background:#334155;color:white}
+.new-order-error{margin:10px 18px 0!important;padding:8px 10px!important}
+.new-order-modal .new-order-form{
+  display:flex;flex-direction:column;min-height:0;flex:1;gap:0;padding:0;background:transparent;
+  border:0;border-radius:0;box-shadow:none;overflow:hidden
+}
+.new-order-modal-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px 21px 10px}
+.new-order-modal-body>section{
+  display:block;min-width:0;padding:0 0 13px;margin:0 0 13px;
+  border:0;border-bottom:1px solid #263449
+}
+.new-order-modal-body>section:last-child{margin-bottom:0}
+.new-order-modal-body section h2{margin:0 0 8px;color:#f1f5f9;font-size:12px;font-weight:750}
+.new-order-modal .field{display:grid;width:100%;max-width:100%;min-width:0;gap:4px;margin:5px 0}
+.new-order-modal .field label{color:#aebdce;font-size:10px;font-weight:600}
+.new-order-modal .field input:not([type="file"]):not([type="radio"]),
+.new-order-modal .field select,
+.new-order-modal textarea{
+  width:100%;max-width:100%;min-width:0;min-height:34px;padding:7px 9px;
+  border:1px solid #334155;border-radius:7px;background:#1e293b;color:#f1f5f9;
+  font:inherit;font-size:11px;outline:none
+}
+.new-order-modal .field input::placeholder,.new-order-modal textarea::placeholder{color:#718096}
+.new-order-modal .field input:focus,.new-order-modal .field select:focus,.new-order-modal textarea:focus{border-color:#f97316;box-shadow:0 0 0 2px #f9731625}
+.new-order-modal .intake-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 0 9px}
+.new-order-modal .intake-option{
+  display:flex;align-items:flex-start;gap:8px;min-width:0;min-height:50px;
+  padding:8px;border:1px solid #334155;border-radius:8px;background:#172235;color:#e2e8f0
+}
+.new-order-modal .intake-option.selected{border-color:#f97316;background:#7c2d121f;box-shadow:inset 0 0 0 1px #f97316}
+.new-order-modal .intake-option input{flex:0 0 auto;margin:2px 0 0;accent-color:#f97316}
+.new-order-modal .intake-option span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.new-order-modal .intake-option strong{font-size:10px;color:#f8fafc}
+.new-order-modal .intake-option small{font-size:9px;line-height:1.35;color:#94a3b8}
+.new-order-modal .intake-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 12px;align-items:start}
+.new-order-modal .upload-control{
+  display:flex;align-items:center;gap:9px;width:100%;max-width:100%;min-height:42px;
+  padding:7px 9px;border:1px dashed #475569;border-radius:8px;background:#172235;color:#cbd5e1
+}
+.new-order-modal .upload-control>svg{color:#fb923c}
+.new-order-modal .upload-control strong{font-size:10px;color:#e2e8f0}
+.new-order-modal .upload-control small{font-size:9px;color:#94a3b8}
+.new-order-modal .tabs{gap:5px;margin:0 0 7px}
+.new-order-modal .tabs .tab{padding:6px 9px;background:#1e293b;color:#94a3b8;font-size:10px}
+.new-order-modal .tabs .tab.active{background:#7c2d1233;color:#fdba74}
+.new-order-modal .client-section .form-grid,
+.new-order-modal .equipment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 12px}
+.new-order-modal .form-grid .full,.new-order-modal .equipment-grid .intake-wide{grid-column:1/-1}
+.new-order-modal .equipment-grid .intake-wide textarea{min-height:58px;resize:vertical}
+.new-order-modal .muted{color:#94a3b8;font-size:10px}
+.new-order-modal .file-selected,.new-order-modal .intake-note{font-size:10px;margin:5px 0 0}
+.new-order-modal .intake-note{color:#86efac}
+.new-order-modal .form-actions{
+  display:flex;justify-content:flex-end;gap:8px;flex:0 0 auto;
+  padding:12px 21px;border-top:1px solid #263449;background:#111c2e
+}
+.new-order-modal .form-actions .secondary{border-color:#334155;background:#1e293b;color:#cbd5e1}
+.new-order-modal .form-actions .primary{background:#f97316;color:#fff}
+.new-order-modal .form-actions button{min-height:34px;padding:8px 13px;font-size:11px}
+@media(max-width:600px){
+  .new-order-overlay{align-items:flex-end;padding:0}
+  .new-order-modal{max-width:none;max-height:96dvh;border-radius:16px 16px 0 0}
+  .new-order-modal-head{padding:15px 15px 12px}
+  .new-order-modal-body{padding:12px 15px 8px}
+  .new-order-modal .intake-options{grid-template-columns:1fr}
+  .new-order-modal .intake-option{min-height:0}
+  .new-order-modal .intake-fields,
+  .new-order-modal .client-section .form-grid,
+  .new-order-modal .equipment-grid{grid-template-columns:minmax(0,1fr)}
+  .new-order-modal .form-grid .full,.new-order-modal .equipment-grid .intake-wide{grid-column:auto}
+  .new-order-modal .form-actions{padding:10px 15px}
+  .new-order-modal .form-actions button{flex:1;justify-content:center}
+}
+
+
+/* Nueva orden integrada sobre el listado: mantiene la ruta y el contexto visibles. */
+.new-order-overlay{background:rgba(18,28,39,.30);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);padding:24px}
+.new-order-modal{max-width:900px;max-height:min(92vh,900px);background:#fff;color:#17212b;border:1px solid rgba(255,255,255,.8);border-radius:16px;box-shadow:0 28px 90px rgba(17,31,45,.28)}
+.new-order-modal-head{padding:18px 22px 14px;border-bottom:1px solid #e8edf2}
+.new-order-modal-head .eyebrow{color:#8a98a5}
+.new-order-modal-head h1{color:#17212b;font-size:21px}
+.new-order-modal-head p{color:#718096}
+.new-order-close{background:#f5f7fa;border-color:#e1e7ed;color:#526272}
+.new-order-close:hover{background:#edf1f5;color:#17212b}
+.new-order-error{margin:10px 20px 0!important}
+.new-order-modal-body{padding:15px 22px 10px}
+.new-order-modal-body>section{border-bottom:1px solid #edf0f3;border-radius:0}
+.new-order-modal-body section h2{color:#263645;font-size:13px}
+.new-order-modal .field label{color:#657585}
+.new-order-modal .field input:not([type="file"]):not([type="radio"]),
+.new-order-modal .field select,.new-order-modal textarea{background:#fff;color:#263645;border-color:#dce3e9;border-radius:8px;font-size:12px}
+.new-order-modal .field input::placeholder,.new-order-modal textarea::placeholder{color:#9aa6b2}
+.new-order-modal .intake-option{background:#fafbfc;border-color:#e1e7ed;color:#263645}
+.new-order-modal .intake-option.selected{background:#fff5ef;border-color:#ff6210;box-shadow:inset 0 0 0 1px #ff6210}
+.new-order-modal .intake-option strong{color:#263645}
+.new-order-modal .intake-option small{color:#718096}
+.new-order-modal .upload-control{background:#fafbfc;border-color:#cbd5df;color:#526272}
+.new-order-modal .upload-control strong{color:#344454}
+.new-order-modal .upload-control small{color:#718096}
+.new-order-modal .tabs .tab{background:#f3f5f7;color:#718096}
+.new-order-modal .tabs .tab.active{background:#fff0e8;color:#d94d08}
+.new-order-modal .muted{color:#718096}
+.new-order-modal .form-actions{background:#fff;border-top:1px solid #e8edf2}
+.new-order-modal .form-actions .secondary{background:#fff;border-color:#dce3e9;color:#425466}
+.new-order-modal .form-actions .primary{background:#ff6210}
+@media(min-width:821px){
+ .new-order-modal-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:22px;align-content:start}
+ .new-order-modal-body>.intake-section{grid-column:1/-1}
+ .new-order-modal-body>.client-section,.new-order-modal-body>.equipment-section{min-width:0}
+ .new-order-modal-body>.client-section{padding-right:18px;border-right:1px solid #edf0f3}
+}
+@media(max-width:600px){.new-order-overlay{align-items:flex-end;padding:0}.new-order-modal{border-radius:16px 16px 0 0}}
+
+
+/* Corrección de distribución y pestañas del bloque Cliente. */
+@media(min-width:821px){
+  .new-order-modal{max-width:860px}
+  .new-order-modal-body{
+    grid-template-columns:minmax(245px,.82fr) minmax(0,1.18fr);
+    column-gap:20px;
+    row-gap:4px;
+  }
+  .new-order-modal-body>.client-section{
+    padding-right:16px;
+    border-right:1px solid #edf0f3;
+    align-self:start;
+  }
+  .new-order-modal-body>.equipment-section{align-self:start}
+  .new-order-modal .equipment-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    column-gap:10px;
+    row-gap:1px;
+  }
+  .new-order-modal .equipment-grid .intake-wide{grid-column:1/-1}
+}
+.new-order-modal .client-section>h2{margin:0 0 9px}
+.new-order-modal .client-section>.tabs{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  flex-wrap:wrap;
+  gap:6px;
+  width:100%;
+  min-height:34px;
+  margin:0 0 9px;
+  padding:0;
+  overflow:visible;
+}
+.new-order-modal .client-section>.tabs>.tab{
+  position:static;
+  display:inline-flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:center;
+  width:auto;
+  min-width:0;
+  min-height:30px;
+  margin:0;
+  padding:7px 11px;
+  line-height:1.2;
+  white-space:nowrap;
+  border:1px solid #e1e7ed;
+  border-radius:7px;
+  font-size:11px;
+}
+.new-order-modal .client-section>.field{margin-top:5px}
+.new-order-modal .client-section>.field select{max-width:100%}
+
+
+/* Nueva orden: distribución estable en grilla, sin solapamientos. */
+.new-order-modal .new-order-form{display:flex;flex-direction:column;gap:0;min-width:0}
+.new-order-modal .new-order-modal-body{
+  display:grid;
+  grid-template-columns:minmax(0,5fr) minmax(0,7fr);
+  grid-template-areas:"intake intake" "client equipment";
+  gap:16px 22px;
+  align-items:start;
+  min-width:0;
+  padding:16px 22px 14px;
+}
+.new-order-modal .new-order-modal-body>.intake-section{grid-area:intake;min-width:0}
+.new-order-modal .new-order-modal-body>.client-section{grid-area:client;min-width:0;padding:0 18px 0 0;border-right:1px solid #edf0f3;align-self:stretch}
+.new-order-modal .new-order-modal-body>.equipment-section{grid-area:equipment;min-width:0;padding:0;border:0}
+.new-order-modal .new-order-modal-body>section{display:block;width:100%;min-width:0;margin:0;padding-bottom:12px}
+.new-order-modal .new-order-modal-body>section h2{display:block;margin:0 0 9px;line-height:1.35}
+.new-order-modal .client-section>.tabs{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:stretch;
+  justify-content:stretch;
+  gap:7px;
+  width:100%;
+  min-height:0;
+  margin:0 0 12px;
+  padding:0;
+  overflow:visible;
+}
+.new-order-modal .client-section>.tabs>.tab{
+  display:flex;
+  position:static;
+  width:100%;
+  min-width:0;
+  min-height:36px;
+  align-items:center;
+  justify-content:center;
+  margin:0;
+  padding:8px 7px;
+  white-space:normal;
+  text-align:center;
+  line-height:1.25;
+  border:1px solid #dce3e9;
+  border-radius:8px;
+  font-size:11px;
+}
+.new-order-modal .client-section>.field,
+.new-order-modal .equipment-section .field{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;width:100%;min-width:0;margin:0 0 10px}
+.new-order-modal .client-section .form-grid,
+.new-order-modal .equipment-section .equipment-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:0 12px;
+  width:100%;
+  min-width:0;
+  align-items:start;
+}
+.new-order-modal .client-section .form-grid .full,
+.new-order-modal .equipment-section .equipment-grid .intake-wide{grid-column:1/-1}
+.new-order-modal .field label{display:block;min-width:0;line-height:1.35;white-space:normal}
+.new-order-modal .field input:not([type="file"]):not([type="radio"]),
+.new-order-modal .field select,
+.new-order-modal textarea{
+  display:block;
+  width:100%;
+  max-width:none;
+  min-width:0;
+  min-height:36px;
+  margin:0;
+  padding:8px 10px;
+  line-height:1.35;
+}
+.new-order-modal .equipment-section .intake-wide textarea{min-height:64px}
+.new-order-modal .client-section .muted{display:block;line-height:1.4;margin-top:6px}
+.new-order-modal .intake-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;align-items:start}
+.new-order-modal .upload-control{width:100%;max-width:none;min-width:0;min-height:36px}
+.new-order-modal .form-actions{display:flex;justify-content:flex-end;gap:9px;padding:12px 22px;border-top:1px solid #e8edf2}
+@media(max-width:760px){
+  .new-order-modal .new-order-modal-body{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:"intake" "client" "equipment";
+    gap:12px;
+    padding:14px 16px;
+  }
+  .new-order-modal .new-order-modal-body>.client-section{
+    padding:0 0 12px;
+    border-right:0;
+    border-bottom:1px solid #edf0f3;
+  }
+  .new-order-modal .new-order-modal-body>.equipment-section{padding-bottom:10px}
+}
+@media(max-width:480px){
+  .new-order-modal .new-order-modal-body>.intake-section .intake-fields,
+  .new-order-modal .new-order-modal-body>.client-section .form-grid,
+  .new-order-modal .new-order-modal-body>.equipment-section .equipment-grid{grid-template-columns:minmax(0,1fr)}
+  .new-order-modal .new-order-modal-body .form-grid .full,
+  .new-order-modal .new-order-modal-body .equipment-grid .intake-wide{grid-column:auto}
+  .new-order-modal .form-actions{padding:10px 16px}
+}
+
+
+/* Aprovechar el ancho real del modal: evitar una columna de contenido encogida. */
+.new-order-modal{
+  width:min(1080px,calc(100vw - 40px));
+  max-width:1080px;
+  min-width:0;
+  margin-inline:auto;
+}
+.new-order-modal .new-order-form,
+.new-order-modal .new-order-modal-body{
+  width:100%;
+  max-width:none;
+  min-width:0;
+  align-self:stretch;
+}
+.new-order-modal .new-order-modal-body{
+  box-sizing:border-box;
+  grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);
+  column-gap:24px;
+  padding-left:24px;
+  padding-right:24px;
+}
+.new-order-modal .new-order-modal-body>.intake-section,
+.new-order-modal .new-order-modal-body>.client-section,
+.new-order-modal .new-order-modal-body>.equipment-section{
+  width:100%;
+  max-width:none;
+  min-width:0;
+}
+.new-order-modal .equipment-section .equipment-grid,
+.new-order-modal .client-section .form-grid,
+.new-order-modal .intake-section .intake-fields{
+  width:100%;
+  max-width:none;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.new-order-modal .equipment-section .field,
+.new-order-modal .client-section .field,
+.new-order-modal .intake-section .field{
+  width:100%;
+  max-width:none;
+  min-width:0;
+}
+@media(max-width:760px){
+  .new-order-modal{width:calc(100vw - 20px);max-width:none}
+  .new-order-modal .new-order-modal-body{grid-template-columns:minmax(0,1fr);padding-left:16px;padding-right:16px}
+}
+@media(max-width:480px){
+  .new-order-modal{width:100vw}
+}
+
+
+/* Tipo de ingreso: usar una sola grilla horizontal y aprovechar el espacio libre. */
+@media(min-width:761px){
+  .new-order-modal .new-order-modal-body>.intake-section{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    align-items:stretch;
+    column-gap:12px;
+    row-gap:8px;
+  }
+  .new-order-modal .new-order-modal-body>.intake-section>h2{
+    grid-column:1/-1;
+    margin-bottom:0;
+  }
+  .new-order-modal .intake-section>.intake-options,
+  .new-order-modal .intake-section>.intake-fields{display:contents}
+  .new-order-modal .intake-section>.intake-options>.intake-option{
+    grid-row:2;
+    min-width:0;
+    min-height:58px;
+    padding:8px 9px;
+    align-self:stretch;
+  }
+  .new-order-modal .intake-section>.intake-fields>.field{
+    grid-row:2;
+    min-width:0;
+    margin:0;
+    align-self:center;
+  }
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control{
+    min-height:36px;
+    padding:6px 8px;
+  }
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control small{
+    overflow-wrap:anywhere;
+  }
+  .new-order-modal .intake-section>.intake-note,
+  .new-order-modal .intake-section>.file-selected{
+    grid-column:1/-1;
+    margin:0;
+  }
+}
+@media(max-width:760px){
+  .new-order-modal .new-order-modal-body>.intake-section{
+    display:block;
+  }
+  .new-order-modal .intake-section>.intake-options{display:grid}
+  .new-order-modal .intake-section>.intake-fields{display:grid}
+}
+
+/* Selector de fotografía: mantener el ícono a la izquierda del texto. */
+.new-order-modal .upload-field > .upload-control{
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+}
+.new-order-modal .upload-field > .upload-control > svg{
+  display:block;
+  flex:0 0 18px;
+}
+.new-order-modal .upload-field > .upload-control > span{
+  display:flex;
+  flex:1 1 auto;
+  flex-direction:column;
+  min-width:0;
+}
+
+/* Igualar altura y mejorar legibilidad de las opciones de tipo de ingreso. */
+@media(min-width:761px){
+  .new-order-modal .intake-section>.intake-options>.intake-option,
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control{
+    height:56px;
+    min-height:56px;
+    box-sizing:border-box;
+  }
+  .new-order-modal .intake-section>.intake-options>.intake-option{
+    align-items:center;
+    padding:8px 10px;
+  }
+  .new-order-modal .intake-section>.intake-options>.intake-option strong{
+    font-size:12px;
+    line-height:1.25;
+  }
+  .new-order-modal .intake-section>.intake-options>.intake-option small{
+    font-size:10px;
+    line-height:1.3;
+  }
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control{
+    padding:6px 9px;
+  }
+}
+
+
+/* Selects de Nueva orden: reducir ligeramente el ancho sin alterar los demás campos. */
+.new-order-modal .field select{
+  width:calc(100% - 8px);
+  max-width:calc(100% - 8px);
+}
+
+
+/* Título de ingreso: la nota de puesta en marcha comparte la línea del encabezado. */
+.new-order-modal .intake-heading{
+  grid-column:1/-1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  min-width:0;
+}
+.new-order-modal .intake-heading h2{margin:0;flex:0 0 auto}
+.new-order-modal .intake-heading .intake-note{
+  margin:0;
+  min-width:0;
+  color:#718096;
+  font-size:10px;
+  line-height:1.35;
+  text-align:right;
+}
+@media(max-width:760px){
+  .new-order-modal .intake-heading{flex-wrap:wrap;gap:4px 10px}
+  .new-order-modal .intake-heading .intake-note{text-align:left}
+}
+
+
+/* Tipo de ingreso: conservar la misma fila y las mismas posiciones al cambiar de modalidad. */
+@media(min-width:761px){
+  .new-order-modal .new-order-modal-body>.intake-section{
+    grid-template-columns:
+      repeat(3,minmax(0,1fr))
+      minmax(150px,.85fr)
+      minmax(220px,1.2fr);
+    grid-template-rows:auto 56px auto;
+    align-items:center;
+  }
+  .new-order-modal .intake-section>.intake-options>.intake-option{
+    grid-row:2;
+    height:56px;
+    min-height:56px;
+    box-sizing:border-box;
+    align-self:center;
+  }
+  .new-order-modal .intake-section>.intake-fields>.field{
+    grid-row:2;
+    height:56px;
+    min-height:56px;
+    margin:0;
+    display:grid;
+    grid-template-rows:24px 30px;
+    gap:2px;
+    align-content:center;
+    align-self:center;
+    min-width:0;
+    box-sizing:border-box;
+  }
+  .new-order-modal .intake-section>.intake-fields>.field>label{
+    height:24px;
+    min-height:24px;
+    overflow:hidden;
+    display:flex;
+    align-items:flex-end;
+    font-size:10px;
+    line-height:1.1;
+  }
+  .new-order-modal .intake-section>.intake-fields>.field>input,
+  .new-order-modal .intake-section>.intake-fields>.field>select,
+  .new-order-modal .intake-section>.intake-fields>.upload-control{
+    width:100%;
+    max-width:100%;
+    height:30px;
+    min-height:30px;
+    box-sizing:border-box;
+  }
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control{
+    padding:0 10px;
+    align-items:center;
+  }
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control>span{
+    min-height:0;
+    margin:0;
+    padding:0;
+  }
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control strong{
+    font-size:10px;
+    line-height:1.1;
+  }
+  .new-order-modal .intake-section>.intake-fields>.upload-field .upload-control small{
+    font-size:9px;
+    line-height:1.1;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+}
+
+
+/* Igualar el ancho de los folios entre garantía, puesta en marcha y sin garantía. */
+@media(min-width:761px){
+  .new-order-modal .intake-section>.intake-fields>.field>input{
+    width:150px;
+    max-width:100%;
+    justify-self:start;
+  }
+}
+
+/* Selector de archivo compacto: sin padding interno ni altura sobrante. */
+.new-order-modal .upload-field > .upload-control{
+  padding:0 !important;
+  height:24px;
+  min-height:24px;
+  gap:6px;
+  box-sizing:border-box;
+}
+.new-order-modal .upload-field > .upload-control > span{
+  margin:0;
+  padding:0;
+  gap:0;
+  line-height:1;
+}
+.new-order-modal .upload-field > .upload-control strong,
+.new-order-modal .upload-field > .upload-control small{
+  margin:0;
+  padding:0;
+  line-height:1;
+}
+
+/* Igualar la altura del selector de fotografía al input de número de factura. */
+.new-order-modal .intake-section > .intake-fields > .field.upload-field > .upload-control{
+  box-sizing:border-box !important;
+  height:30px !important;
+  min-height:30px !important;
+  max-height:30px !important;
+  padding:0 !important;
+  margin:0 !important;
+  gap:5px !important;
+  align-items:center !important;
+}
+.new-order-modal .intake-section > .intake-fields > .field.upload-field > .upload-control > span{
+  gap:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  line-height:1 !important;
+}
+.new-order-modal .intake-section > .intake-fields > .field.upload-field > .upload-control strong,
+.new-order-modal .intake-section > .intake-fields > .field.upload-field > .upload-control small{
+  margin:0 !important;
+  padding:0 !important;
+  line-height:1 !important;
+}
+
+
+/* Tipo de ingreso: agrupar etiqueta y control en superficies iguales para todos los campos. */
+.new-order-modal .intake-section > .intake-fields > .field{
+  box-sizing:border-box;
+  min-width:0;
+  padding:8px;
+  border:1px solid #dce3e9;
+  border-radius:8px;
+  background:#fafbfc;
+}
+.new-order-modal .intake-section > .intake-fields > .field > label:first-of-type{
+  min-width:0;
+  margin:0;
+}
+.new-order-modal .intake-section > .intake-fields > .field > input,
+.new-order-modal .intake-section > .intake-fields > .field > select{
+  border:0 !important;
+  border-radius:5px !important;
+  background:transparent !important;
+  box-shadow:none;
+}
+.new-order-modal .intake-section > .intake-fields > .field > input:focus,
+.new-order-modal .intake-section > .intake-fields > .field > select:focus{
+  outline:2px solid #ff6210;
+  outline-offset:-2px;
+}
+.new-order-modal .intake-section > .intake-fields > .field > .upload-control{
+  border:0 !important;
+  border-radius:5px !important;
+  background:transparent !important;
+}
+@media(min-width:761px){
+  .new-order-modal .intake-section > .intake-fields > .field{
+    padding:1px 8px;
+    grid-template-rows:20px 30px;
+    gap:2px;
+  }
+  .new-order-modal .intake-section > .intake-fields > .field > label:first-of-type{
+    height:20px;
+    min-height:20px;
+    align-items:flex-end;
+  }
+}
+@media(max-width:760px){
+  .new-order-modal .intake-section > .intake-fields > .field{
+    height:auto;
+    min-height:56px;
+    padding:8px 10px;
+  }
+  .new-order-modal .intake-section > .intake-fields > .field > input,
+  .new-order-modal .intake-section > .intake-fields > .field > select{
+    min-height:30px;
+    padding:4px 6px;
+  }
+}
+
+
+/* Campos de ingreso: borde visible en folio y alineación del título con el texto del input. */
+.new-order-modal .intake-section > .intake-fields > .field > input{
+  border:1px solid #dce3e9 !important;
+  border-radius:5px !important;
+  background:#fff !important;
+  padding-left:8px !important;
+}
+.new-order-modal .intake-section > .intake-fields > .field > label:first-of-type{
+  padding-left:8px;
+}
+
+
+/* Separar ligeramente los textos del selector sin aumentar su altura. */
+.new-order-modal .intake-section > .intake-fields > .field.upload-field > .upload-control > span{
+  gap:2px !important;
+}
+
+
+/* Inputs y select de comprobantes con la misma superficie blanca y borde visible. */
+.new-order-modal .intake-section > .intake-fields > .field > input,
+.new-order-modal .intake-section > .intake-fields > .field > select{
+  background-color:#fff !important;
+  border:1px solid #dce3e9 !important;
+  border-radius:5px !important;
+  box-shadow:none !important;
+}
+.new-order-modal .intake-section > .intake-fields > .field > select{
+  color:#263238;
+}
+
+
+/* Nueva orden: cabecera en dos zonas y comprobante inmediatamente debajo. */
+.new-order-modal-head{
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(260px,.9fr) minmax(0,1.1fr);
+  align-items:center;
+  gap:22px;
+  padding:18px 58px 16px 24px;
+}
+.new-order-head-copy{min-width:0}
+.new-order-head-copy h1{margin:0 0 5px}
+.new-order-head-copy p{margin:0;font-size:12px;line-height:1.4}
+.new-order-head-intake{min-width:0}
+.new-order-head-intake .intake-heading{display:flex;align-items:center;gap:8px;min-width:0;margin:0 0 7px}
+.new-order-head-intake .intake-heading h2{margin:0;font-size:13px;white-space:nowrap}
+.new-order-head-intake .intake-heading .intake-note{margin:0;text-align:left;font-size:9px;line-height:1.25}
+.new-order-head-intake .intake-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0}
+.new-order-head-intake .intake-option{min-width:0;min-height:48px;padding:6px 7px;gap:6px;border-radius:7px}
+.new-order-head-intake .intake-option input{flex:0 0 auto}
+.new-order-head-intake .intake-option span{min-width:0}
+.new-order-head-intake .intake-option strong{font-size:10px;line-height:1.2}
+.new-order-head-intake .intake-option small{font-size:10.5px;line-height:1.2}
+.new-order-modal-head .new-order-close{position:absolute;top:14px;right:16px}
+.new-order-modal .new-order-modal-body{
+  grid-template-areas:"intake intake" "client equipment";
+  row-gap:12px;
+}
+.new-order-modal .new-order-modal-body>.intake-section{
+  display:block;
+  grid-area:intake;
+  padding-bottom:12px;
+  border-bottom:1px solid #edf0f3;
+}
+.new-order-modal .intake-section>.intake-fields{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:8px 12px;
+  align-items:end;
+}
+.new-order-modal .intake-section>.intake-fields>.field{
+  height:auto;
+  min-height:0;
+  margin:0;
+  padding:7px 8px;
+  display:grid;
+  grid-template-rows:auto 30px;
+  gap:4px;
+  align-content:start;
+}
+.new-order-modal .intake-section>.intake-fields>.field>label:first-of-type{
+  height:auto;
+  min-height:0;
+  padding-left:0;
+  display:block;
+  overflow:visible;
+  line-height:1.25;
+}
+.new-order-modal .intake-section>.intake-fields>.field>input,
+.new-order-modal .intake-section>.intake-fields>.field>select{
+  width:100%;
+  max-width:100%;
+  height:30px;
+  min-height:30px;
+  justify-self:stretch;
+  padding:4px 8px !important;
+}
+.new-order-modal .intake-section>.intake-fields>.field.upload-field>.upload-control{
+  width:100%;
+  height:30px !important;
+  min-height:30px !important;
+  max-height:30px !important;
+  padding:0 5px !important;
+}
+.new-order-modal .intake-section>.file-selected{
+  margin:6px 0 0;
+}
+@media(max-width:760px){
+  .new-order-modal-head{
+    grid-template-columns:minmax(0,1fr);
+    gap:14px;
+    padding:16px 52px 14px 16px;
+  }
+  .new-order-head-intake .intake-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .new-order-head-intake .intake-option{align-items:flex-start;min-height:54px}
+  .new-order-head-intake .intake-option small{overflow-wrap:anywhere}
+  .new-order-modal .new-order-modal-body>.intake-section{display:block}
+  .new-order-modal .intake-section>.intake-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:480px){
+  .new-order-head-intake .intake-options{grid-template-columns:1fr}
+  .new-order-head-intake .intake-option{min-height:42px;align-items:center}
+  .new-order-head-intake .intake-option span{gap:2px}
+  .new-order-modal .intake-section>.intake-fields{grid-template-columns:minmax(0,1fr)}
+}
+
+
+/* Resaltar la indicación de puesta en marcha en la cabecera. */
+.new-order-head-intake .intake-heading .intake-note{
+  color:#d94d08;
+  font-size:11px;
+  font-weight:700;
+  line-height:1.3;
+}
