@@ -381,73 +381,49 @@ html,body{height:100%;min-height:100%}
 }
 
 
-/* Apertura fluida y proporciones refinadas de los drawers de órdenes. */
+
+/* Drawers con transiciones CSS suaves de apertura y cierre. */
 .drawerback{
-  animation:order-drawer-overlay-in .28s ease-out both;
+  opacity:0;
   background:rgba(13,23,32,.48);
   backdrop-filter:blur(2px);
+  transition:opacity .3s ease-in-out;
+  animation:none;
 }
 .drawerback>.drawer{
-  animation:order-summary-drawer-in .38s cubic-bezier(.22,.75,.22,1) both;
-  will-change:transform,opacity;
+  transform:translateX(100%);
+  opacity:1;
+  transition:transform .3s ease-in-out;
+  will-change:transform;
 }
+.drawerback.is-open{opacity:1}
+.drawerback.is-open>.drawer{transform:translateX(0)}
+
 .detail-drawer-layer{
   width:100%;
-  animation:order-detail-overlay-in .3s ease-out both;
+  opacity:0;
   background:rgba(15,23,42,.3);
+  transition:opacity .3s ease-in-out;
+  animation:none;
 }
 .detail-drawer-panel{
   width:min(900px,calc(100vw - 88px));
   max-width:900px;
-  animation:order-detail-drawer-in .42s cubic-bezier(.2,.8,.2,1) both;
-  will-change:transform,opacity;
+  transform:translateX(100%);
+  opacity:1;
+  transition:transform .3s ease-in-out;
+  animation:none;
+  will-change:transform;
 }
-@keyframes order-drawer-overlay-in{
-  from{opacity:0}
-  to{opacity:1}
-}
-@keyframes order-summary-drawer-in{
-  from{transform:translate3d(38px,0,0);opacity:.72}
-  to{transform:translate3d(0,0,0);opacity:1}
-}
-@keyframes order-detail-overlay-in{
-  from{opacity:0}
-  to{opacity:1}
-}
-@keyframes order-detail-drawer-in{
-  from{transform:translate3d(52px,0,0);opacity:.72}
-  to{transform:translate3d(0,0,0);opacity:1}
-}
+.detail-drawer-layer.is-open{opacity:1}
+.detail-drawer-layer.is-open>.detail-drawer-panel{transform:translateX(0)}
+
 @media(max-width:700px){
   .detail-drawer-panel{width:100vw;max-width:100vw}
-  .drawerback>.drawer{animation-duration:.34s}
-  .detail-drawer-panel{animation-duration:.36s}
 }
 @media(prefers-reduced-motion:reduce){
-  .drawerback,.drawerback>.drawer,.detail-drawer-layer,.detail-drawer-panel{animation:none;will-change:auto}
-}
-
-
-/* Cierre de drawers: anima la salida antes de desmontar el contenido. */
-.drawerback.is-closing{
-  animation:order-drawer-overlay-out .34s ease-in both;
-  pointer-events:none;
-}
-.drawerback.is-closing>.drawer{
-  animation:order-summary-drawer-out .36s cubic-bezier(.4,0,.8,.35) both;
-}
-.detail-drawer-layer.is-closing{
-  animation:order-detail-overlay-out .38s ease-in both;
-  pointer-events:none;
-}
-.detail-drawer-layer.is-closing>.detail-drawer-panel{
-  animation:order-detail-drawer-out .4s cubic-bezier(.4,0,.8,.35) both;
-}
-@keyframes order-drawer-overlay-out{from{opacity:1}to{opacity:0}}
-@keyframes order-summary-drawer-out{from{transform:translate3d(0,0,0);opacity:1}to{transform:translate3d(34px,0,0);opacity:.65}}
-@keyframes order-detail-overlay-out{from{opacity:1}to{opacity:0}}
-@keyframes order-detail-drawer-out{from{transform:translate3d(0,0,0);opacity:1}to{transform:translate3d(46px,0,0);opacity:.65}}
-@media(prefers-reduced-motion:reduce){
-  .drawerback.is-closing,.drawerback.is-closing>.drawer,
-  .detail-drawer-layer.is-closing,.detail-drawer-layer.is-closing>.detail-drawer-panel{animation:none}
+  .drawerback,.drawerback>.drawer,.detail-drawer-layer,.detail-drawer-panel{
+    transition:none;
+    will-change:auto;
+  }
 }
