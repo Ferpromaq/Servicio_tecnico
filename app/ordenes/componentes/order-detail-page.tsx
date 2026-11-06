@@ -1,6 +1,6 @@
 "use client";
 
-import "../[id]/order-detail.css";
+import "./order-detail.css";
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
