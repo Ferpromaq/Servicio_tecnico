@@ -572,3 +572,21 @@ html,body{height:100%;min-height:100%}
 }
 
 /* Mantener la animación solicitada también si el sistema reduce movimiento. */
+
+
+/* Cierre inverso robusto: usa la propiedad individual translate para no
+   depender del transform heredado de reglas anteriores del drawer. */
+.drawerback > .drawer,
+.detail-drawer-panel {
+  translate: 100% 0;
+  transition: translate 180ms ease-in-out !important;
+  will-change: translate;
+}
+.drawerback.is-open > .drawer,
+.detail-drawer-layer.is-open > .detail-drawer-panel {
+  translate: 0 0;
+}
+.drawerback.is-closing > .drawer,
+.detail-drawer-layer.is-closing > .detail-drawer-panel {
+  translate: 100% 0;
+}
