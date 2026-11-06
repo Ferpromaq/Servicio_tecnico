@@ -48,7 +48,7 @@ export function orderPriorityLabel(priority: ServiceOrder["priority"] | string |
 
 export function orderPriorityClass(priority: ServiceOrder["priority"] | string | null | undefined) {
   const value = String(priority ?? "normal").trim().toLocaleLowerCase("es-CL")
-    .normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-z0-9_-]/g, "");
+    .replace(/[^a-z0-9_-]/g, "");
   return `priority priority-${value || "normal"}`;
 }
 
