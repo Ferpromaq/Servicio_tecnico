@@ -6,6 +6,28 @@ import { usePathname, useRouter } from "next/navigation";
 import { ClipboardList, Users, Wrench, Cog, Package, CreditCard, BarChart3, LogOut } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
+// El middleware ya valida la sesión y los permisos en el servidor. Esta caché evita
+// repetir la consulta de perfil en cada navegación cliente entre módulos.
+const profileRoleCache = new Map<string, { role: string; expiresAt: number }>();
+const profileRoleRequests = new Map<string, Promise<string>>();
+
+async function getCachedProfileRole(client: NonNullable<typeof supabase>, userId: string) {
+  const cached = profileRoleCache.get(userId);
+  if (cached && cached.expiresAt > Date.now()) return cached.role;
+  const pending = profileRoleRequests.get(userId);
+  if (pending) return pending;
+
+  const request = client.from("profiles").select("role,active").eq("id", userId).maybeSingle()
+    .then(({ data, error }) => {
+      if (error || !data || data.active !== true) throw new Error("No se pudo verificar tu perfil y tus permisos.");
+      profileRoleCache.set(userId, { role: data.role, expiresAt: Date.now() + 30_000 });
+      return data.role as string;
+    })
+    .finally(() => profileRoleRequests.delete(userId));
+  profileRoleRequests.set(userId, request);
+  return request;
+}
+
 const links = [
   { href: "/", label: "Panel general", icon: ClipboardList },
   { href: "/ordenes", label: "Órdenes de servicio", icon: Wrench },
@@ -35,38 +57,39 @@ export function ModuleShell({ title, description, children }: { title: string; d
     const db = client as NonNullable<typeof client>;
     let cancelled = false;
     async function verifySession() {
-      const { data: authData, error: authError } = await db.auth.getUser();
+      // getSession lee la sesión persistida localmente; getUser añade una
+      // validación remota que el middleware ya realizó al solicitar la ruta.
+      const { data: authData, error: authError } = await db.auth.getSession();
       if (cancelled) return;
-      if (authError || !authData.user) {
+      const user = authData.session?.user;
+      if (authError || !user) {
         router.replace("/login");
         return;
       }
 
-      const { data: profile, error: profileError } = await db
-        .from("profiles")
-        .select("role,active")
-        .eq("id", authData.user.id)
-        .maybeSingle();
-
-      if (cancelled) return;
-      if (profileError || !profile || profile.active !== true) {
+      let profileRole: string;
+      try {
+        profileRole = await getCachedProfileRole(db, user.id);
+      } catch {
+        if (cancelled) return;
         setProfileWarning("No se pudo verificar tu perfil y tus permisos. El contenido del módulo permanecerá bloqueado.");
         setRoleReady(true);
         return;
       }
 
+      if (cancelled) return;
       const isOrdersRoute = path === "/ordenes" || path.startsWith("/ordenes/");
       const isUsersRoute = path === "/usuarios" || path.startsWith("/usuarios/");
-      const allowed = profile.role === "admin"
-        || (profile.role === "supervisor" && !isUsersRoute)
-        || (profile.role === "tecnico" && isOrdersRoute);
+      const allowed = profileRole === "admin"
+        || (profileRole === "supervisor" && !isUsersRoute)
+        || (profileRole === "tecnico" && isOrdersRoute);
 
       if (!allowed) {
         router.replace("/ordenes");
         return;
       }
 
-      setRole(profile.role ?? "");
+      setRole(profileRole);
       setRoleReady(true);
       setProfileWarning("");
     }
