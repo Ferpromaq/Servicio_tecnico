@@ -81,9 +81,10 @@ export function Dashboard() {
     ]).then(([workflow, currentOrder]) => {
       if (cancelled) return;
       if (currentOrder.error) throw currentOrder.error;
-      if (currentOrder.data?.status) {
+      const currentStatus = currentOrder.data?.status;
+      if (currentStatus) {
         setSelected((current) => current?.id === selected.id
-          ? { ...current, status: currentOrder.data.status }
+          ? { ...current, status: currentStatus }
           : current);
       }
       setDrawerEvents(workflow.events.slice(0, 5));
