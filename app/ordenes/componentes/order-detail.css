@@ -192,3 +192,24 @@
   .payment-form input,.payment-form select{padding:6px 8px;font-size:11px}
   .status-control{padding:9px;margin-bottom:8px}
 }
+
+
+/* Ficha: limitar el ancho de lectura y evitar campos desproporcionados. */
+@media(min-width:901px){
+  .detail-page{width:100%;max-width:1120px;margin-inline:auto}
+  .detail-page-head,.detail-tabs,.detail-content{width:100%}
+  .detail-content>.card{max-width:100%}
+  .detail-content .field input,
+  .detail-content .field select,
+  .detail-content textarea{max-width:100%}
+  .detail-content textarea{max-width:100%;resize:vertical}
+  .parts-draft-row .detail-columns{
+    grid-template-columns:minmax(220px,1.65fr) minmax(76px,.48fr) minmax(130px,.85fr) minmax(145px,auto);
+    gap:8px 12px;
+  }
+  .parts-draft-row .field input{max-width:100%}
+  .detail-content .part-list{max-width:100%}
+  .detail-content .part-row{align-items:center}
+  .detail-content .part-main{max-width:720px}
+  .payment-form .detail-columns{grid-template-columns:repeat(2,minmax(180px,1fr))}
+}
