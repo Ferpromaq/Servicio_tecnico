@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 import Link from "next/link";
-import {ModuleShell} from "@/components/module-shell";
+import {ModuleShell} from "@/components/layout/module-shell";
 import {supabase} from "@/lib/supabase";
 type Payment={id:string;order_id:string;payment_type:string;amount:number;method:string|null;reference:string|null;receipt_received:boolean;paid_at:string;service_orders?:{order_number:number;clients?:{name:string}|null}|null};
 const money=(n:number)=>new Intl.NumberFormat("es-CL",{style:"currency",currency:"CLP",maximumFractionDigits:0}).format(n);
