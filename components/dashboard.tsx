@@ -85,9 +85,10 @@ export function Dashboard() {
       if (cancelled) return;
       if (orderResult.error) {
         setSelectedTraceError(orderResult.error.message);
-      } else if (orderResult.data) {
+      } else if (orderResult.data?.status) {
+        const currentStatus = orderResult.data.status;
         setSelected(current => current?.id === selectedOrderId
-          ? { ...current, status: orderResult.data.status }
+          ? { ...current, status: currentStatus }
           : current);
       }
       if (eventsResult.error) {
