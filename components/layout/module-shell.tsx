@@ -17,13 +17,16 @@ async function getCachedProfileRole(client: NonNullable<typeof supabase>, userId
   const pending = profileRoleRequests.get(userId);
   if (pending) return pending;
 
-  const request = client.from("profiles").select("role,active").eq("id", userId).maybeSingle()
-    .then(({ data, error }) => {
+  const request = (async () => {
+    try {
+      const { data, error } = await client.from("profiles").select("role,active").eq("id", userId).maybeSingle();
       if (error || !data || data.active !== true) throw new Error("No se pudo verificar tu perfil y tus permisos.");
       profileRoleCache.set(userId, { role: data.role, expiresAt: Date.now() + 30_000 });
       return data.role as string;
-    })
-    .finally(() => profileRoleRequests.delete(userId));
+    } finally {
+      profileRoleRequests.delete(userId);
+    }
+  })();
   profileRoleRequests.set(userId, request);
   return request;
 }
