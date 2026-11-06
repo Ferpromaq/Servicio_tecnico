@@ -58,7 +58,8 @@ export async function middleware(request: NextRequest) {
   const isOrdersRoute = pathname === "/ordenes" || pathname.startsWith("/ordenes/");
   const isUsersRoute = pathname === "/usuarios" || pathname.startsWith("/usuarios/");
 
-  const forbiddenForTechnician = profile.role === "tecnico" && !isOrdersRoute;
+  const isNewOrderRoute = pathname === "/ordenes/nueva" || pathname.startsWith("/ordenes/nueva/");
+  const forbiddenForTechnician = profile.role === "tecnico" && (!isOrdersRoute || isNewOrderRoute);
   const forbiddenForSupervisor = profile.role === "supervisor" && isUsersRoute;
 
   if (forbiddenForTechnician || forbiddenForSupervisor) {
