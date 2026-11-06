@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AlertCircle, ClipboardList, RefreshCw, Search, Wrench, Users, Cog, Package, CreditCard, BarChart3 } from "lucide-react";
+import { AlertCircle, CalendarDays, ClipboardList, RefreshCw, Search, Wrench, Users, UserRound, Cog, Package, CreditCard, BarChart3, Hash } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import NewOrderModal from "@/app/ordenes/componentes/new-order-modal";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderPriorityClass, orderPriorityLabel, orderStatusClass, orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
@@ -189,18 +189,51 @@ export function Dashboard() {
       {showNewOrder && <NewOrderModal onClose={() => setShowNewOrder(false)} onCreated={() => { setShowNewOrder(false); void loadOrders(); }} />}
 
       {selected && <div className="drawerback" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
-        <aside className="drawer compact-drawer"><div className="drawerhead"><div><div className="eyebrow">ORDEN DE SERVICIO</div><h2>#{selected.order_number}</h2></div><button className="close" onClick={() => setSelected(null)}>Cerrar ×</button></div>
-          <div className="detailgrid"><div className="detailbox"><small>Estado</small><span className={orderStatusClass(selected.status)}>{orderStatusLabel(selected.status)}</span></div><div className="detailbox"><small>Prioridad</small><span className={orderPriorityClass(selected.priority)}>{orderPriorityLabel(selected.priority)}</span></div></div>
-          <h3 className="sectiontitle">Cliente</h3><p>{selected.clients?.name ?? "Sin información"}</p><p className="muted">{selected.clients?.rut ?? ""}</p>
-          <h3 className="sectiontitle">Equipo</h3><p>{[selected.machines?.brand, selected.machines?.model, selected.machines?.equipment_type].filter(Boolean).join(" · ") || "Sin información"}</p><p className="muted">Serie: {selected.machines?.serial_number ?? "No registrada"}</p>
-          <h3 className="sectiontitle">Problema informado</h3><p>{selected.problem_description}</p>
-          <p className="muted">Ingreso: {formatOrderDate(selected.received_at)}</p>
-          <p className="muted">Técnico: {selected.assigned?.full_name ?? "Sin asignar"}</p>
+        <aside className="drawer compact-drawer">
+          <div className="drawerhead drawer-order-head">
+            <div><div className="drawer-kicker">FERPROMAQ <span>·</span> ORDEN DE SERVICIO</div><h2>#{selected.order_number}</h2></div>
+            <button className="close" onClick={() => setSelected(null)} aria-label="Cerrar detalle">×</button>
+          </div>
+
+          <div className="drawer-status-strip" aria-label="Estado y prioridad de la orden">
+            <div className="drawer-status-item">
+              <span className="drawer-meta-label">Estado actual</span>
+              <span className={orderStatusClass(selected.status)}>{orderStatusLabel(selected.status)}</span>
+            </div>
+            <span className="drawer-status-divider" aria-hidden="true" />
+            <div className="drawer-status-item">
+              <span className="drawer-meta-label">Prioridad</span>
+              <span className={orderPriorityClass(selected.priority)}>{orderPriorityLabel(selected.priority)}</span>
+            </div>
+          </div>
+
+          <div className="drawer-info-grid">
+            <section className="drawer-info-card">
+              <div className="drawer-info-heading"><UserRound size={15}/><span>Cliente</span></div>
+              <strong>{selected.clients?.name ?? "Sin información"}</strong>
+              <small>{selected.clients?.rut ? `RUT ${selected.clients.rut}` : "RUT no registrado"}</small>
+            </section>
+            <section className="drawer-info-card">
+              <div className="drawer-info-heading"><Wrench size={15}/><span>Equipo</span></div>
+              <strong>{[selected.machines?.brand, selected.machines?.model].filter(Boolean).join(" ") || selected.machines?.equipment_type || "Sin información"}</strong>
+              <small>Serie: {selected.machines?.serial_number ?? "No registrada"}</small>
+            </section>
+          </div>
+
+          <section className="drawer-problem">
+            <div className="drawer-info-heading"><ClipboardList size={15}/><span>Problema informado</span></div>
+            <p>{selected.problem_description || "Sin descripción registrada."}</p>
+          </section>
+
+          <div className="drawer-order-meta">
+            <span><CalendarDays size={14}/><span>Ingreso <strong>{formatOrderDate(selected.received_at)}</strong></span></span>
+            <span><UserRound size={14}/><span>Técnico <strong>{selected.assigned?.full_name ?? "Sin asignar"}</strong></span></span>
+          </div>
 
           <div className="drawer-trace">
             <div className="drawer-trace-head">
-              <h3 className="sectiontitle">Trazabilidad</h3>
-              <span className={orderStatusClass(selected.status)}>{orderStatusLabel(selected.status)}</span>
+              <h3 className="sectiontitle">Historial de actividad</h3>
+              <span className="drawer-trace-count">{drawerEvents.length ? `${drawerEvents.length} recientes` : "Actividad"}</span>
             </div>
             {drawerLoading ? <p className="muted drawer-trace-message">Cargando movimientos…</p>
               : drawerError ? <p className="muted drawer-trace-message">{drawerError}</p>
@@ -214,7 +247,7 @@ export function Dashboard() {
                 ))}
               </div>}
           </div>
-          <a className="primary full-detail-link" href={`/ordenes/${selected.order_number}`}>Abrir ficha completa de la orden</a>
+          <a className="primary full-detail-link" href={`/ordenes/${selected.order_number}`}>Abrir ficha completa <span aria-hidden="true">→</span></a>
         </aside>
       </div>}
     </div>
