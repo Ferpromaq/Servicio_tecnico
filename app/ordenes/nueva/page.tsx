@@ -32,6 +32,7 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [diagnosisReceiptType, setDiagnosisReceiptType] = useState("boleta");
   const [diagnosisReceiptNumber, setDiagnosisReceiptNumber] = useState("");
+  const [diagnosisReceiptAmount, setDiagnosisReceiptAmount] = useState("");
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -73,7 +74,7 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
       let documentPath: string | null = null;
       if (documentFile) {
         const extension = documentFile.name.split(".").pop()?.toLowerCase() || "jpg";
-        const documentName = intakeType === "warranty" ? "garantia" : "factura-compra";
+        const documentName = intakeType === "warranty" ? "garantia" : intakeType === "commissioning" ? "factura-compra" : "comprobante-diagnostico";
         documentPath = createdOrderId + "/" + documentName + "-" + Date.now() + "." + extension;
         const { error: uploadError } = await supabase.storage.from("order-documents").upload(documentPath, documentFile, {
           cacheControl: "3600", upsert: false, contentType: documentFile.type
@@ -92,6 +93,8 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
         purchase_invoice_photo_path: intakeType === "commissioning" ? documentPath : null,
         diagnosis_receipt_type: intakeType === "no_warranty" ? diagnosisReceiptType : null,
         diagnosis_receipt_number: intakeType === "no_warranty" ? diagnosisReceiptNumber.trim() : null,
+        diagnosis_receipt_amount: intakeType === "no_warranty" ? Number(diagnosisReceiptAmount) : null,
+        diagnosis_receipt_photo_path: intakeType === "no_warranty" ? documentPath : null,
         diagnosis_amount: intakeType === "commissioning" ? 0 : undefined,
         installation_amount: intakeType === "commissioning" ? 0 : undefined
       };
@@ -109,7 +112,7 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
   if (role === "tecnico") return null;
   const needsInvoice = intakeType === "warranty" || intakeType === "commissioning";
   const photoLabel = intakeType === "warranty" ? "Foto del documento de garantía" : "Foto de la factura de compra";
-  const validDocument = documentFile && ["image/jpeg","image/png","image/webp"].includes(documentFile.type) && documentFile.size <= 8 * 1024 * 1024;
+  const validDocument = Boolean(documentFile && ["image/jpeg","image/png","image/webp"].includes(documentFile.type) && documentFile.size <= 8 * 1024 * 1024);
 
   return <main className="new-order-overlay">
     <div className="new-order-modal" role="dialog" aria-modal="true" aria-labelledby="new-order-title">
@@ -133,6 +136,8 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
         </div> : <div className="intake-fields">
           <div className="field"><label>Tipo de comprobante *</label><select value={diagnosisReceiptType} onChange={e => setDiagnosisReceiptType(e.target.value)}><option value="boleta">Boleta</option><option value="factura">Factura</option></select></div>
           <div className="field"><label>Número de Folio *</label><input required value={diagnosisReceiptNumber} onChange={e => setDiagnosisReceiptNumber(e.target.value)} placeholder="N° de Folio"/></div>
+          <div className="field"><label>Monto pagado (CLP) *</label><input required type="number" min="1" step="1" inputMode="numeric" value={diagnosisReceiptAmount} onChange={e => setDiagnosisReceiptAmount(e.target.value)} placeholder="Ej. 25000"/></div>
+          <div className="field upload-field"><label>Fotografía de la boleta o factura *</label><input id="intake-document" className="file-input-hidden" type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setDocumentFile(e.target.files?.[0] ?? null)}/><label className="upload-control" htmlFor="intake-document"><Upload size={17}/><span><strong>{documentFile ? "Cambiar fotografía" : "Seleccionar fotografía"}</strong><small>{documentFile ? documentFile.name : "JPG, PNG o WEBP · máximo 8 MB"}</small></span></label></div>
         </div>}
         {documentFile && !validDocument && <p className="file-selected file-error">El archivo debe ser JPG, PNG o WEBP y pesar máximo 8 MB.</p>}
       </section>
@@ -161,7 +166,7 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
       </section>
 
         </div>
-      <div className="form-actions"><button type="button" className="secondary" onClick={() => onClose ? onClose() : router.push("/")}>Cancelar</button><button type="submit" className="primary" disabled={loading || !role || role === "tecnico" || (needsInvoice && !validDocument)}><Save size={14}/>{loading ? "Creando…" : "Crear orden"}</button></div>
+      <div className="form-actions"><button type="button" className="secondary" onClick={() => onClose ? onClose() : router.push("/")}>Cancelar</button><button type="submit" className="primary" disabled={loading || !role || role === "tecnico" || !validDocument || (intakeType === "no_warranty" && (!diagnosisReceiptAmount || Number(diagnosisReceiptAmount) <= 0))}><Save size={14}/>{loading ? "Creando…" : "Crear orden"}</button></div>
       </form>
     </div>
   </main>;
