@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import NewOrderModal from "@/app/ordenes/componentes/new-order-modal";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderPriorityClass, orderPriorityLabel, orderStatusClass, orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
 import { getOrderWorkflow, type OrderEvent } from "@/app/ordenes/servicios/order-workflow";
+import { useDrawerTransition } from "@/hooks/use-drawer-transition";
 
 const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: boolean }[] = [
   { label: "Panel general", icon: ClipboardList, href: "/" },
@@ -31,12 +32,11 @@ export function Dashboard() {
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<ServiceOrder | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [summaryClosing, setSummaryClosing] = useState(false);
-  const [summaryVisible, setSummaryVisible] = useState(false);
-  const [detailClosing, setDetailClosing] = useState(false);
-  const [detailVisible, setDetailVisible] = useState(false);
-  const summaryCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const detailCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const summaryTransition = useDrawerTransition(!!selected);
+  const detailTransition = useDrawerTransition(detailOpen);
+  const lastSelectedRef = useRef<ServiceOrder | null>(null);
+  if (selected) lastSelectedRef.current = selected;
+  const drawerOrder = selected ?? lastSelectedRef.current;
   const [drawerEvents, setDrawerEvents] = useState<OrderEvent[]>([]);
   const [drawerLoading, setDrawerLoading] = useState(false);
   const [drawerError, setDrawerError] = useState("");
@@ -45,79 +45,25 @@ export function Dashboard() {
   const [role, setRole] = useState("");
   const [roleReady, setRoleReady] = useState(false);
 
-  useEffect(() => {
-    if (!selected || summaryClosing) {
-      setSummaryVisible(false);
-      return;
-    }
-    // Espera a que el drawer se pinte fuera de pantalla antes de iniciar la transición.
-    const timer = window.setTimeout(() => setSummaryVisible(true), 40);
-    return () => window.clearTimeout(timer);
-  }, [selected, summaryClosing]);
-
-  useEffect(() => {
-    if (!detailOpen || detailClosing) {
-      setDetailVisible(false);
-      return;
-    }
-    // Separa el montaje del cambio de estado para que el navegador anime la entrada.
-    const timer = window.setTimeout(() => setDetailVisible(true), 40);
-    return () => window.clearTimeout(timer);
-  }, [detailOpen, detailClosing]);
-
   const syncDrawerFromUrl = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
     const orderNumber = Number(params.get("orden"));
     if (!Number.isSafeInteger(orderNumber) || orderNumber <= 0) {
-      setSummaryClosing(true);
-      setSummaryVisible(false);
-      setDetailClosing(true);
-      setDetailVisible(false);
-      if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
-      if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
-      summaryCloseTimer.current = setTimeout(() => {
-        setSelected(null);
-        setSummaryClosing(false);
-      }, 180);
-      detailCloseTimer.current = setTimeout(() => {
-        setDetailOpen(false);
-        setDetailClosing(false);
-      }, 180);
+      setSelected(null);
+      setDetailOpen(false);
       return;
     }
 
-    if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
-    setSummaryClosing(false);
     const match = orders.find((order) => order.order_number === orderNumber) ?? null;
     setSelected(match);
-    const shouldShowDetail = Boolean(match) && params.get("ficha") === "1";
-    if (shouldShowDetail) {
-      if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
-      setDetailClosing(false);
-      setDetailOpen(true);
-    } else if (detailOpen) {
-      setDetailClosing(true);
-      setDetailVisible(false);
-      if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
-      detailCloseTimer.current = setTimeout(() => {
-        setDetailOpen(false);
-        setDetailClosing(false);
-      }, 180);
-    } else {
-      setDetailClosing(false);
-      setDetailOpen(false);
-    }
-  }, [orders, detailOpen]);
+    setDetailOpen(Boolean(match) && params.get("ficha") === "1");
+  }, [orders]);
 
   const openOrderSummary = (order: ServiceOrder) => {
     const url = new URL(window.location.href);
     url.searchParams.set("orden", String(order.order_number));
     url.searchParams.delete("ficha");
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
-    if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
-    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
-    setSummaryClosing(false);
-    setDetailClosing(false);
     setSelected(order);
     setDetailOpen(false);
   };
@@ -128,8 +74,6 @@ export function Dashboard() {
     url.searchParams.set("orden", String(selected.order_number));
     url.searchParams.set("ficha", "1");
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
-    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
-    setDetailClosing(false);
     setDetailOpen(true);
   };
 
@@ -137,40 +81,16 @@ export function Dashboard() {
     const url = new URL(window.location.href);
     url.searchParams.delete("ficha");
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
-    setDetailClosing(true);
-    setDetailVisible(false);
-    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
-    detailCloseTimer.current = setTimeout(() => {
-      setDetailOpen(false);
-      setDetailClosing(false);
-    }, 180);
+    setDetailOpen(false);
   };
 
-  const closeOrderDrawers = () => {
+  const closeSummary = () => {
     const url = new URL(window.location.href);
     url.searchParams.delete("orden");
     url.searchParams.delete("ficha");
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
-    setSummaryClosing(true);
-    setSummaryVisible(false);
-    if (detailOpen) {
-      setDetailClosing(true);
-      setDetailVisible(false);
-    }
-    if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
-    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
-    summaryCloseTimer.current = setTimeout(() => {
-      setSelected(null);
-      setSummaryClosing(false);
-    }, 180);
-    if (detailOpen) {
-      detailCloseTimer.current = setTimeout(() => {
-        setDetailOpen(false);
-        setDetailClosing(false);
-      }, 180);
-    } else {
-      setDetailOpen(false);
-    }
+    setDetailOpen(false);
+    setSelected(null);
   };
 
   const loadOrders = useCallback(async () => {
@@ -207,13 +127,10 @@ export function Dashboard() {
   }, [loading, syncDrawerFromUrl]);
 
   useEffect(() => {
-    if (!selected) {
-      setDrawerEvents([]);
-      setDrawerError("");
-      return;
-    }
+    if (!selected) return;
 
     let cancelled = false;
+    setDrawerEvents([]);
     setDrawerLoading(true);
     setDrawerError("");
     Promise.all([
@@ -331,46 +248,51 @@ export function Dashboard() {
 
       {showNewOrder && <NewOrderModal onClose={() => setShowNewOrder(false)} onCreated={() => { setShowNewOrder(false); void loadOrders(); }} />}
 
-      {selected && <div className={`drawerback ${summaryVisible ? "is-open" : ""} ${summaryClosing ? "is-closing" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeOrderDrawers(); }}>
-        <aside className="drawer compact-drawer">
+      {summaryTransition.mounted && drawerOrder && <div
+        className="drawer-root"
+        data-open={summaryTransition.visible}
+        onMouseDown={(event) => { if (event.target === event.currentTarget) closeSummary(); }}
+      >
+        <div className="drawer-overlay" onClick={closeSummary} />
+        <aside className="drawer drawer-panel compact-drawer" onTransitionEnd={summaryTransition.onTransitionEnd}>
           <div className="drawerhead drawer-order-head">
-            <div><div className="drawer-kicker">FERPROMAQ <span>·</span> ORDEN DE SERVICIO</div><h2>#{selected.order_number}</h2></div>
-            <button className="close" onClick={closeOrderDrawers} aria-label="Cerrar detalle">×</button>
+            <div><div className="drawer-kicker">FERPROMAQ <span>·</span> ORDEN DE SERVICIO</div><h2>#{drawerOrder.order_number}</h2></div>
+            <button className="close" onClick={closeSummary} aria-label="Cerrar detalle">×</button>
           </div>
 
           <div className="drawer-status-strip" aria-label="Estado y prioridad de la orden">
             <div className="drawer-status-item">
               <span className="drawer-meta-label">Estado actual</span>
-              <span className={orderStatusClass(selected.status)}>{orderStatusLabel(selected.status)}</span>
+              <span className={orderStatusClass(drawerOrder.status)}>{orderStatusLabel(drawerOrder.status)}</span>
             </div>
             <span className="drawer-status-divider" aria-hidden="true" />
             <div className="drawer-status-item">
               <span className="drawer-meta-label">Prioridad</span>
-              <span className={orderPriorityClass(selected.priority)}>{orderPriorityLabel(selected.priority)}</span>
+              <span className={orderPriorityClass(drawerOrder.priority)}>{orderPriorityLabel(drawerOrder.priority)}</span>
             </div>
           </div>
 
           <div className="drawer-info-grid">
             <section className="drawer-info-card">
               <div className="drawer-info-heading"><UserRound size={15}/><span>Cliente</span></div>
-              <strong>{selected.clients?.name ?? "Sin información"}</strong>
-              <small>{selected.clients?.rut ? `RUT ${selected.clients.rut}` : "RUT no registrado"}</small>
+              <strong>{drawerOrder.clients?.name ?? "Sin información"}</strong>
+              <small>{drawerOrder.clients?.rut ? `RUT ${drawerOrder.clients.rut}` : "RUT no registrado"}</small>
             </section>
             <section className="drawer-info-card">
               <div className="drawer-info-heading"><Wrench size={15}/><span>Equipo</span></div>
-              <strong>{[selected.machines?.brand, selected.machines?.model].filter(Boolean).join(" ") || selected.machines?.equipment_type || "Sin información"}</strong>
-              <small>Serie: {selected.machines?.serial_number ?? "No registrada"}</small>
+              <strong>{[drawerOrder.machines?.brand, drawerOrder.machines?.model].filter(Boolean).join(" ") || drawerOrder.machines?.equipment_type || "Sin información"}</strong>
+              <small>Serie: {drawerOrder.machines?.serial_number ?? "No registrada"}</small>
             </section>
           </div>
 
           <section className="drawer-problem">
             <div className="drawer-info-heading"><ClipboardList size={15}/><span>Problema informado</span></div>
-            <p>{selected.problem_description || "Sin descripción registrada."}</p>
+            <p>{drawerOrder.problem_description || "Sin descripción registrada."}</p>
           </section>
 
           <div className="drawer-order-meta">
-            <span><CalendarDays size={14}/><span>Ingreso <strong>{formatOrderDate(selected.received_at)}</strong></span></span>
-            <span><UserRound size={14}/><span>Técnico <strong>{selected.assigned?.full_name ?? "Sin asignar"}</strong></span></span>
+            <span><CalendarDays size={14}/><span>Ingreso <strong>{formatOrderDate(drawerOrder.received_at)}</strong></span></span>
+            <span><UserRound size={14}/><span>Técnico <strong>{drawerOrder.assigned?.full_name ?? "Sin asignar"}</strong></span></span>
           </div>
 
           <div className="drawer-trace">
@@ -394,9 +316,14 @@ export function Dashboard() {
         </aside>
       </div>}
 
-      {selected && detailOpen && <div className={`detail-drawer-layer ${detailVisible ? "is-open" : ""} ${detailClosing ? "is-closing" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeFullDetail(); }}>
-        <aside className="detail-drawer-panel" role="dialog" aria-modal="true" aria-label={`Ficha completa de la orden ${selected.order_number}`}>
-          <OrderDetailPage orderNumber={String(selected.order_number)} embedded onClose={closeFullDetail} />
+      {detailTransition.mounted && drawerOrder && <div
+        className="drawer-root"
+        data-open={detailTransition.visible}
+        onMouseDown={(event) => { if (event.target === event.currentTarget) closeFullDetail(); }}
+      >
+        <div className="drawer-overlay" onClick={closeFullDetail} />
+        <aside className="drawer-panel detail-drawer-panel" role="dialog" aria-modal="true" aria-label={`Ficha completa de la orden ${drawerOrder.order_number}`} onTransitionEnd={detailTransition.onTransitionEnd}>
+          <OrderDetailPage orderNumber={String(drawerOrder.order_number)} embedded onClose={closeFullDetail} />
         </aside>
       </div>}
     </div>
