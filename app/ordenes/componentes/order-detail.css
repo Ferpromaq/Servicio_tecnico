@@ -60,3 +60,21 @@
 .detail-admin-tools-content .card{padding:13px}
 @media(max-width:1000px){.summary-overview{grid-template-columns:1fr 1fr}.summary-documents-card{grid-column:1/-1}.summary-image-link{height:150px}}
 @media(max-width:700px){.summary-overview{grid-template-columns:1fr}.summary-documents-card{grid-column:auto}.summary-metrics{grid-template-columns:1fr 1fr}.summary-card-heading{align-items:flex-start;flex-direction:column}.detail-admin-tools>summary{align-items:flex-start;flex-wrap:wrap}.detail-admin-tools>summary span{margin-left:0;width:100%}}
+
+
+/* Informes de diagnóstico y captura de varios repuestos */
+.diagnosis-report { padding: 14px 0; border-bottom: 1px solid var(--border, #e5e7eb); }
+.diagnosis-report:last-child { border-bottom: 0; }
+.diagnosis-report strong { display: block; font-size: 0.82rem; }
+.diagnosis-report p { margin: 8px 0 0; white-space: pre-wrap; line-height: 1.55; }
+.parts-draft-list { display: grid; gap: 12px; margin: 16px 0; }
+.parts-draft-row { border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 14px; }
+.parts-draft-heading, .parts-draft-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.parts-draft-heading { margin-bottom: 12px; }
+.parts-draft-subtotal { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; font-size: 0.88rem; }
+.parts-draft-footer { margin: 14px 0; flex-wrap: wrap; }
+.parts-draft-footer > strong { font-size: 0.95rem; }
+@media (max-width: 640px) {
+  .parts-draft-row { padding: 11px; }
+  .parts-draft-footer { align-items: stretch; flex-direction: column; }
+}
