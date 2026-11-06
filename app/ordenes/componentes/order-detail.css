@@ -19,3 +19,44 @@
 .small-action{padding:6px 8px}
 .payment-form{padding:13px;margin:12px 0 16px}
 .status-control{padding:12px;margin-bottom:12px;gap:8px}
+
+/* Ficha completa: resumen compacto y documentos visibles sin abrir otras pestañas. */
+.summary-view{display:flex;flex-direction:column;gap:12px}
+.summary-metrics{margin:0;gap:9px}
+.summary-metrics .detailbox{padding:10px 12px;min-height:64px}
+.summary-metrics .detailbox small{font-size:10px}
+.summary-metrics .detailbox strong{font-size:15px}
+.summary-overview{display:grid;grid-template-columns:1fr 1fr 1.12fr;gap:10px;align-items:stretch}
+.summary-overview>.card{min-width:0;padding:14px}
+.summary-card-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:11px}
+.summary-card-heading .sectiontitle{margin:0}
+.summary-order-date,.summary-intake-type{font-size:10px;color:#788594;white-space:nowrap}
+.summary-client-name,.summary-equipment-name{font-size:13px;font-weight:750;color:#253244}
+.summary-compact-line{font-size:11px;margin-top:5px}
+.summary-divider{height:1px;background:#edf0f3;margin:11px 0}
+.summary-problem-text{font-size:12px;line-height:1.5;color:#526172;margin:9px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.summary-money-row{display:flex;justify-content:space-between;gap:8px;padding:5px 0;font-size:11px;color:#687789}
+.summary-money-row strong{color:#263548}
+.summary-document-row{padding:9px 10px;border:1px solid #edf0f3;background:#fafbfc;border-radius:9px}
+.summary-document-row small{display:block;color:#718096;font-size:10px;margin-bottom:5px}
+.summary-document-row strong{font-size:12px;color:#29384a}
+.summary-document-row strong span{font-weight:600;color:#526273;margin-left:5px}
+.summary-document-preview{margin-top:10px}
+.summary-document-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:11px;font-weight:700;color:#526273}
+.summary-document-label a,.summary-warranty-link a{color:#d9530c;font-size:10px;text-decoration:none;font-weight:700}
+.summary-image-link{display:flex;align-items:center;justify-content:center;height:118px;border:1px solid #e9edf1;border-radius:8px;background:#f8fafb;overflow:hidden}
+.summary-invoice-image{display:block;width:100%;height:100%;object-fit:contain}
+.summary-no-image{height:72px;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;border:1px dashed #d9e0e7;border-radius:8px;color:#8995a3;font-size:10px}
+.summary-warranty-link{margin-top:8px}
+.detail-admin-tools{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.detail-admin-tools>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;list-style:none;padding:12px 15px;font-size:12px;font-weight:750;color:#344256}
+.detail-admin-tools>summary::-webkit-details-marker{display:none}
+.detail-admin-tools>summary:after{content:"＋";color:#d9530c;font-size:17px}
+.detail-admin-tools[open]>summary:after{content:"−"}
+.detail-admin-tools>summary span{margin-left:auto;color:#8793a1;font-size:10px;font-weight:500}
+.detail-admin-tools-content{padding:0 12px 12px}
+.detail-admin-tools-content .status-control{margin:0 0 10px;padding:12px}
+.detail-admin-tools-content .detail-columns{margin-top:0}
+.detail-admin-tools-content .card{padding:13px}
+@media(max-width:1000px){.summary-overview{grid-template-columns:1fr 1fr}.summary-documents-card{grid-column:1/-1}.summary-image-link{height:150px}}
+@media(max-width:700px){.summary-overview{grid-template-columns:1fr}.summary-documents-card{grid-column:auto}.summary-metrics{grid-template-columns:1fr 1fr}.summary-card-heading{align-items:flex-start;flex-direction:column}.detail-admin-tools>summary{align-items:flex-start;flex-wrap:wrap}.detail-admin-tools>summary span{margin-left:0;width:100%}}
