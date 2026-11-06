@@ -54,10 +54,38 @@ export default function OrderDetailPage() {
     if (!supabase) { setError("Configura Supabase para consultar esta orden."); return; }
     setBusy(true); setError("");
     try {
-      const { data: row, error: orderError } = await supabase.from("service_orders")
-        .select("id,order_number,status,priority,problem_description,diagnosis,repair_notes,diagnosis_amount,installation_amount,warranty_entry,warranty_covers_damage,receipt_type,receipt_number,receipt_date,commissioning,intake_type,warranty_photo_path,purchase_invoice_photo_path,diagnosis_receipt_type,diagnosis_receipt_number,forced_delivery,forced_delivery_reason,forced_delivery_at,forced_by:profiles!service_orders_forced_delivery_by_fkey(full_name),received_at,clients(name,rut),machines(equipment_type,brand,model,serial_number),assigned:profiles!service_orders_assigned_technician_fkey(full_name)")
-        .eq("id", params.id).single();
+      // Cargar primero la fila base sin joins anidados. Así la ficha no depende
+      // de que PostgREST resuelva todas las relaciones en una sola consulta.
+      const { data: baseRow, error: orderError } = await supabase.from("service_orders")
+        .select("*")
+        .eq("id", params.id)
+        .maybeSingle();
       if (orderError) throw orderError;
+      if (!baseRow) throw new Error("La orden no existe o no tienes permiso para consultarla.");
+
+      const [clientResult, machineResult, assignedResult, forcedByResult] = await Promise.all([
+        baseRow.client_id
+          ? supabase.from("clients").select("name,rut").eq("id", baseRow.client_id).maybeSingle()
+          : Promise.resolve({ data: null, error: null }),
+        baseRow.machine_id
+          ? supabase.from("machines").select("equipment_type,brand,model,serial_number").eq("id", baseRow.machine_id).maybeSingle()
+          : Promise.resolve({ data: null, error: null }),
+        baseRow.assigned_technician
+          ? supabase.from("profiles").select("full_name").eq("id", baseRow.assigned_technician).maybeSingle()
+          : Promise.resolve({ data: null, error: null }),
+        baseRow.forced_delivery_by
+          ? supabase.from("profiles").select("full_name").eq("id", baseRow.forced_delivery_by).maybeSingle()
+          : Promise.resolve({ data: null, error: null }),
+      ]);
+      const relationError = clientResult.error ?? machineResult.error ?? assignedResult.error ?? forcedByResult.error;
+      if (relationError) throw relationError;
+      const row = {
+        ...baseRow,
+        clients: clientResult.data,
+        machines: machineResult.data,
+        assigned: assignedResult.data,
+        forced_by: forcedByResult.data,
+      };
       setOrder(row as unknown as ServiceOrder);
       setNextStatus(row.status);
       setDiagnosis(row.diagnosis ?? "");
@@ -76,9 +104,9 @@ export default function OrderDetailPage() {
       if (row.purchase_invoice_photo_path) { const { data: file } = await supabase.storage.from("order-documents").createSignedUrl(row.purchase_invoice_photo_path, 3600); if (file?.signedUrl) setPurchaseInvoicePhotoUrl(file.signedUrl); }
       const workflow = await getOrderWorkflow(params.id);
       setParts(workflow.parts); setPayments(workflow.payments); setEvents(workflow.events);
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user) {
-        const { data: profile } = await supabase.from("profiles").select("role").eq("id", userData.user.id).maybeSingle();
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session?.user) {
+        const { data: profile } = await supabase.from("profiles").select("role").eq("id", sessionData.session.user.id).maybeSingle();
         setRole(profile?.role as Role ?? null);
       }
     } catch (err) { setError(err instanceof Error ? err.message : "No se pudo cargar la orden."); }

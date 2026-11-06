@@ -7,6 +7,7 @@ import { AlertCircle, ClipboardList, RefreshCw, Search, Wrench, Users, Cog, Pack
 import { supabase } from "@/lib/supabase";
 import NewOrderModal from "@/app/ordenes/componentes/new-order-modal";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
+import { getOrderWorkflow, type OrderEvent } from "@/app/ordenes/servicios/order-workflow";
 
 const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: boolean }[] = [
   { label: "Panel general", icon: ClipboardList, href: "/" },
@@ -28,6 +29,9 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<ServiceOrder | null>(null);
+  const [drawerEvents, setDrawerEvents] = useState<OrderEvent[]>([]);
+  const [drawerLoading, setDrawerLoading] = useState(false);
+  const [drawerError, setDrawerError] = useState("");
   const [showNewOrder, setShowNewOrder] = useState(false);
   const [userLabel, setUserLabel] = useState("Equipo de servicio");
   const [role, setRole] = useState("");
@@ -58,6 +62,44 @@ export function Dashboard() {
       setRoleReady(true);
     });
   }, [loadOrders]);
+
+  useEffect(() => {
+    if (!selected) {
+      setDrawerEvents([]);
+      setDrawerError("");
+      return;
+    }
+
+    let cancelled = false;
+    setDrawerLoading(true);
+    setDrawerError("");
+    Promise.all([
+      getOrderWorkflow(selected.id),
+      supabase
+        ? supabase.from("service_orders").select("status").eq("id", selected.id).maybeSingle()
+        : Promise.resolve({ data: null, error: new Error("Supabase no está disponible.") }),
+    ]).then(([workflow, currentOrder]) => {
+      if (cancelled) return;
+      if (currentOrder.error) throw currentOrder.error;
+      const currentStatus = currentOrder.data?.status;
+      if (currentStatus) {
+        setSelected((current) => current?.id === selected.id
+          ? { ...current, status: currentStatus }
+          : current);
+      }
+      setDrawerEvents(workflow.events.slice(0, 5));
+    }).catch((err) => {
+      if (!cancelled) setDrawerError(err instanceof Error ? err.message : "No se pudo cargar la trazabilidad.");
+    }).finally(() => {
+      if (!cancelled) setDrawerLoading(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [selected?.id]);
+
+  const formatEventDate = (value: string) => new Intl.DateTimeFormat("es-CL", {
+    day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+  }).format(new Date(value));
 
   const filtered = useMemo(() => orders.filter((order) => {
     const matchesStatus = active === "todas" || order.status === active;
@@ -143,6 +185,24 @@ export function Dashboard() {
           <h3 className="sectiontitle">Problema informado</h3><p>{selected.problem_description}</p>
           <p className="muted">Ingreso: {formatOrderDate(selected.received_at)}</p>
           <p className="muted">Técnico: {selected.assigned?.full_name ?? "Sin asignar"}</p>
+
+          <div className="drawer-trace">
+            <div className="drawer-trace-head">
+              <h3 className="sectiontitle">Trazabilidad</h3>
+              <span className="drawer-current-status">{orderStatusLabel(selected.status)}</span>
+            </div>
+            {drawerLoading ? <p className="muted drawer-trace-message">Cargando movimientos…</p>
+              : drawerError ? <p className="muted drawer-trace-message">{drawerError}</p>
+              : drawerEvents.length === 0 ? <p className="muted drawer-trace-message">Solo se registra el ingreso inicial. Aún no hay movimientos posteriores.</p>
+              : <div className="timeline drawer-timeline">
+                {drawerEvents.map((event) => (
+                  <div className="event" key={event.id}>
+                    <strong>{event.description}</strong>
+                    <small>{formatEventDate(event.created_at)}{event.actor?.full_name ? ` · ${event.actor.full_name}` : ""}</small>
+                  </div>
+                ))}
+              </div>}
+          </div>
           <a className="primary full-detail-link" href={`/ordenes/${selected.id}`}>Abrir ficha completa de la orden</a>
         </aside>
       </div>}

@@ -32,6 +32,7 @@ export type OrderEvent = {
   metadata: Record<string, unknown>;
   created_at: string;
   actor: { full_name: string } | null;
+  actor_id?: string | null;
 };
 
 async function requireSupabase() {
@@ -44,15 +45,27 @@ export async function getOrderWorkflow(orderId: string) {
   const [parts, payments, events] = await Promise.all([
     client.from("parts_requests").select("id,order_id,description,quantity,unit_price,status,warranty_covered,client_contacted,from_stock,received_at,installed_at,created_at").eq("order_id", orderId).order("created_at", { ascending: false }),
     client.from("payments").select("id,payment_type,amount,method,reference,receipt_received,paid_at").eq("order_id", orderId).order("paid_at", { ascending: false }),
-    client.from("order_events").select("id,event_type,description,metadata,created_at,actor:profiles!order_events_actor_id_fkey(full_name)").eq("order_id", orderId).order("created_at", { ascending: false }),
+    client.from("order_events").select("id,event_type,description,metadata,created_at,actor_id").eq("order_id", orderId).order("created_at", { ascending: false }),
   ]);
   if (parts.error) throw parts.error;
   if (payments.error) throw payments.error;
   if (events.error) throw events.error;
+
+  const eventRows = events.data ?? [];
+  const actorIds = [...new Set(eventRows.map((event) => event.actor_id).filter((id): id is string => Boolean(id)))];
+  const actorsResult = actorIds.length
+    ? await client.from("profiles").select("id,full_name").in("id", actorIds)
+    : { data: [], error: null };
+  if (actorsResult.error) throw actorsResult.error;
+  const actorNames = new Map((actorsResult.data ?? []).map((actor) => [actor.id, actor.full_name]));
+
   return {
     parts: (parts.data ?? []) as PartRequest[],
     payments: (payments.data ?? []) as OrderPayment[],
-    events: (events.data ?? []) as unknown as OrderEvent[],
+    events: eventRows.map((event) => ({
+      ...event,
+      actor: event.actor_id ? { full_name: actorNames.get(event.actor_id) ?? "Usuario" } : null,
+    })) as unknown as OrderEvent[],
   };
 }
 

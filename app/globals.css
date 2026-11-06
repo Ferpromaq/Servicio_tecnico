@@ -136,3 +136,15 @@ html,body{height:100%;min-height:100%}
 
 @media(prefers-reduced-motion:reduce){.skeleton-bar{animation:none;background:#edf0f3}}
 
+
+
+/* Trazabilidad compacta del drawer de órdenes */
+.drawer-trace{margin-top:22px;padding-top:2px}
+.drawer-trace-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.drawer-trace-head .sectiontitle{margin:14px 0 10px}
+.drawer-current-status{font-size:10px;font-weight:750;color:#a84612;background:#fff0e8;border:1px solid #ffd8c4;border-radius:20px;padding:5px 9px;white-space:nowrap}
+.drawer-timeline{margin-top:10px;padding-left:17px}
+.drawer-timeline .event{padding-bottom:13px}
+.drawer-timeline .event strong{display:block;font-size:11px;line-height:1.45;color:#344252;font-weight:650}
+.drawer-timeline .event small{display:block;margin-top:3px;font-size:10px;color:#7a8795}
+.drawer-trace-message{font-size:11px;line-height:1.5}
