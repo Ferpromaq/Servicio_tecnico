@@ -70,7 +70,9 @@ export function Dashboard() {
     const orderNumber = Number(params.get("orden"));
     if (!Number.isSafeInteger(orderNumber) || orderNumber <= 0) {
       setSummaryClosing(true);
+      setSummaryVisible(false);
       setDetailClosing(true);
+      setDetailVisible(false);
       if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
       if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
       summaryCloseTimer.current = setTimeout(() => {
@@ -95,6 +97,7 @@ export function Dashboard() {
       setDetailOpen(true);
     } else if (detailOpen) {
       setDetailClosing(true);
+      setDetailVisible(false);
       if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
       detailCloseTimer.current = setTimeout(() => {
         setDetailOpen(false);
@@ -135,6 +138,7 @@ export function Dashboard() {
     url.searchParams.delete("ficha");
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
     setDetailClosing(true);
+    setDetailVisible(false);
     if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
     detailCloseTimer.current = setTimeout(() => {
       setDetailOpen(false);
@@ -148,7 +152,11 @@ export function Dashboard() {
     url.searchParams.delete("ficha");
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
     setSummaryClosing(true);
-    if (detailOpen) setDetailClosing(true);
+    setSummaryVisible(false);
+    if (detailOpen) {
+      setDetailClosing(true);
+      setDetailVisible(false);
+    }
     if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
     if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
     summaryCloseTimer.current = setTimeout(() => {
