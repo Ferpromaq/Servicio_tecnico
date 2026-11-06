@@ -39,3 +39,27 @@ export function orderStatusLabel(status: ServiceOrder["status"]) {
 export function formatOrderDate(value: string) {
   return new Intl.DateTimeFormat("es-CL", { dateStyle: "medium" }).format(new Date(value));
 }
+
+
+export function orderPriorityLabel(priority: ServiceOrder["priority"] | string | null | undefined) {
+  const value = String(priority ?? "normal").trim().toLocaleLowerCase("es-CL");
+  return value ? value.charAt(0).toLocaleUpperCase("es-CL") + value.slice(1) : "Normal";
+}
+
+export function orderPriorityClass(priority: ServiceOrder["priority"] | string | null | undefined) {
+  const value = String(priority ?? "normal").trim().toLocaleLowerCase("es-CL")
+    .replace(/[^a-z0-9_-]/g, "");
+  return `priority priority-${value || "normal"}`;
+}
+
+export function orderStatusClass(status: ServiceOrder["status"]) {
+  const variants: Record<ServiceOrder["status"], string> = {
+    recepcion: "neutral",
+    diagnostico: "blue",
+    en_reparacion: "orange",
+    listas: "green",
+    entregadas: "green",
+    rechazadas: "red",
+  };
+  return `pill ${variants[status] ?? "neutral"}`;
+}

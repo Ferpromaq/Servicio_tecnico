@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { AlertCircle, ClipboardList, RefreshCw, Search, Wrench, Users, Cog, Package, CreditCard, BarChart3 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import NewOrderModal from "@/app/ordenes/componentes/new-order-modal";
-import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
+import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderPriorityClass, orderPriorityLabel, orderStatusClass, orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
 import { getOrderWorkflow, type OrderEvent } from "@/app/ordenes/servicios/order-workflow";
 
 const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: boolean }[] = [
@@ -173,8 +173,8 @@ export function Dashboard() {
               <td className="orderid">#{order.order_number}</td>
               <td><div className="client">{order.clients?.name ?? "Cliente sin nombre"}</div><div className="subline">{order.clients?.rut ?? "—"}</div></td>
               <td><div>{[order.machines?.brand, order.machines?.model].filter(Boolean).join(" ") || order.machines?.equipment_type || "Equipo no especificado"}</div><div className="subline">{order.machines?.serial_number ?? ""}</div></td>
-              <td><span className={`pill ${order.status === "listas" ? "green" : order.status === "diagnostico" ? "blue" : order.status === "rechazadas" ? "red" : "orange"}`}>{orderStatusLabel(order.status)}</span></td>
-              <td><span className={`priority priority-${String(order.priority ?? "normal").toLowerCase().replace(/[^a-záéíóúñ_-]/g,"")}`}>{order.priority || "Normal"}</span></td>
+              <td><span className={orderStatusClass(order.status)}>{orderStatusLabel(order.status)}</span></td>
+              <td><span className={orderPriorityClass(order.priority)}>{orderPriorityLabel(order.priority)}</span></td>
               <td>{formatOrderDate(order.received_at)}</td>
             </tr>)}</tbody>
           </table>
@@ -190,7 +190,7 @@ export function Dashboard() {
 
       {selected && <div className="drawerback" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
         <aside className="drawer compact-drawer"><div className="drawerhead"><div><div className="eyebrow">ORDEN DE SERVICIO</div><h2>#{selected.order_number}</h2></div><button className="close" onClick={() => setSelected(null)}>Cerrar ×</button></div>
-          <div className="detailgrid"><div className="detailbox"><small>Estado</small><strong>{orderStatusLabel(selected.status)}</strong></div><div className="detailbox"><small>Prioridad</small><strong>{selected.priority}</strong></div></div>
+          <div className="detailgrid"><div className="detailbox"><small>Estado</small><span className={orderStatusClass(selected.status)}>{orderStatusLabel(selected.status)}</span></div><div className="detailbox"><small>Prioridad</small><span className={orderPriorityClass(selected.priority)}>{orderPriorityLabel(selected.priority)}</span></div></div>
           <h3 className="sectiontitle">Cliente</h3><p>{selected.clients?.name ?? "Sin información"}</p><p className="muted">{selected.clients?.rut ?? ""}</p>
           <h3 className="sectiontitle">Equipo</h3><p>{[selected.machines?.brand, selected.machines?.model, selected.machines?.equipment_type].filter(Boolean).join(" · ") || "Sin información"}</p><p className="muted">Serie: {selected.machines?.serial_number ?? "No registrada"}</p>
           <h3 className="sectiontitle">Problema informado</h3><p>{selected.problem_description}</p>
@@ -200,7 +200,7 @@ export function Dashboard() {
           <div className="drawer-trace">
             <div className="drawer-trace-head">
               <h3 className="sectiontitle">Trazabilidad</h3>
-              <span className="drawer-current-status">{orderStatusLabel(selected.status)}</span>
+              <span className={orderStatusClass(selected.status)}>{orderStatusLabel(selected.status)}</span>
             </div>
             {drawerLoading ? <p className="muted drawer-trace-message">Cargando movimientos…</p>
               : drawerError ? <p className="muted drawer-trace-message">{drawerError}</p>
