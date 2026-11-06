@@ -203,7 +203,7 @@ export function Dashboard() {
                 ))}
               </div>}
           </div>
-          <a className="primary full-detail-link" href={`/ordenes/${selected.id}`}>Abrir ficha completa de la orden</a>
+          <a className="primary full-detail-link" href={`/ordenes/${selected.order_number}`}>Abrir ficha completa de la orden</a>
         </aside>
       </div>}
     </div>

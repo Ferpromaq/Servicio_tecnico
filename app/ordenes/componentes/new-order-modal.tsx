@@ -109,7 +109,11 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
       if (documentUploadWarning) {
         throw new Error("La orden y sus datos de ingreso se guardaron, pero falta la fotografía. Error de almacenamiento: " + documentUploadWarning);
       }
-      if (onCreated) onCreated(); else router.replace("/ordenes/" + createdOrderId);
+      if (onCreated) onCreated(); else {
+        const { data: createdOrder, error: lookupError } = await supabase.from("service_orders").select("order_number").eq("id", createdOrderId).single();
+        if (lookupError) throw lookupError;
+        router.replace("/ordenes/" + createdOrder.order_number);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear la orden.");
       if (createdOrderId) setError((current) => current + " Número interno: " + createdOrderId);

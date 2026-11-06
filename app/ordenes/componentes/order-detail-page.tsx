@@ -52,13 +52,18 @@ export default function OrderDetailPage() {
 
   const load = useCallback(async () => {
     if (!supabase) { setError("Configura Supabase para consultar esta orden."); return; }
+    const orderNumber = Number(params.id);
+    if (!Number.isSafeInteger(orderNumber) || orderNumber <= 0) {
+      setError("El número de orden de la dirección no es válido.");
+      return;
+    }
     setBusy(true); setError("");
     try {
       // Cargar primero la fila base sin joins anidados. Así la ficha no depende
       // de que PostgREST resuelva todas las relaciones en una sola consulta.
       const { data: baseRow, error: orderError } = await supabase.from("service_orders")
         .select("*")
-        .eq("id", params.id)
+        .eq("order_number", Number(params.id))
         .maybeSingle();
       if (orderError) throw orderError;
       if (!baseRow) throw new Error("La orden no existe o no tienes permiso para consultarla.");
@@ -102,7 +107,7 @@ export default function OrderDetailPage() {
       setPurchaseInvoicePhotoUrl("");
       if (row.warranty_photo_path) { const { data: file } = await supabase.storage.from("order-documents").createSignedUrl(row.warranty_photo_path, 3600); if (file?.signedUrl) setWarrantyPhotoUrl(file.signedUrl); }
       if (row.purchase_invoice_photo_path) { const { data: file } = await supabase.storage.from("order-documents").createSignedUrl(row.purchase_invoice_photo_path, 3600); if (file?.signedUrl) setPurchaseInvoicePhotoUrl(file.signedUrl); }
-      const workflow = await getOrderWorkflow(params.id);
+      const workflow = await getOrderWorkflow(baseRow.id);
       setParts(workflow.parts); setPayments(workflow.payments); setEvents(workflow.events);
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData.session?.user) {
