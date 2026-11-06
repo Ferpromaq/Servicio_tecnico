@@ -47,10 +47,25 @@ export function Dashboard() {
     const params = new URLSearchParams(window.location.search);
     const orderNumber = Number(params.get("orden"));
     if (!Number.isSafeInteger(orderNumber) || orderNumber <= 0) {
-      setSelected(null);
-      setDetailOpen(false);
+      setSummaryClosing(true);
+      setDetailClosing(true);
+      if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
+      if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+      summaryCloseTimer.current = setTimeout(() => {
+        setSelected(null);
+        setSummaryClosing(false);
+      }, 380);
+      detailCloseTimer.current = setTimeout(() => {
+        setDetailOpen(false);
+        setDetailClosing(false);
+      }, 420);
       return;
     }
+
+    if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
+    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+    setSummaryClosing(false);
+    setDetailClosing(false);
     const match = orders.find((order) => order.order_number === orderNumber) ?? null;
     setSelected(match);
     setDetailOpen(Boolean(match) && params.get("ficha") === "1");
@@ -61,6 +76,10 @@ export function Dashboard() {
     url.searchParams.set("orden", String(order.order_number));
     url.searchParams.delete("ficha");
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
+    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+    setSummaryClosing(false);
+    setDetailClosing(false);
     setSelected(order);
     setDetailOpen(false);
   };
@@ -71,14 +90,21 @@ export function Dashboard() {
     url.searchParams.set("orden", String(selected.order_number));
     url.searchParams.set("ficha", "1");
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
-    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);\n    setDetailClosing(false);\n    setDetailOpen(true);
+    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+    setDetailClosing(false);
+    setDetailOpen(true);
   };
 
   const closeFullDetail = () => {
     const url = new URL(window.location.href);
     url.searchParams.delete("ficha");
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
-    setDetailOpen(false);
+    setDetailClosing(true);
+    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+    detailCloseTimer.current = setTimeout(() => {
+      setDetailOpen(false);
+      setDetailClosing(false);
+    }, 420);
   };
 
   const closeOrderDrawers = () => {
@@ -86,8 +112,22 @@ export function Dashboard() {
     url.searchParams.delete("orden");
     url.searchParams.delete("ficha");
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
-    setSelected(null);
-    setDetailOpen(false);
+    setSummaryClosing(true);
+    if (detailOpen) setDetailClosing(true);
+    if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
+    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+    summaryCloseTimer.current = setTimeout(() => {
+      setSelected(null);
+      setSummaryClosing(false);
+    }, 380);
+    if (detailOpen) {
+      detailCloseTimer.current = setTimeout(() => {
+        setDetailOpen(false);
+        setDetailClosing(false);
+      }, 420);
+    } else {
+      setDetailOpen(false);
+    }
   };
 
   const loadOrders = useCallback(async () => {
