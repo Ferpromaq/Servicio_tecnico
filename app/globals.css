@@ -136,3 +136,18 @@ html,body{height:100%;min-height:100%}
 
 @media(prefers-reduced-motion:reduce){.skeleton-bar{animation:none;background:#edf0f3}}
 
+
+
+/* Drawer de órdenes: trazabilidad compacta y legible. */
+.drawer-trace{margin-top:20px;padding-top:14px;border-top:1px solid var(--line)}
+.drawer-trace-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.drawer-trace-head .sectiontitle{margin:0}
+.drawer-trace-head>span{font-size:10px;color:#8793a0}
+.drawer-trace-list{display:flex;flex-direction:column;gap:0;list-style:none;margin:0;padding:0}
+.drawer-trace-list li{position:relative;display:grid;grid-template-columns:10px minmax(0,1fr);gap:9px;padding:0 0 13px}
+.drawer-trace-list li:not(:last-child)::after{content:"";position:absolute;left:4px;top:9px;bottom:0;width:1px;background:#e3e8ed}
+.drawer-trace-dot{position:relative;z-index:1;width:9px;height:9px;margin-top:3px;border:2px solid #ff6210;border-radius:50%;background:#fff}
+.drawer-trace-list li>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.drawer-trace-list strong{font-size:11px;line-height:1.4;color:#344454;font-weight:650}
+.drawer-trace-list small{font-size:10px;color:#8793a0}
+.drawer-trace-error{font-size:10px;line-height:1.4}
