@@ -1060,7 +1060,7 @@ html,body{height:100%;min-height:100%}
 .new-order-head-intake .intake-option input{flex:0 0 auto}
 .new-order-head-intake .intake-option span{min-width:0}
 .new-order-head-intake .intake-option strong{font-size:10px;line-height:1.2}
-.new-order-head-intake .intake-option small{font-size:8px;line-height:1.2}
+.new-order-head-intake .intake-option small{font-size:9px;line-height:1.2}
 .new-order-modal-head .new-order-close{position:absolute;top:14px;right:16px}
 .new-order-modal .new-order-modal-body{
   grid-template-areas:"intake intake" "client equipment";
