@@ -174,7 +174,7 @@ export function Dashboard() {
               <td><div className="client">{order.clients?.name ?? "Cliente sin nombre"}</div><div className="subline">{order.clients?.rut ?? "—"}</div></td>
               <td><div>{[order.machines?.brand, order.machines?.model].filter(Boolean).join(" ") || order.machines?.equipment_type || "Equipo no especificado"}</div><div className="subline">{order.machines?.serial_number ?? ""}</div></td>
               <td><span className={`pill ${order.status === "listas" ? "green" : order.status === "diagnostico" ? "blue" : order.status === "rechazadas" ? "red" : "orange"}`}>{orderStatusLabel(order.status)}</span></td>
-              <td><span className={`priority priority-${order.priority}`}>{order.priority}</span></td>
+              <td><span className={`priority priority-${String(order.priority ?? "normal").toLowerCase().replace(/[^a-záéíóúñ_-]/g,"")}`}>{order.priority || "Normal"}</span></td>
               <td>{formatOrderDate(order.received_at)}</td>
             </tr>)}</tbody>
           </table>
