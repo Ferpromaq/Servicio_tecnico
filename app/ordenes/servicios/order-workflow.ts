@@ -75,12 +75,11 @@ export async function getOrderWorkflow(orderId: string) {
   };
 }
 
-export async function saveDiagnosis(orderId: string, diagnosis: string, repairNotes?: string) {
+export async function saveDiagnosis(orderId: string, diagnosis: string) {
   const client = await requireSupabase();
   const { error } = await client.rpc("save_order_diagnosis", {
     p_order_id: orderId,
     p_diagnosis: diagnosis,
-    p_repair_notes: repairNotes ?? null,
   });
   if (error) throw error;
 }
