@@ -426,3 +426,28 @@ html,body{height:100%;min-height:100%}
 @media(prefers-reduced-motion:reduce){
   .drawerback,.drawerback>.drawer,.detail-drawer-layer,.detail-drawer-panel{animation:none;will-change:auto}
 }
+
+
+/* Cierre de drawers: anima la salida antes de desmontar el contenido. */
+.drawerback.is-closing{
+  animation:order-drawer-overlay-out .34s ease-in both;
+  pointer-events:none;
+}
+.drawerback.is-closing>.drawer{
+  animation:order-summary-drawer-out .36s cubic-bezier(.4,0,.8,.35) both;
+}
+.detail-drawer-layer.is-closing{
+  animation:order-detail-overlay-out .38s ease-in both;
+  pointer-events:none;
+}
+.detail-drawer-layer.is-closing>.detail-drawer-panel{
+  animation:order-detail-drawer-out .4s cubic-bezier(.4,0,.8,.35) both;
+}
+@keyframes order-drawer-overlay-out{from{opacity:1}to{opacity:0}}
+@keyframes order-summary-drawer-out{from{transform:translate3d(0,0,0);opacity:1}to{transform:translate3d(34px,0,0);opacity:.65}}
+@keyframes order-detail-overlay-out{from{opacity:1}to{opacity:0}}
+@keyframes order-detail-drawer-out{from{transform:translate3d(0,0,0);opacity:1}to{transform:translate3d(46px,0,0);opacity:.65}}
+@media(prefers-reduced-motion:reduce){
+  .drawerback.is-closing,.drawerback.is-closing>.drawer,
+  .detail-drawer-layer.is-closing,.detail-drawer-layer.is-closing>.detail-drawer-panel{animation:none}
+}

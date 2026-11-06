@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import OrderDetailPage from "@/app/ordenes/componentes/order-detail-page";
@@ -31,6 +31,10 @@ export function Dashboard() {
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<ServiceOrder | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [summaryClosing, setSummaryClosing] = useState(false);
+  const [detailClosing, setDetailClosing] = useState(false);
+  const summaryCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const detailCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [drawerEvents, setDrawerEvents] = useState<OrderEvent[]>([]);
   const [drawerLoading, setDrawerLoading] = useState(false);
   const [drawerError, setDrawerError] = useState("");
@@ -43,20 +47,52 @@ export function Dashboard() {
     const params = new URLSearchParams(window.location.search);
     const orderNumber = Number(params.get("orden"));
     if (!Number.isSafeInteger(orderNumber) || orderNumber <= 0) {
-      setSelected(null);
-      setDetailOpen(false);
+      setSummaryClosing(true);
+      setDetailClosing(true);
+      if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
+      if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+      summaryCloseTimer.current = setTimeout(() => {
+        setSelected(null);
+        setSummaryClosing(false);
+      }, 380);
+      detailCloseTimer.current = setTimeout(() => {
+        setDetailOpen(false);
+        setDetailClosing(false);
+      }, 420);
       return;
     }
+
+    if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
+    setSummaryClosing(false);
     const match = orders.find((order) => order.order_number === orderNumber) ?? null;
     setSelected(match);
-    setDetailOpen(Boolean(match) && params.get("ficha") === "1");
-  }, [orders]);
+    const shouldShowDetail = Boolean(match) && params.get("ficha") === "1";
+    if (shouldShowDetail) {
+      if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+      setDetailClosing(false);
+      setDetailOpen(true);
+    } else if (detailOpen) {
+      setDetailClosing(true);
+      if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+      detailCloseTimer.current = setTimeout(() => {
+        setDetailOpen(false);
+        setDetailClosing(false);
+      }, 420);
+    } else {
+      setDetailClosing(false);
+      setDetailOpen(false);
+    }
+  }, [orders, detailOpen]);
 
   const openOrderSummary = (order: ServiceOrder) => {
     const url = new URL(window.location.href);
     url.searchParams.set("orden", String(order.order_number));
     url.searchParams.delete("ficha");
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
+    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+    setSummaryClosing(false);
+    setDetailClosing(false);
     setSelected(order);
     setDetailOpen(false);
   };
@@ -67,6 +103,8 @@ export function Dashboard() {
     url.searchParams.set("orden", String(selected.order_number));
     url.searchParams.set("ficha", "1");
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+    setDetailClosing(false);
     setDetailOpen(true);
   };
 
@@ -74,7 +112,12 @@ export function Dashboard() {
     const url = new URL(window.location.href);
     url.searchParams.delete("ficha");
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
-    setDetailOpen(false);
+    setDetailClosing(true);
+    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+    detailCloseTimer.current = setTimeout(() => {
+      setDetailOpen(false);
+      setDetailClosing(false);
+    }, 420);
   };
 
   const closeOrderDrawers = () => {
@@ -82,8 +125,22 @@ export function Dashboard() {
     url.searchParams.delete("orden");
     url.searchParams.delete("ficha");
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
-    setSelected(null);
-    setDetailOpen(false);
+    setSummaryClosing(true);
+    if (detailOpen) setDetailClosing(true);
+    if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
+    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+    summaryCloseTimer.current = setTimeout(() => {
+      setSelected(null);
+      setSummaryClosing(false);
+    }, 380);
+    if (detailOpen) {
+      detailCloseTimer.current = setTimeout(() => {
+        setDetailOpen(false);
+        setDetailClosing(false);
+      }, 420);
+    } else {
+      setDetailOpen(false);
+    }
   };
 
   const loadOrders = useCallback(async () => {
@@ -244,7 +301,7 @@ export function Dashboard() {
 
       {showNewOrder && <NewOrderModal onClose={() => setShowNewOrder(false)} onCreated={() => { setShowNewOrder(false); void loadOrders(); }} />}
 
-      {selected && <div className="drawerback" onMouseDown={(event) => { if (event.target === event.currentTarget) closeOrderDrawers(); }}>
+      {selected && <div className={`drawerback ${summaryClosing ? "is-closing" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeOrderDrawers(); }}>
         <aside className="drawer compact-drawer">
           <div className="drawerhead drawer-order-head">
             <div><div className="drawer-kicker">FERPROMAQ <span>·</span> ORDEN DE SERVICIO</div><h2>#{selected.order_number}</h2></div>
@@ -307,7 +364,7 @@ export function Dashboard() {
         </aside>
       </div>}
 
-      {selected && detailOpen && <div className="detail-drawer-layer" onMouseDown={(event) => { if (event.target === event.currentTarget) closeFullDetail(); }}>
+      {selected && detailOpen && <div className={`detail-drawer-layer ${detailClosing ? "is-closing" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeFullDetail(); }}>
         <aside className="detail-drawer-panel" role="dialog" aria-modal="true" aria-label={`Ficha completa de la orden ${selected.order_number}`}>
           <OrderDetailPage orderNumber={String(selected.order_number)} embedded onClose={closeFullDetail} />
         </aside>
