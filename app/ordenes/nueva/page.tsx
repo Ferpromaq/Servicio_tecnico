@@ -111,7 +111,7 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
 
   if (role === "tecnico") return null;
   const needsInvoice = intakeType === "warranty" || intakeType === "commissioning";
-  const photoLabel = intakeType === "warranty" ? "Foto del documento de garantía" : "Foto de la factura de compra";
+  const photoLabel = "Foto de la factura de compra";
   const validDocument = Boolean(documentFile && ["image/jpeg","image/png","image/webp"].includes(documentFile.type) && documentFile.size <= 8 * 1024 * 1024);
 
   return <main className="new-order-overlay">
