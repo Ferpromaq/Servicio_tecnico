@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ModuleShell } from "@/components/module-shell";
+import { ModuleShell } from "@/components/layout/module-shell";
 import { supabase } from "@/lib/supabase";
 
 type Profile = {
