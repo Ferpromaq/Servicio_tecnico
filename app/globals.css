@@ -460,3 +460,61 @@ html,body{height:100%;min-height:100%}
     will-change:auto;
   }
 }
+
+
+/* Entrada y salida por keyframes: se ejecutan al montar el drawer, sin depender
+   del primer cambio de estado de React ni del orden de pintado del navegador. */
+@keyframes order-drawer-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes order-drawer-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes order-drawer-panel-in {
+  from { transform: translate3d(100%,0,0); }
+  to { transform: translate3d(0,0,0); }
+}
+@keyframes order-drawer-panel-out {
+  from { transform: translate3d(0,0,0); }
+  to { transform: translate3d(100%,0,0); }
+}
+
+.drawerback {
+  opacity: 1 !important;
+  animation: order-drawer-overlay-in .52s ease both !important;
+}
+.drawerback > .drawer {
+  transform: translate3d(0,0,0) !important;
+  animation: order-drawer-panel-in .52s cubic-bezier(.22,.75,.25,1) both !important;
+}
+.drawerback.is-closing {
+  animation: order-drawer-overlay-out .52s ease both !important;
+  pointer-events: none;
+}
+.drawerback.is-closing > .drawer {
+  animation: order-drawer-panel-out .52s cubic-bezier(.55,0,.8,.35) both !important;
+}
+
+.detail-drawer-layer {
+  opacity: 1 !important;
+  animation: order-drawer-overlay-in .52s ease both !important;
+}
+.detail-drawer-panel {
+  transform: translate3d(0,0,0) !important;
+  animation: order-drawer-panel-in .52s cubic-bezier(.22,.75,.25,1) both !important;
+}
+.detail-drawer-layer.is-closing {
+  animation: order-drawer-overlay-out .52s ease both !important;
+  pointer-events: none;
+}
+.detail-drawer-layer.is-closing > .detail-drawer-panel {
+  animation: order-drawer-panel-out .52s cubic-bezier(.55,0,.8,.35) both !important;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .drawerback,.drawerback > .drawer,.detail-drawer-layer,.detail-drawer-panel{
+    animation-duration:.01ms !important;
+  }
+}
