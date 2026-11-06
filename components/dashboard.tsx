@@ -63,13 +63,26 @@ export function Dashboard() {
     }
 
     if (summaryCloseTimer.current) clearTimeout(summaryCloseTimer.current);
-    if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
     setSummaryClosing(false);
-    setDetailClosing(false);
     const match = orders.find((order) => order.order_number === orderNumber) ?? null;
     setSelected(match);
-    setDetailOpen(Boolean(match) && params.get("ficha") === "1");
-  }, [orders]);
+    const shouldShowDetail = Boolean(match) && params.get("ficha") === "1";
+    if (shouldShowDetail) {
+      if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+      setDetailClosing(false);
+      setDetailOpen(true);
+    } else if (detailOpen) {
+      setDetailClosing(true);
+      if (detailCloseTimer.current) clearTimeout(detailCloseTimer.current);
+      detailCloseTimer.current = setTimeout(() => {
+        setDetailOpen(false);
+        setDetailClosing(false);
+      }, 420);
+    } else {
+      setDetailClosing(false);
+      setDetailOpen(false);
+    }
+  }, [orders, detailOpen]);
 
   const openOrderSummary = (order: ServiceOrder) => {
     const url = new URL(window.location.href);
