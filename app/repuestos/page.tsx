@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 import Link from "next/link";
-import {ModuleShell} from "@/components/module-shell";
+import {ModuleShell} from "@/components/layout/module-shell";
 import {supabase} from "@/lib/supabase";
 type Part={id:string;order_id:string;description:string;quantity:number;unit_price:number;status:string;warranty_covered:boolean;created_at:string;service_orders?:{order_number:number;clients?:{name:string}|null}|null};
 const labels:Record<string,string>={pendiente:"Pendiente",autorizado:"Autorizado",rechazado:"Rechazado",comprado:"Comprado"};
