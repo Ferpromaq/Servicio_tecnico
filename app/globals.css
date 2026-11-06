@@ -388,6 +388,7 @@ html,body{height:100%;min-height:100%}
   background:rgba(13,23,32,.48);
   backdrop-filter:blur(2px);
   transition:opacity .3s ease-in-out;
+  animation:none;
 }
 .drawerback>.drawer{
   transform:translateX(100%);
@@ -403,6 +404,7 @@ html,body{height:100%;min-height:100%}
   opacity:0;
   background:rgba(15,23,42,.3);
   transition:opacity .3s ease-in-out;
+  animation:none;
 }
 .detail-drawer-panel{
   width:min(900px,calc(100vw - 88px));
@@ -410,6 +412,7 @@ html,body{height:100%;min-height:100%}
   transform:translateX(100%);
   opacity:1;
   transition:transform .3s ease-in-out;
+  animation:none;
   will-change:transform;
 }
 .detail-drawer-layer.is-open{opacity:1}
