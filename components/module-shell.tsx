@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -27,6 +28,7 @@ export function ModuleShell({ title, description, children }: { title: string; d
     const client = supabase;
     if (!client) {
       setProfileWarning("No se pudo inicializar la conexión con Supabase.");
+      setRoleReady(true);
       return;
     }
 
@@ -39,8 +41,6 @@ export function ModuleShell({ title, description, children }: { title: string; d
         return;
       }
 
-      // Un error de lectura del perfil (por ejemplo, RLS o conexión) NO debe
-      // cerrar la sesión. Solo se cierra cuando active=false está confirmado.
       const { data: profile, error: profileError } = await client
         .from("profiles")
         .select("role,active")
@@ -48,19 +48,23 @@ export function ModuleShell({ title, description, children }: { title: string; d
         .maybeSingle();
 
       if (cancelled) return;
-      if (profileError) {
-        setProfileWarning("No se pudo verificar el perfil. La sesión permanece activa; revisa los permisos de profiles en Supabase.");
+      if (profileError || !profile || profile.active !== true) {
+        setProfileWarning("No se pudo verificar tu perfil y tus permisos. El contenido del módulo permanecerá bloqueado.");
+        setRoleReady(true);
         return;
       }
-      if (!profile) {
-        setProfileWarning("Tu usuario inició sesión, pero no tiene un perfil registrado en la tabla profiles.");
+
+      const isOrdersRoute = path === "/ordenes" || path.startsWith("/ordenes/");
+      const isUsersRoute = path === "/usuarios" || path.startsWith("/usuarios/");
+      const allowed = profile.role === "admin"
+        || (profile.role === "supervisor" && !isUsersRoute)
+        || (profile.role === "tecnico" && isOrdersRoute);
+
+      if (!allowed) {
+        router.replace("/ordenes");
         return;
       }
-      if (profile.active === false) {
-        await client.auth.signOut();
-        if (!cancelled) { setRoleReady(true); router.replace("/login"); }
-        return;
-      }
+
       setRole(profile.role ?? "");
       setRoleReady(true);
       setProfileWarning("");
@@ -68,7 +72,13 @@ export function ModuleShell({ title, description, children }: { title: string; d
 
     void verifySession();
     return () => { cancelled = true; };
-  }, [router]);
+  }, [path, router]);
+
+  const visibleLinks = links.filter(item => roleReady && (
+    role === "admin"
+      || (role === "supervisor" && !item.admin)
+      || (role === "tecnico" && item.href === "/ordenes")
+  ));
 
   return (
     <div className="shell">
@@ -76,7 +86,7 @@ export function ModuleShell({ title, description, children }: { title: string; d
         <Link className="brand" href="/">FERPRO<span>MAQ</span></Link>
         <div className="sidebar-navigation">
           <div className="navlabel">Espacio de trabajo</div>
-          {links.filter(item => !item.admin || !roleReady || role === "admin").map(({ href, label, icon: Icon }) => {
+          {visibleLinks.map(({ href, label, icon: Icon }) => {
             const isActive = path === href || (href !== "/" && path.startsWith(href + "/"));
             return (
               <Link key={href} href={href} className={`navitem navlink ${isActive ? "active" : ""}`}>
@@ -104,7 +114,11 @@ export function ModuleShell({ title, description, children }: { title: string; d
           </div>
         </header>
         {profileWarning && <div className="notice error" role="status">{profileWarning}</div>}
-        {children}
+        {!roleReady ? (
+          <section className="card"><div className="empty"><span className="loader"/>Verificando permisos…</div></section>
+        ) : profileWarning ? null : (
+          children
+        )}
         <div className="footer">Ferpromaq · Plataforma de servicio técnico</div>
       </main>
     </div>
