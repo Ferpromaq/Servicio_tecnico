@@ -50,8 +50,9 @@ export function Dashboard() {
       setSummaryVisible(false);
       return;
     }
-    const frame = window.requestAnimationFrame(() => setSummaryVisible(true));
-    return () => window.cancelAnimationFrame(frame);
+    // Espera a que el drawer se pinte fuera de pantalla antes de iniciar la transición.
+    const timer = window.setTimeout(() => setSummaryVisible(true), 40);
+    return () => window.clearTimeout(timer);
   }, [selected, summaryClosing]);
 
   useEffect(() => {
@@ -59,8 +60,9 @@ export function Dashboard() {
       setDetailVisible(false);
       return;
     }
-    const frame = window.requestAnimationFrame(() => setDetailVisible(true));
-    return () => window.cancelAnimationFrame(frame);
+    // Separa el montaje del cambio de estado para que el navegador anime la entrada.
+    const timer = window.setTimeout(() => setDetailVisible(true), 40);
+    return () => window.clearTimeout(timer);
   }, [detailOpen, detailClosing]);
 
   const syncDrawerFromUrl = useCallback(() => {
@@ -74,11 +76,11 @@ export function Dashboard() {
       summaryCloseTimer.current = setTimeout(() => {
         setSelected(null);
         setSummaryClosing(false);
-      }, 320);
+      }, 450);
       detailCloseTimer.current = setTimeout(() => {
         setDetailOpen(false);
         setDetailClosing(false);
-      }, 320);
+      }, 450);
       return;
     }
 
@@ -97,7 +99,7 @@ export function Dashboard() {
       detailCloseTimer.current = setTimeout(() => {
         setDetailOpen(false);
         setDetailClosing(false);
-      }, 320);
+      }, 450);
     } else {
       setDetailClosing(false);
       setDetailOpen(false);
@@ -137,7 +139,7 @@ export function Dashboard() {
     detailCloseTimer.current = setTimeout(() => {
       setDetailOpen(false);
       setDetailClosing(false);
-    }, 320);
+    }, 450);
   };
 
   const closeOrderDrawers = () => {
@@ -152,12 +154,12 @@ export function Dashboard() {
     summaryCloseTimer.current = setTimeout(() => {
       setSelected(null);
       setSummaryClosing(false);
-    }, 320);
+    }, 450);
     if (detailOpen) {
       detailCloseTimer.current = setTimeout(() => {
         setDetailOpen(false);
         setDetailClosing(false);
-      }, 320);
+      }, 450);
     } else {
       setDetailOpen(false);
     }
