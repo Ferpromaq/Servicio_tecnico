@@ -78,3 +78,117 @@
   .parts-draft-row { padding: 11px; }
   .parts-draft-footer { align-items: stretch; flex-direction: column; }
 }
+
+/* Compacto en escritorio y usable con una mano en móvil. */
+.detail-content>.card{padding:13px}
+.detail-content h2{font-size:15px;margin-bottom:6px}
+.detail-content .muted{font-size:12px}
+.detail-content .field{gap:4px;margin:8px 0}
+.detail-content .field label{font-size:11px}
+.detail-content textarea{min-height:78px;max-height:220px;padding:9px 10px}
+.detail-content .primary{min-height:36px;padding:8px 12px}
+.parts-draft-list{display:grid;gap:8px}
+.parts-draft-row{padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.parts-draft-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.parts-draft-heading strong{font-size:12px}
+.parts-draft-row .detail-columns{display:grid;grid-template-columns:minmax(0,2fr) minmax(90px,1fr);gap:5px 10px;margin-top:0}
+.parts-draft-row .field{margin:4px 0}
+.parts-draft-row .field input{width:100%;min-width:0;min-height:34px;padding:7px 9px;font-size:12px}
+.parts-draft-row .checkline{padding:5px 0;align-self:center}
+.parts-draft-subtotal{text-align:right;font-size:11px;margin-top:3px;color:#637181}
+.parts-draft-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:9px 0}
+.parts-draft-footer>strong{font-size:13px;white-space:nowrap}
+.diagnosis-report{padding-bottom:12px}
+.diagnosis-report strong{font-size:11px;line-height:1.4}
+.diagnosis-report p{font-size:13px;margin:5px 0 0;line-height:1.45}
+.detail-content .timeline{margin-top:12px;padding-left:17px}
+.detail-content .event:before{left:-23px;width:8px;height:8px}
+@media(max-width:700px){
+  .detail-page{padding-top:8px}
+  .back-link{margin:0 0 12px}
+  .detail-page-head{flex-direction:row;align-items:center;gap:8px;margin-bottom:10px}
+  .detail-page-head .heading{font-size:21px}
+  .detail-page-head .secondary{flex:0 0 auto;padding:7px 9px;min-height:34px}
+  .detail-page-head .muted{font-size:11px;margin-top:4px}
+  .detail-tabs{gap:0;margin:0 -2px 9px;scrollbar-width:none}
+  .detail-tabs::-webkit-scrollbar{display:none}
+  .detail-tabs button{flex:0 0 auto;padding:10px 12px;font-size:11px}
+  .detail-content{margin-bottom:9px}
+  .detail-content>.card{padding:11px}
+  .detail-content h2{font-size:14px}
+  .detail-content>p{font-size:11px}
+  .detail-columns{grid-template-columns:minmax(0,1fr);gap:8px;margin-top:8px}
+  .detail-content textarea{min-height:92px;font-size:16px}
+  .detail-content .primary,.detail-content .secondary{min-height:42px}
+  .parts-draft-row{padding:9px}
+  .parts-draft-row .detail-columns{grid-template-columns:minmax(0,1fr) minmax(84px,.55fr);gap:5px 8px}
+  .parts-draft-row .field input{min-height:40px;font-size:16px}
+  .parts-draft-row .checkline{grid-column:1/-1;padding:4px 0;font-size:12px}
+  .parts-draft-footer{align-items:flex-start;flex-direction:column}
+  .parts-draft-footer>strong{align-self:flex-end}
+  .part-row{gap:8px}
+  .part-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .part-actions .small-action{min-height:38px}
+  .payment-form{padding:10px}
+  .payment-form .detail-columns{grid-template-columns:1fr}
+  .summary-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .summary-overview{grid-template-columns:minmax(0,1fr);gap:8px}
+  .summary-overview>.card{padding:11px}
+  .summary-image-link{height:150px}
+  .detail-admin-tools>summary{padding:11px;align-items:flex-start}
+  .detail-admin-tools>summary span{display:none}
+  .status-control{padding:10px}
+}
+@media(max-width:380px){
+  .detail-page-head{align-items:flex-start}
+  .detail-page-head .secondary{font-size:0}
+  .detail-page-head .secondary svg{margin:0}
+  .detail-tabs button{padding:9px 10px;font-size:10px}
+}
+
+
+/* Desktop: compactar de verdad la ficha, no solo reducir tipografía. */
+@media(min-width:901px){
+  .detail-page{max-width:1480px}
+  .detail-page-head{margin-bottom:8px;gap:12px}
+  .detail-page-head .muted{margin-top:3px;font-size:11px}
+  .detail-tabs{margin-bottom:9px}
+  .detail-tabs button{padding:7px 11px}
+  .detail-content{margin-bottom:8px}
+  .detail-content>.card{padding:10px 12px}
+  .detail-content h2{font-size:14px;margin:0 0 4px}
+  .detail-content>p{font-size:11px;line-height:1.35;margin:3px 0 7px}
+  .detail-content .field{margin:4px 0;gap:3px}
+  .detail-content .field label{font-size:10px}
+  .detail-content .field input,
+  .detail-content .field select{min-height:31px;padding:5px 8px;font-size:11px}
+  .detail-content textarea{height:76px;min-height:76px;padding:7px 9px;font-size:12px;line-height:1.35}
+  .detail-content .primary,.detail-content .secondary{min-height:30px;padding:6px 10px;font-size:10px}
+  .diagnosis-report{padding:7px 0}
+  .diagnosis-report strong{font-size:10px}
+  .diagnosis-report p{font-size:12px;line-height:1.4;margin-top:3px}
+  .detail-content .timeline{margin-top:5px}
+  .parts-draft-list{gap:6px;margin:7px 0}
+  .parts-draft-row{padding:7px 9px;border-radius:8px}
+  .parts-draft-heading{margin-bottom:3px}
+  .parts-draft-heading strong{font-size:11px}
+  .parts-draft-row .detail-columns{grid-template-columns:minmax(240px,2.4fr) minmax(75px,.55fr) minmax(125px,1fr) minmax(145px,auto);align-items:end;gap:8px;margin-top:0}
+  .parts-draft-row .field{margin:2px 0}
+  .parts-draft-row .field input{min-height:30px;padding:5px 7px;font-size:11px}
+  .parts-draft-row .checkline{padding:5px 0;font-size:10px;white-space:nowrap}
+  .parts-draft-subtotal{font-size:10px;margin-top:2px}
+  .parts-draft-footer{margin:6px 0;gap:8px}
+  .parts-draft-footer>strong{font-size:12px}
+  .part-row{padding:7px 0;gap:10px}
+  .part-main{gap:2px}
+  .part-main strong{font-size:11px}
+  .part-main span,.part-main small{font-size:10px}
+  .part-actions{gap:4px}
+  .small-action{padding:5px 7px;font-size:9px}
+  .payment-form{padding:10px;margin:8px 0 10px}
+  .payment-form h2{font-size:13px;margin-bottom:6px}
+  .payment-form .detail-columns{gap:7px}
+  .payment-form .field{margin:3px 0}
+  .payment-form input,.payment-form select{padding:6px 8px;font-size:11px}
+  .status-control{padding:9px;margin-bottom:8px}
+}

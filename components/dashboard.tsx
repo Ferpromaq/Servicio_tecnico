@@ -129,6 +129,17 @@ export function Dashboard() {
         </div>
       </aside>
 
+      <nav className="mobile-nav" aria-label="Navegación principal">
+        {nav.filter(item => roleReady && (role === "admin" || (role === "supervisor" && !item.admin) || (role === "tecnico" && item.href === "/ordenes"))).map(({ label, icon: Icon, href }) => {
+          const isActive = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
+          return <Link key={label} href={href} className={`mobile-nav-item ${isActive ? "active" : ""}`} aria-current={isActive ? "page" : undefined}>
+            <Icon size={19}/><span>{label === "Órdenes de servicio" ? "Órdenes" : label === "Usuarios y técnicos" ? "Usuarios" : label}</span>
+          </Link>;
+        })}
+        <button className="mobile-nav-item mobile-nav-logout" type="button" onClick={() => void supabase?.auth.signOut().then(() => window.location.assign("/login"))}>
+          <span aria-hidden="true">↪</span><span>Salir</span>
+        </button>
+      </nav>
       <main className="main">
         <header className="topbar">
           <div><div className="eyebrow">FERPROMAQ / OPERACIONES</div><h1 className="heading">{isOrdersPage ? "Órdenes de servicio" : "Panel de servicio técnico"}</h1></div>

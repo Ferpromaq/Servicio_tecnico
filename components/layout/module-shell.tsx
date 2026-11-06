@@ -132,6 +132,18 @@ export function ModuleShell({ title, description, children }: { title: string; d
           </button>
         </div>
       </aside>
+      <nav className="mobile-nav" aria-label="Navegación principal">
+        {visibleLinks.map(({ href, label, icon: Icon }) => {
+          const isActive = path === href || (href !== "/" && path.startsWith(href + "/"));
+          return <Link key={href} href={href} className={`mobile-nav-item ${isActive ? "active" : ""}`} aria-current={isActive ? "page" : undefined}>
+            <Icon size={19} /><span>{label === "Órdenes de servicio" ? "Órdenes" : label === "Usuarios y técnicos" ? "Usuarios" : label}</span>
+          </Link>;
+        })}
+        <button className="mobile-nav-item mobile-nav-logout" type="button" onClick={() => {
+          const client = supabase;
+          if (client) void client.auth.signOut().then(() => router.replace("/login"));
+        }}><LogOut size={19}/><span>Salir</span></button>
+      </nav>
       <main className="main">
         <header className="topbar">
           <div>
