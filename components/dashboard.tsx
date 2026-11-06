@@ -76,11 +76,11 @@ export function Dashboard() {
       summaryCloseTimer.current = setTimeout(() => {
         setSelected(null);
         setSummaryClosing(false);
-      }, 360);
+      }, 180);
       detailCloseTimer.current = setTimeout(() => {
         setDetailOpen(false);
         setDetailClosing(false);
-      }, 360);
+      }, 180);
       return;
     }
 
@@ -99,7 +99,7 @@ export function Dashboard() {
       detailCloseTimer.current = setTimeout(() => {
         setDetailOpen(false);
         setDetailClosing(false);
-      }, 360);
+      }, 180);
     } else {
       setDetailClosing(false);
       setDetailOpen(false);
@@ -139,7 +139,7 @@ export function Dashboard() {
     detailCloseTimer.current = setTimeout(() => {
       setDetailOpen(false);
       setDetailClosing(false);
-    }, 360);
+    }, 180);
   };
 
   const closeOrderDrawers = () => {
@@ -154,12 +154,12 @@ export function Dashboard() {
     summaryCloseTimer.current = setTimeout(() => {
       setSelected(null);
       setSummaryClosing(false);
-    }, 360);
+    }, 180);
     if (detailOpen) {
       detailCloseTimer.current = setTimeout(() => {
         setDetailOpen(false);
         setDetailClosing(false);
-      }, 360);
+      }, 180);
     } else {
       setDetailOpen(false);
     }
