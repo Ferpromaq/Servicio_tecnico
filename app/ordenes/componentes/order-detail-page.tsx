@@ -8,7 +8,7 @@ import { ArrowLeft, Check, ClipboardList, PackagePlus, RefreshCw, Save } from "l
 import { supabase } from "@/lib/supabase";
 import { authorizePart, getOrderWorkflow, markPartMilestone, saveDiagnosis, requestParts, transitionOrderStatus, updateOrderCosts, updateOrderWarranty, updatePartCoverage, type OrderEvent, type OrderPayment, type PartRequest } from "@/app/ordenes/servicios/order-workflow";
 import { registerOrderPayment } from "@/app/ordenes/servicios/payments";
-import { orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
+import { orderPriorityClass, orderPriorityLabel, orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
 
 type Role = "admin" | "supervisor" | "tecnico";
 
@@ -147,7 +147,7 @@ export default function OrderDetailPage() {
       {tab === "resumen" && <section className="detail-content summary-view">
         <div className="detailgrid summary-metrics">
           <div className="detailbox"><small>Estado actual</small><strong>{orderStatusLabel(order.status)}</strong></div>
-          <div className="detailbox"><small>Prioridad</small><span className={`priority priority-${String(order.priority ?? "normal").toLowerCase().replace(/[^a-záéíóúñ_-]/g,"")}`}>{order.priority || "Normal"}</span></div>
+          <div className="detailbox"><small>Prioridad</small><span className={orderPriorityClass(order.priority)}>{orderPriorityLabel(order.priority)}</span></div>
           <div className="detailbox"><small>Repuestos solicitados</small><strong>{parts.length}</strong></div>
           <div className="detailbox"><small>Total pagado</small><strong>{money(totalPaid)}</strong></div>
         </div>
