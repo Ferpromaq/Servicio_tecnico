@@ -42,12 +42,14 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
     void Promise.all([
       supabase.from("clients").select("id,name,rut").order("name"),
       supabase.from("profiles").select("id,full_name").eq("role", "tecnico").eq("active", true).order("full_name"),
-      supabase.auth.getUser()
-    ]).then(([clientResult, techResult, userResult]) => {
+      supabase.auth.getSession()
+    ]).then(([clientResult, techResult, sessionResult]) => {
       if (clientResult.error) setError(clientResult.error.message); else setClients(clientResult.data ?? []);
       if (techResult.error) setError(techResult.error.message); else setTechnicians(techResult.data ?? []);
-      if (userResult.data.user) {
-        void supabase!.from("profiles").select("role").eq("id", userResult.data.user.id).maybeSingle().then(({ data }) => {
+      const user = sessionResult.data.session?.user;
+      if (user) {
+        void supabase!.from("profiles").select("role").eq("id", user.id).maybeSingle().then(({ data, error: profileError }) => {
+          if (profileError) { setError("No se pudo verificar tu perfil: " + profileError.message); return; }
           setRole(data?.role ?? "");
           if (data?.role === "tecnico") router.replace("/");
         });
