@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Check, ClipboardList, PackagePlus, RefreshCw, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { authorizePart, getOrderWorkflow, markPartMilestone, requestPart, saveDiagnosis, transitionOrderStatus, updateOrderCosts, updateOrderWarranty, updatePartCoverage, type OrderEvent, type OrderPayment, type PartRequest } from "@/lib/data/order-workflow";
-import { registerOrderPayment } from "@/lib/data/payments";
+import { authorizePart, getOrderWorkflow, markPartMilestone, requestPart, saveDiagnosis, transitionOrderStatus, updateOrderCosts, updateOrderWarranty, updatePartCoverage, type OrderEvent, type OrderPayment, type PartRequest } from "@/app/ordenes/servicios/order-workflow";
+import { registerOrderPayment } from "@/app/ordenes/servicios/payments";
 import { orderStatusLabel, type ServiceOrder } from "@/lib/data/orders";
 
 type Role = "admin" | "supervisor" | "tecnico";
