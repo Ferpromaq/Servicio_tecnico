@@ -15,6 +15,8 @@ export type PartRequest = {
   created_at: string;
 };
 
+export type DiagnosisReport = { id: string; order_id: string; report: string; created_at: string; actor: { full_name: string } | null };
+
 export type OrderPayment = {
   id: string;
   payment_type: "abono" | "repuestos" | "diagnostico" | "instalacion";
@@ -42,17 +44,20 @@ async function requireSupabase() {
 
 export async function getOrderWorkflow(orderId: string) {
   const client = await requireSupabase();
-  const [parts, payments, events] = await Promise.all([
+  const [parts, payments, events, reports] = await Promise.all([
     client.from("parts_requests").select("id,order_id,description,quantity,unit_price,status,warranty_covered,client_contacted,from_stock,received_at,installed_at,created_at").eq("order_id", orderId).order("created_at", { ascending: false }),
     client.from("payments").select("id,payment_type,amount,method,reference,receipt_received,paid_at").eq("order_id", orderId).order("paid_at", { ascending: false }),
     client.from("order_events").select("id,event_type,description,metadata,created_at,actor_id").eq("order_id", orderId).order("created_at", { ascending: false }),
+    client.from("order_diagnosis_reports").select("id,order_id,report,created_at,created_by").eq("order_id", orderId).order("created_at", { ascending: false }),
   ]);
   if (parts.error) throw parts.error;
   if (payments.error) throw payments.error;
   if (events.error) throw events.error;
+  if (reports.error) throw reports.error;
 
   const eventRows = events.data ?? [];
-  const actorIds = [...new Set(eventRows.map((event) => event.actor_id).filter((id): id is string => Boolean(id)))];
+  const reportRows = reports.data ?? [];
+  const actorIds = [...new Set([...eventRows.map((event) => event.actor_id), ...reportRows.map((report) => report.created_by)].filter((id): id is string => Boolean(id)))];
   const actorsResult = actorIds.length
     ? await client.from("profiles").select("id,full_name").in("id", actorIds)
     : { data: [], error: null };
@@ -62,6 +67,7 @@ export async function getOrderWorkflow(orderId: string) {
   return {
     parts: (parts.data ?? []) as PartRequest[],
     payments: (payments.data ?? []) as OrderPayment[],
+    diagnosisReports: reportRows.map((report) => ({ ...report, actor: report.created_by ? { full_name: actorNames.get(report.created_by) ?? "Usuario" } : null })) as DiagnosisReport[],
     events: eventRows.map((event) => ({
       ...event,
       actor: event.actor_id ? { full_name: actorNames.get(event.actor_id) ?? "Usuario" } : null,
@@ -79,17 +85,14 @@ export async function saveDiagnosis(orderId: string, diagnosis: string, repairNo
   if (error) throw error;
 }
 
-export async function requestPart(input: { orderId: string; description: string; quantity: number; unitPrice: number; fromStock?: boolean }) {
+export async function requestParts(input: { orderId: string; items: { description: string; quantity: number; unitPrice: number; fromStock?: boolean }[] }) {
   const client = await requireSupabase();
-  const { data, error } = await client.rpc("request_order_part", {
+  if (!input.items.length) throw new Error("Agrega al menos un repuesto.");
+  const { error } = await client.rpc("request_order_parts", {
     p_order_id: input.orderId,
-    p_description: input.description,
-    p_quantity: input.quantity,
-    p_unit_price: input.unitPrice,
-    p_from_stock: input.fromStock ?? false,
+    p_parts: input.items.map((item) => ({ description: item.description, quantity: item.quantity, unit_price: item.unitPrice, from_stock: item.fromStock ?? false })),
   });
   if (error) throw error;
-  return data as string;
 }
 
 export async function authorizePart(partId: string, authorized: boolean) {
