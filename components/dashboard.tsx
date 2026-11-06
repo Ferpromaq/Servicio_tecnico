@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AlertCircle, ClipboardList, RefreshCw, Search, Wrench, Users, Cog, Package, CreditCard, BarChart3 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import NewOrderPage from "@/app/ordenes/nueva/page";
+import NewOrderModal from "@/app/ordenes/componentes/new-order-modal";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderStatusLabel, type ServiceOrder } from "@/lib/data/orders";
 
 const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: boolean }[] = [
@@ -133,7 +133,7 @@ export function Dashboard() {
         <div className="footer">Ferpromaq · Plataforma de servicio técnico</div>
       </main>
 
-      {showNewOrder && <NewOrderPage onClose={() => setShowNewOrder(false)} onCreated={() => { setShowNewOrder(false); void loadOrders(); }} />}
+      {showNewOrder && <NewOrderModal onClose={() => setShowNewOrder(false)} onCreated={() => { setShowNewOrder(false); void loadOrders(); }} />}
 
       {selected && <div className="drawerback" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
         <aside className="drawer compact-drawer"><div className="drawerhead"><div><div className="eyebrow">ORDEN DE SERVICIO</div><h2>#{selected.order_number}</h2></div><button className="close" onClick={() => setSelected(null)}>Cerrar ×</button></div>
