@@ -72,6 +72,7 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
       createdOrderId = data as string;
 
       let documentPath: string | null = null;
+      let documentUploadWarning = "";
       if (documentFile) {
         const extension = documentFile.name.split(".").pop()?.toLowerCase() || "jpg";
         const documentName = intakeType === "warranty" ? "garantia" : intakeType === "commissioning" ? "factura-compra" : "comprobante-diagnostico";
@@ -79,7 +80,12 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
         const { error: uploadError } = await supabase.storage.from("order-documents").upload(documentPath, documentFile, {
           cacheControl: "3600", upsert: false, contentType: documentFile.type
         });
-        if (uploadError) throw new Error("La orden se creó, pero no se pudo subir la fotografía: " + uploadError.message);
+        if (uploadError) {
+          // No interrumpir el guardado de los datos de ingreso: la orden ya existe.
+          // Se conserva el resto de la información y se informa la falta de fotografía.
+          documentUploadWarning = uploadError.message;
+          documentPath = null;
+        }
       }
 
       const details = {
@@ -100,6 +106,9 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
       };
       const { error: saveError } = await supabase.from("service_orders").update(details).eq("id", createdOrderId);
       if (saveError) throw new Error("La orden se creó, pero faltó guardar sus datos de ingreso: " + saveError.message);
+      if (documentUploadWarning) {
+        throw new Error("La orden y sus datos de ingreso se guardaron, pero falta la fotografía. Error de almacenamiento: " + documentUploadWarning);
+      }
       if (onCreated) onCreated(); else router.replace("/ordenes/" + createdOrderId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear la orden.");
