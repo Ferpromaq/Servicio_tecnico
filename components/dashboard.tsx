@@ -28,6 +28,9 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<ServiceOrder | null>(null);
+  const [selectedEvents, setSelectedEvents] = useState<{ id: string; description: string; created_at: string; actor: { full_name: string } | null }[]>([]);
+  const [selectedTraceLoading, setSelectedTraceLoading] = useState(false);
+  const [selectedTraceError, setSelectedTraceError] = useState("");
   const [showNewOrder, setShowNewOrder] = useState(false);
   const [userLabel, setUserLabel] = useState("Equipo de servicio");
   const [role, setRole] = useState("");
@@ -58,6 +61,52 @@ export function Dashboard() {
       setRoleReady(true);
     });
   }, [loadOrders]);
+
+  const selectedOrderId = selected?.id ?? null;
+
+  useEffect(() => {
+    if (!selectedOrderId || !supabase) {
+      setSelectedEvents([]);
+      setSelectedTraceError("");
+      return;
+    }
+    let cancelled = false;
+    setSelectedTraceLoading(true);
+    setSelectedTraceError("");
+    async function loadSelectedTrace() {
+      const [orderResult, eventsResult] = await Promise.all([
+        supabase!.from("service_orders").select("status").eq("id", selectedOrderId).maybeSingle(),
+        supabase!.from("order_events")
+          .select("id,description,created_at,actor:profiles!order_events_actor_id_fkey(full_name)")
+          .eq("order_id", selectedOrderId)
+          .order("created_at", { ascending: false })
+          .limit(6),
+      ]);
+      if (cancelled) return;
+      if (orderResult.error) {
+        setSelectedTraceError(orderResult.error.message);
+      } else if (orderResult.data?.status) {
+        const currentStatus = orderResult.data.status;
+        setSelected(current => current?.id === selectedOrderId
+          ? { ...current, status: currentStatus }
+          : current);
+      }
+      if (eventsResult.error) {
+        setSelectedTraceError(current => current || eventsResult.error.message);
+        setSelectedEvents([]);
+      } else {
+        setSelectedEvents((eventsResult.data ?? []) as unknown as typeof selectedEvents);
+      }
+      setSelectedTraceLoading(false);
+    }
+    void loadSelectedTrace().catch(error => {
+      if (!cancelled) {
+        setSelectedTraceError(error instanceof Error ? error.message : "No se pudo consultar la trazabilidad.");
+        setSelectedTraceLoading(false);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [selectedOrderId]);
 
   const filtered = useMemo(() => orders.filter((order) => {
     const matchesStatus = active === "todas" || order.status === active;
@@ -143,6 +192,17 @@ export function Dashboard() {
           <h3 className="sectiontitle">Problema informado</h3><p>{selected.problem_description}</p>
           <p className="muted">Ingreso: {formatOrderDate(selected.received_at)}</p>
           <p className="muted">Técnico: {selected.assigned?.full_name ?? "Sin asignar"}</p>
+          <section className="drawer-trace">
+            <div className="drawer-trace-head"><h3 className="sectiontitle">Trazabilidad</h3><span>{selectedTraceLoading ? "Actualizando…" : "Últimos movimientos"}</span></div>
+            {selectedTraceError && <p className="muted drawer-trace-error">No se pudo cargar el historial: {selectedTraceError}</p>}
+            {!selectedTraceLoading && !selectedTraceError && selectedEvents.length === 0 && <p className="muted">Aún no hay movimientos registrados.</p>}
+            <ol className="drawer-trace-list">
+              {selectedEvents.map(event => <li key={event.id}>
+                <span className="drawer-trace-dot" />
+                <div><strong>{event.description}</strong><small>{new Intl.DateTimeFormat("es-CL",{dateStyle:"medium",timeStyle:"short"}).format(new Date(event.created_at))} · {event.actor?.full_name ?? "Sistema"}</small></div>
+              </li>)}
+            </ol>
+          </section>
           <a className="primary full-detail-link" href={`/ordenes/${selected.id}`}>Abrir ficha completa de la orden</a>
         </aside>
       </div>}

@@ -9,6 +9,18 @@ type ClientRow = { id: string; name: string; rut: string | null };
 type TechnicianRow = { id: string; full_name: string };
 type IntakeType = "warranty" | "no_warranty" | "commissioning";
 
+function readableCreateError(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object") {
+    const value = error as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown };
+    const parts = [value.message, value.details, value.hint]
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+    const code = typeof value.code === "string" ? value.code : "";
+    if (parts.length) return [code, ...parts].filter(Boolean).join(" · ");
+  }
+  return "Error inesperado al crear la orden.";
+}
+
 export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => void; onCreated?: () => void }) {
   const router = useRouter();
   const [clients, setClients] = useState<ClientRow[]>([]);
@@ -42,12 +54,14 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
     void Promise.all([
       supabase.from("clients").select("id,name,rut").order("name"),
       supabase.from("profiles").select("id,full_name").eq("role", "tecnico").eq("active", true).order("full_name"),
-      supabase.auth.getUser()
-    ]).then(([clientResult, techResult, userResult]) => {
+      supabase.auth.getSession()
+    ]).then(([clientResult, techResult, sessionResult]) => {
       if (clientResult.error) setError(clientResult.error.message); else setClients(clientResult.data ?? []);
       if (techResult.error) setError(techResult.error.message); else setTechnicians(techResult.data ?? []);
-      if (userResult.data.user) {
-        void supabase!.from("profiles").select("role").eq("id", userResult.data.user.id).maybeSingle().then(({ data }) => {
+      const user = sessionResult.data.session?.user;
+      if (user) {
+        void supabase!.from("profiles").select("role").eq("id", user.id).maybeSingle().then(({ data, error: profileError }) => {
+          if (profileError) { setError("No se pudo verificar tu perfil: " + profileError.message); return; }
           setRole(data?.role ?? "");
           if (data?.role === "tecnico") router.replace("/");
         });
@@ -102,8 +116,12 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
       if (saveError) throw new Error("La orden se creó, pero faltó guardar sus datos de ingreso: " + saveError.message);
       if (onCreated) onCreated(); else router.replace("/ordenes/" + createdOrderId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo crear la orden.");
-      if (createdOrderId) setError((current) => current + " Número interno: " + createdOrderId);
+      const message = readableCreateError(err);
+      const migrationHint = /diagnosis_receipt_amount|diagnosis_receipt_photo_path|column .* does not exist/i.test(message)
+        ? " Revisa que esté aplicada la migración 0012_no_warranty_receipt_details.sql en Supabase."
+        : "";
+      setError((createdOrderId ? "La orden sí se creó, pero falló un paso posterior: " : "No se pudo crear la orden: ")
+        + message + migrationHint + (createdOrderId ? " ID: " + createdOrderId : ""));
     } finally {
       setLoading(false);
     }
