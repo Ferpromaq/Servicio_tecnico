@@ -32,7 +32,9 @@ export function Dashboard() {
   const [selected, setSelected] = useState<ServiceOrder | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [summaryClosing, setSummaryClosing] = useState(false);
+  const [summaryVisible, setSummaryVisible] = useState(false);
   const [detailClosing, setDetailClosing] = useState(false);
+  const [detailVisible, setDetailVisible] = useState(false);
   const summaryCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const detailCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [drawerEvents, setDrawerEvents] = useState<OrderEvent[]>([]);
@@ -42,6 +44,24 @@ export function Dashboard() {
   const [userLabel, setUserLabel] = useState("Equipo de servicio");
   const [role, setRole] = useState("");
   const [roleReady, setRoleReady] = useState(false);
+
+  useEffect(() => {
+    if (!selected || summaryClosing) {
+      setSummaryVisible(false);
+      return;
+    }
+    const frame = window.requestAnimationFrame(() => setSummaryVisible(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [selected, summaryClosing]);
+
+  useEffect(() => {
+    if (!detailOpen || detailClosing) {
+      setDetailVisible(false);
+      return;
+    }
+    const frame = window.requestAnimationFrame(() => setDetailVisible(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [detailOpen, detailClosing]);
 
   const syncDrawerFromUrl = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
@@ -301,7 +321,7 @@ export function Dashboard() {
 
       {showNewOrder && <NewOrderModal onClose={() => setShowNewOrder(false)} onCreated={() => { setShowNewOrder(false); void loadOrders(); }} />}
 
-      {selected && <div className={`drawerback ${summaryClosing ? "is-closing" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeOrderDrawers(); }}>
+      {selected && <div className={`drawerback ${summaryVisible ? "is-open" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeOrderDrawers(); }}>
         <aside className="drawer compact-drawer">
           <div className="drawerhead drawer-order-head">
             <div><div className="drawer-kicker">FERPROMAQ <span>·</span> ORDEN DE SERVICIO</div><h2>#{selected.order_number}</h2></div>
@@ -364,7 +384,7 @@ export function Dashboard() {
         </aside>
       </div>}
 
-      {selected && detailOpen && <div className={`detail-drawer-layer ${detailClosing ? "is-closing" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeFullDetail(); }}>
+      {selected && detailOpen && <div className={`detail-drawer-layer ${detailVisible ? "is-open" : ""}`} onMouseDown={(event) => { if (event.target === event.currentTarget) closeFullDetail(); }}>
         <aside className="detail-drawer-panel" role="dialog" aria-modal="true" aria-label={`Ficha completa de la orden ${selected.order_number}`}>
           <OrderDetailPage orderNumber={String(selected.order_number)} embedded onClose={closeFullDetail} />
         </aside>
