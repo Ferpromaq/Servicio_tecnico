@@ -524,12 +524,12 @@ html,body{height:100%;min-height:100%}
 .drawerback {
   opacity: 0;
   animation: none !important;
-  transition: opacity 360ms ease-in-out !important;
+  transition: opacity 180ms ease-in-out !important;
 }
 .drawerback > .drawer {
   transform: translate3d(100%, 0, 0) !important;
   animation: none !important;
-  transition: transform 360ms ease-in-out !important;
+  transition: transform 180ms ease-in-out !important;
   will-change: transform;
 }
 .drawerback.is-open {
@@ -549,12 +549,12 @@ html,body{height:100%;min-height:100%}
 .detail-drawer-layer {
   opacity: 0;
   animation: none !important;
-  transition: opacity 360ms ease-in-out !important;
+  transition: opacity 180ms ease-in-out !important;
 }
 .detail-drawer-panel {
   transform: translate3d(100%, 0, 0) !important;
   animation: none !important;
-  transition: transform 360ms ease-in-out !important;
+  transition: transform 180ms ease-in-out !important;
   will-change: transform;
 }
 .detail-drawer-layer.is-open {
