@@ -44,19 +44,25 @@ async function requireSupabase() {
 
 export async function getOrderWorkflow(orderId: string) {
   const client = await requireSupabase();
-  const [parts, payments, events, reports] = await Promise.all([
+  // La trazabilidad histórica y los datos operativos no deben depender
+  // de que exista la tabla nueva de informes de diagnóstico. Si la migración
+  // 0015 aún no está aplicada, mantenemos disponibles los eventos anteriores.
+  const [parts, payments, events] = await Promise.all([
     client.from("parts_requests").select("id,order_id,description,quantity,unit_price,status,warranty_covered,client_contacted,from_stock,received_at,installed_at,created_at").eq("order_id", orderId).order("created_at", { ascending: false }),
     client.from("payments").select("id,payment_type,amount,method,reference,receipt_received,paid_at").eq("order_id", orderId).order("paid_at", { ascending: false }),
     client.from("order_events").select("id,event_type,description,metadata,created_at,actor_id").eq("order_id", orderId).order("created_at", { ascending: false }),
-    client.from("order_diagnosis_reports").select("id,order_id,report,created_at,created_by").eq("order_id", orderId).order("created_at", { ascending: false }),
   ]);
   if (parts.error) throw parts.error;
   if (payments.error) throw payments.error;
   if (events.error) throw events.error;
-  if (reports.error) throw reports.error;
 
   const eventRows = events.data ?? [];
-  const reportRows = reports.data ?? [];
+  const reports = await client.from("order_diagnosis_reports")
+    .select("id,order_id,report,created_at,created_by")
+    .eq("order_id", orderId)
+    .order("created_at", { ascending: false });
+  // Esta consulta es complementaria: su fallo no debe ocultar la trazabilidad.
+  const reportRows = reports.error ? [] : (reports.data ?? []);
   const actorIds = [...new Set([...eventRows.map((event) => event.actor_id), ...reportRows.map((report) => report.created_by)].filter((id): id is string => Boolean(id)))];
   const actorsResult = actorIds.length
     ? await client.from("profiles").select("id,full_name").in("id", actorIds)
