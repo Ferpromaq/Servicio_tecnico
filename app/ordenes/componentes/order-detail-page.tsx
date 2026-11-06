@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Check, ClipboardList, PackagePlus, RefreshCw, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { authorizePart, getOrderWorkflow, markPartMilestone, requestPart, saveDiagnosis, requestParts, transitionOrderStatus, updateOrderCosts, updateOrderWarranty, updatePartCoverage, type OrderEvent, type OrderPayment, type PartRequest } from "@/app/ordenes/servicios/order-workflow";
+import { authorizePart, getOrderWorkflow, markPartMilestone, saveDiagnosis, requestParts, transitionOrderStatus, updateOrderCosts, updateOrderWarranty, updatePartCoverage, type OrderEvent, type OrderPayment, type PartRequest } from "@/app/ordenes/servicios/order-workflow";
 import { registerOrderPayment } from "@/app/ordenes/servicios/payments";
 import { orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
 
