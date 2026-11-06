@@ -427,3 +427,36 @@ html,body{height:100%;min-height:100%}
     will-change:auto;
   }
 }
+
+
+/* Animación visible y consistente para los drawers de órdenes. */
+.drawerback{
+  opacity:0;
+  transition:opacity .42s ease-in-out !important;
+}
+.drawerback>.drawer{
+  transform:translate3d(105%,0,0);
+  transition:transform .42s cubic-bezier(.22,1,.36,1) !important;
+  will-change:transform;
+}
+.drawerback.is-open{opacity:1}
+.drawerback.is-open>.drawer{transform:translate3d(0,0,0)}
+
+.detail-drawer-layer{
+  opacity:0;
+  transition:opacity .42s ease-in-out !important;
+}
+.detail-drawer-panel{
+  transform:translate3d(105%,0,0);
+  transition:transform .42s cubic-bezier(.22,1,.36,1) !important;
+  will-change:transform;
+}
+.detail-drawer-layer.is-open{opacity:1}
+.detail-drawer-layer.is-open>.detail-drawer-panel{transform:translate3d(0,0,0)}
+
+@media(prefers-reduced-motion:reduce){
+  .drawerback,.drawerback>.drawer,.detail-drawer-layer,.detail-drawer-panel{
+    transition:none !important;
+    will-change:auto;
+  }
+}
