@@ -73,7 +73,7 @@ export function Dashboard() {
   const closeFullDetail = () => {
     const url = new URL(window.location.href);
     url.searchParams.delete("ficha");
-    window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
     setDetailOpen(false);
   };
 
@@ -81,7 +81,7 @@ export function Dashboard() {
     const url = new URL(window.location.href);
     url.searchParams.delete("orden");
     url.searchParams.delete("ficha");
-    window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
     setSelected(null);
     setDetailOpen(false);
   };
