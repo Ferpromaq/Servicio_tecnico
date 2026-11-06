@@ -117,19 +117,21 @@ export default function NewOrderPage({ onClose, onCreated }: { onClose?: () => v
   return <main className="new-order-overlay">
     <div className="new-order-modal" role="dialog" aria-modal="true" aria-labelledby="new-order-title">
       <header className="new-order-modal-head">
-        <div><div className="eyebrow">FERPROMAQ / OPERACIONES</div><h1 id="new-order-title">Nueva orden de servicio</h1><p>Completa los datos para registrar el ingreso.</p></div>
+        <div className="new-order-head-copy"><div className="eyebrow">FERPROMAQ / OPERACIONES</div><h1 id="new-order-title">Nueva orden de servicio</h1><p>Completa los datos para registrar el ingreso.</p></div>
+        <section className="new-order-head-intake" aria-label="Tipo de ingreso">
+          <div className="intake-heading"><h2>Tipo de ingreso</h2><p className="intake-note">{intakeType === "commissioning" ? "La puesta en marcha queda registrada con diagnóstico e instalación en $0." : ""}</p></div>
+          <div className="intake-options">
+            <label className={intakeType === "no_warranty" ? "intake-option selected" : "intake-option"}><input type="radio" name="intakeType" checked={intakeType === "no_warranty"} onChange={() => { setIntakeType("no_warranty"); setDocumentFile(null); }}/> <span><strong>Sin garantía</strong><small>Comprobante del diagnóstico</small></span></label>
+            <label className={intakeType === "warranty" ? "intake-option selected" : "intake-option"}><input type="radio" name="intakeType" checked={intakeType === "warranty"} onChange={() => { setIntakeType("warranty"); setDocumentFile(null); }}/> <span><strong>Con garantía</strong><small>Factura y foto de garantía</small></span></label>
+            <label className={intakeType === "commissioning" ? "intake-option selected" : "intake-option"}><input type="radio" name="intakeType" checked={intakeType === "commissioning"} onChange={() => { setIntakeType("commissioning"); setDocumentFile(null); }}/> <span><strong>Puesta en marcha</strong><small>Sin cobro de servicio</small></span></label>
+          </div>
+        </section>
         <button type="button" className="new-order-close" aria-label="Cerrar" onClick={() => onClose ? onClose() : router.push("/")}><X size={18}/></button>
       </header>
       {error && <div className="notice error new-order-error">{error}</div>}
       <form className="new-order-form" onSubmit={submit}>
         <div className="new-order-modal-body">
       <section className="intake-section">
-        <div className="intake-heading"><h2>Tipo de ingreso</h2><p className="intake-note">{intakeType === "commissioning" ? "La puesta en marcha queda registrada con diagnóstico e instalación en $0." : ""}</p></div>
-        <div className="intake-options">
-          <label className={intakeType === "warranty" ? "intake-option selected" : "intake-option"}><input type="radio" name="intakeType" checked={intakeType === "warranty"} onChange={() => { setIntakeType("warranty"); setDocumentFile(null); }}/> <span><strong>Con garantía</strong><small>Factura y foto de garantía</small></span></label>
-          <label className={intakeType === "no_warranty" ? "intake-option selected" : "intake-option"}><input type="radio" name="intakeType" checked={intakeType === "no_warranty"} onChange={() => { setIntakeType("no_warranty"); setDocumentFile(null); }}/> <span><strong>Sin garantía</strong><small>Comprobante del diagnóstico</small></span></label>
-          <label className={intakeType === "commissioning" ? "intake-option selected" : "intake-option"}><input type="radio" name="intakeType" checked={intakeType === "commissioning"} onChange={() => { setIntakeType("commissioning"); setDocumentFile(null); }}/> <span><strong>Puesta en marcha</strong><small>Sin cobro de servicio</small></span></label>
-        </div>
         {needsInvoice ? <div className="intake-fields">
           <div className="field"><label>Número de Folio *</label><input required value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} placeholder="N° de Folio"/></div>
           <div className="field upload-field"><label>{photoLabel} *</label><input id="intake-document" className="file-input-hidden" type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setDocumentFile(e.target.files?.[0] ?? null)}/><label className="upload-control" htmlFor="intake-document"><Upload size={17}/><span><strong>{documentFile ? "Cambiar fotografía" : "Seleccionar fotografía"}</strong><small>{documentFile ? documentFile.name : "JPG, PNG o WEBP · máximo 8 MB"}</small></span></label></div>
