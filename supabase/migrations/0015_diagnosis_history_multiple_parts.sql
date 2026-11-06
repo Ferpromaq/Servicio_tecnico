@@ -7,6 +7,16 @@ create table if not exists public.order_diagnosis_reports (
   created_at timestamptz not null default now()
 );
 
+-- Conserva como primer registro el último diagnóstico que ya estuviera guardado.
+insert into public.order_diagnosis_reports(order_id, report, created_by, created_at)
+select id, diagnosis, created_by, coalesce(updated_at, created_at)
+from public.service_orders
+where nullif(trim(diagnosis), '') is not null
+  and not exists (
+    select 1 from public.order_diagnosis_reports r
+    where r.order_id = service_orders.id
+  );
+
 alter table public.order_diagnosis_reports enable row level security;
 drop policy if exists "staff read diagnosis reports" on public.order_diagnosis_reports;
 create policy "staff read diagnosis reports"
