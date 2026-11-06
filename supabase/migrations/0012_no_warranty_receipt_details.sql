@@ -11,7 +11,7 @@ alter table public.service_orders
 
 alter table public.service_orders
   add constraint service_orders_diagnosis_receipt_amount_check
-  check (diagnosis_receipt_amount is null or diagnosis_receipt_amount >= 0);
+  check (diagnosis_receipt_amount is null or diagnosis_receipt_amount > 0);
 
 comment on column public.service_orders.diagnosis_receipt_amount is
   'Monto efectivamente pagado que figura en la boleta o factura del ingreso sin garantía.';
