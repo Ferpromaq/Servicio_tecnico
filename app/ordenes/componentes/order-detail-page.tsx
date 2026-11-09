@@ -157,11 +157,14 @@ export default function OrderDetailPage({ orderNumber, embedded = false, onClose
   if (!order && !error) return <main className={embedded ? "detail-drawer-content detail-page" : "main detail-page"}><div className="empty">Cargando ficha de la orden…</div></main>;
 
   return <main className={embedded ? "detail-drawer-content detail-page" : "main detail-page"}>
-    <button className="back-link" onClick={() => onClose ? onClose() : router.push("/ordenes")}><ArrowLeft size={16}/> {embedded ? "Volver al resumen" : "Volver a órdenes"}</button>
+    <div className={embedded ? "detail-drawer-topbar" : undefined}>
+      <button className="back-link" onClick={() => onClose ? onClose() : router.push("/ordenes")}><ArrowLeft size={16}/> {embedded ? "Volver al resumen" : "Volver a órdenes"}</button>
+      {embedded && order && <span className="detail-drawer-order-number">Orden #{order.order_number}</span>}
+    </div>
     {error && <div className="notice error">{error}</div>}
     {notice && <div className="notice success"><Check size={16}/>{notice}</div>}
     {order && <>
-      <header className="detail-page-head"><div><div className="eyebrow">FERPROMAQ / ORDEN DE SERVICIO</div><h1 className="heading">Orden #{order.order_number}</h1><p className="muted">{order.clients?.name ?? "Cliente"} · {orderStatusLabel(order.status)}</p></div><button className="secondary" onClick={() => void load()} disabled={busy}><RefreshCw size={15}/> Actualizar</button></header>
+      <header className="detail-page-head"><div><div className="eyebrow">FERPROMAQ / ORDEN DE SERVICIO</div>{!embedded && <h1 className="heading">Orden #{order.order_number}</h1>}<p className="muted">{order.clients?.name ?? "Cliente"} · {orderStatusLabel(order.status)}</p></div><button className="secondary" onClick={() => void load()} disabled={busy}><RefreshCw size={15}/> Actualizar</button></header>
       <nav className="detail-tabs">{[["resumen","Resumen"],["diagnostico","Diagnóstico"],["repuestos","Repuestos"],["pagos","Pagos"],["historial","Historial"]].map(([value,label])=><button key={value} className={tab===value?"active":""} onClick={()=>setTab(value)}>{label}</button>)}</nav>
 
       {tab === "resumen" && <section className="detail-content summary-view">
