@@ -150,7 +150,8 @@
 /* Desktop: compactar de verdad la ficha, no solo reducir tipografía. */
 @media(min-width:901px){
   .detail-page{max-width:1480px}
-  .detail-page-head{margin-bottom:8px;gap:12px}
+  .detail-page-head{margin-bottom:8px;gap:10px}
+.detail-page-head-copy{display:flex;align-items:center;min-height:34px}
   .detail-page-head .muted{margin-top:3px;font-size:11px}
   .detail-tabs{margin-bottom:9px}
   .detail-tabs button{padding:7px 11px}
