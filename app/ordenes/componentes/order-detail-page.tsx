@@ -69,6 +69,11 @@ export default function OrderDetailPage({
   const [activeTechnicians, setActiveTechnicians] = useState<{ id: string; full_name: string }[]>([]);
   const [commissioningModalOpen, setCommissioningModalOpen] = useState(false);
   const [testingTechnicianId, setTestingTechnicianId] = useState("");
+  const [deliveryModalOpen, setDeliveryModalOpen] = useState(false);
+  const [deliveryByName, setDeliveryByName] = useState("");
+  const [deliveryReceivedBy, setDeliveryReceivedBy] = useState("");
+  const [deliveryPhotoFile, setDeliveryPhotoFile] = useState<File | null>(null);
+  const [deliveryPhotoUrl, setDeliveryPhotoUrl] = useState("");
   const [tab, setTab] = useState("resumen");
   const [diagnosis, setDiagnosis] = useState("");
   const [partDescription, setPartDescription] = useState("");
@@ -230,6 +235,17 @@ export default function OrderDetailPage({
       setParts(workflow.parts);
       setPayments(workflow.payments);
       setEvents(workflow.events);
+      const deliveryEvent = workflow.events.find((event) => event.event_type === "commissioning_delivered");
+      const deliveryPhotoPath = deliveryEvent?.metadata?.delivery_photo_path;
+      if (typeof deliveryPhotoPath === "string" && deliveryPhotoPath) {
+        const { data: deliveryFile, error: deliveryFileError } = await supabase.storage
+          .from("order-documents")
+          .createSignedUrl(deliveryPhotoPath, 3600);
+        if (deliveryFileError) throw deliveryFileError;
+        setDeliveryPhotoUrl(deliveryFile?.signedUrl ?? "");
+      } else {
+        setDeliveryPhotoUrl("");
+      }
       setDiagnosisReports(workflow.diagnosisReports);
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData.session?.user) {
@@ -464,7 +480,9 @@ export default function OrderDetailPage({
                   ) : order.status === "listas" || order.status === "entregadas" ? (
                     (() => {
                       const confirmation = events.find((event) => event.event_type === "commissioning_ready");
+                      const delivery = events.find((event) => event.event_type === "commissioning_delivered");
                       const tester = confirmation?.testing_technician;
+                      const deliveryMetadata = delivery?.metadata ?? {};
                       return (
                         <div className="commissioning-completed">
                           <div className="commissioning-completed-heading">
@@ -495,6 +513,48 @@ export default function OrderDetailPage({
                             </div>
                           ) : (
                             <p className="commissioning-audit-missing">La confirmación quedó registrada, pero no se encontró el detalle de trazabilidad.</p>
+                          )}
+                          {order.status === "listas" && (role === "admin" || role === "supervisor") && (
+                            <div className="commissioning-delivery-action">
+                              <p>Cuando el cliente retire el equipo, registra quién lo entrega, quién lo recibe y adjunta una fotografía de la persona que lo retira.</p>
+                              <button type="button" className="primary" disabled={busy} onClick={() => setDeliveryModalOpen(true)}>
+                                <Check size={15} /> Registrar entrega al cliente
+                              </button>
+                            </div>
+                          )}
+                          {order.status === "entregadas" && delivery && (
+                            <div className="commissioning-delivery-audit">
+                              <h3>Registro de entrega</h3>
+                              <div className="commissioning-audit-grid">
+                                <div className="commissioning-audit-item">
+                                  <span>Entregado por</span>
+                                  <strong>{typeof deliveryMetadata.delivered_by_name === "string" ? deliveryMetadata.delivered_by_name : "No registrado"}</strong>
+                                </div>
+                                <div className="commissioning-audit-item">
+                                  <span>Recibido por</span>
+                                  <strong>{typeof deliveryMetadata.received_by_name === "string" ? deliveryMetadata.received_by_name : "No registrado"}</strong>
+                                </div>
+                                <div className="commissioning-audit-item">
+                                  <span>Fecha y hora de entrega</span>
+                                  <strong>{new Intl.DateTimeFormat("es-CL", { dateStyle: "medium", timeStyle: "short" }).format(new Date(delivery.created_at))}</strong>
+                                </div>
+                              </div>
+                              <div className="commissioning-delivery-photo">
+                                <span>Fotografía de quien retiró el equipo</span>
+                                {deliveryPhotoUrl ? (
+                                  <button type="button" className="summary-image-link" onClick={() => {
+                                    setReceiptPreview({ src: deliveryPhotoUrl, alt: "Fotografía de la persona que retiró el equipo" });
+                                    setReceiptPreviewOpen(true);
+                                  }} aria-label="Ampliar fotografía de quien retiró el equipo">
+                                    <img className="summary-invoice-image" src={deliveryPhotoUrl} alt="Persona que retiró el equipo" />
+                                    <span className="summary-image-hover-hint" aria-hidden="true">Clic para acercar</span>
+                                  </button>
+                                ) : (
+                                  <p className="commissioning-audit-missing">No se pudo cargar la fotografía registrada.</p>
+                                )}
+                              </div>
+                              <p className="commissioning-delivery-actor">Entrega registrada por: <strong>{delivery.actor?.full_name ?? "Usuario"}</strong></p>
+                            </div>
                           )}
                         </div>
                       );
@@ -1592,6 +1652,57 @@ export default function OrderDetailPage({
                   if (succeeded) setCommissioningModalOpen(false);
                 });
               }}>Confirmar y registrar</button>
+            </div>
+          </section>
+        </div>
+      )}
+      {deliveryModalOpen && order && (
+        <div className="commissioning-modal-backdrop" role="presentation" onClick={() => !busy && setDeliveryModalOpen(false)}>
+          <section className="commissioning-modal commissioning-delivery-modal" role="dialog" aria-modal="true" aria-labelledby="commissioning-delivery-title" onClick={(event) => event.stopPropagation()}>
+            <button type="button" className="commissioning-modal-close" aria-label="Cerrar" disabled={busy} onClick={() => setDeliveryModalOpen(false)}>×</button>
+            <span className="eyebrow">PUESTA EN MARCHA · ORDEN #{order.order_number}</span>
+            <h2 id="commissioning-delivery-title">Registrar entrega al cliente</h2>
+            <p>Completa los datos de la persona que entrega y de quien retira el equipo. Adjunta una fotografía de quien lo recibe para dejar constancia de la entrega.</p>
+            <label htmlFor="commissioning-delivered-by">Entregado por</label>
+            <input id="commissioning-delivered-by" type="text" value={deliveryByName} onChange={(event) => setDeliveryByName(event.target.value)} placeholder="Nombre de quien entrega" maxLength={120} />
+            <label htmlFor="commissioning-received-by">Recibido por</label>
+            <input id="commissioning-received-by" type="text" value={deliveryReceivedBy} onChange={(event) => setDeliveryReceivedBy(event.target.value)} placeholder="Nombre de quien retira la máquina" maxLength={120} />
+            <label htmlFor="commissioning-delivery-photo">Fotografía de quien retira</label>
+            <input id="commissioning-delivery-photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setDeliveryPhotoFile(event.target.files?.[0] ?? null)} />
+            <small className="commissioning-delivery-file-hint">{deliveryPhotoFile ? deliveryPhotoFile.name : "Formatos permitidos: JPG, PNG o WEBP. Máximo 8 MB."}</small>
+            <div className="commissioning-modal-actions">
+              <button type="button" className="secondary" disabled={busy} onClick={() => setDeliveryModalOpen(false)}>Cancelar</button>
+              <button type="button" className="primary" disabled={busy || !deliveryByName.trim() || !deliveryReceivedBy.trim() || !deliveryPhotoFile} onClick={() => {
+                void run(async () => {
+                  if (!supabase) throw new Error("Falta configurar la conexión con Supabase.");
+                  if (!deliveryPhotoFile) throw new Error("Adjunta la fotografía de quien retira el equipo.");
+                  if (!["image/jpeg", "image/png", "image/webp"].includes(deliveryPhotoFile.type)) throw new Error("La fotografía debe ser JPG, PNG o WEBP.");
+                  if (deliveryPhotoFile.size > 8 * 1024 * 1024) throw new Error("La fotografía no puede superar los 8 MB.");
+                  const extension = deliveryPhotoFile.type === "image/png" ? "png" : deliveryPhotoFile.type === "image/webp" ? "webp" : "jpg";
+                  const photoPath = `${order.id}/delivery/${crypto.randomUUID()}.${extension}`;
+                  const { error: uploadError } = await supabase.storage.from("order-documents").upload(photoPath, deliveryPhotoFile, { contentType: deliveryPhotoFile.type, upsert: false });
+                  if (uploadError) throw uploadError;
+                  try {
+                    const { error: deliveryError } = await supabase.rpc("confirm_commissioning_delivery", {
+                      p_order_id: order.id,
+                      p_delivered_by_name: deliveryByName.trim(),
+                      p_received_by_name: deliveryReceivedBy.trim(),
+                      p_delivery_photo_path: photoPath,
+                    });
+                    if (deliveryError) throw deliveryError;
+                  } catch (deliveryError) {
+                    await supabase.storage.from("order-documents").remove([photoPath]);
+                    throw deliveryError;
+                  }
+                }, "Entrega registrada correctamente. La orden quedó entregada al cliente.").then((succeeded) => {
+                  if (succeeded) {
+                    setDeliveryModalOpen(false);
+                    setDeliveryByName("");
+                    setDeliveryReceivedBy("");
+                    setDeliveryPhotoFile(null);
+                  }
+                });
+              }}>Confirmar entrega</button>
             </div>
           </section>
         </div>
