@@ -247,3 +247,23 @@
 .detail-drawer-topbar .back-link{margin:0;flex:0 0 auto}
 .detail-drawer-order-number{margin-left:auto;color:#ff6210;white-space:nowrap;font-variant-numeric:tabular-nums}
 @media(max-width:700px){.detail-drawer-topbar{margin:0 0 10px}}
+
+
+/* PopUp de confirmación y trazabilidad de Puesta en Marcha. */
+.commissioning-audit{display:grid;gap:5px;margin-top:10px;padding:11px 13px;border:1px solid #dceee3;border-radius:9px;background:#f5fbf7;color:#526273;font-size:11px;line-height:1.45}
+.commissioning-audit strong{color:#263548}
+.commissioning-modal-backdrop{position:fixed;inset:0;z-index:11000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(12,18,27,.62);backdrop-filter:blur(4px);animation:commissioningModalFade .2s ease both}
+.commissioning-modal{position:relative;width:min(100%,480px);padding:25px;border:1px solid #e8edf1;border-radius:16px;background:#fff;box-shadow:0 24px 80px rgba(0,0,0,.24);animation:commissioningModalIn .24s cubic-bezier(.2,.8,.2,1) both}
+.commissioning-modal .eyebrow{display:block;margin-bottom:10px;color:#d9530c;font-size:10px;font-weight:800;letter-spacing:.06em}
+.commissioning-modal h2{margin:0 28px 8px 0;color:#253244;font-size:19px}
+.commissioning-modal p{margin:0 0 18px;color:#647384;font-size:12px;line-height:1.55}
+.commissioning-modal label{display:block;margin-bottom:6px;color:#344256;font-size:11px;font-weight:750}
+.commissioning-modal select{width:100%;min-height:42px;padding:9px 11px;border:1px solid #dce2e8;border-radius:9px;background:#fff;color:#263548;font:inherit;font-size:12px}
+.commissioning-modal select:focus{outline:2px solid rgba(255,98,16,.2);border-color:#ff6210}
+.commissioning-modal-close{position:absolute;top:12px;right:13px;width:30px;height:30px;border:0;border-radius:50%;background:#f1f3f5;color:#526273;font-size:22px;line-height:1;cursor:pointer}
+.commissioning-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.commissioning-modal-actions button{min-height:38px;padding:8px 13px;border-radius:8px;font-size:11px}
+@keyframes commissioningModalFade{from{opacity:0}to{opacity:1}}
+@keyframes commissioningModalIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:520px){.commissioning-modal{padding:20px 17px}.commissioning-modal-actions{flex-direction:column-reverse}.commissioning-modal-actions button{width:100%;min-height:42px}}
+@media(prefers-reduced-motion:reduce){.commissioning-modal-backdrop,.commissioning-modal{animation-duration:.01ms}}
