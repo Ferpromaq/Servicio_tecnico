@@ -242,5 +242,5 @@
 /* Encabezado del drawer secundario: acción a la izquierda y orden a la derecha. */
 .detail-drawer-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:24px;margin:2px 0 14px}
 .detail-drawer-topbar .back-link{margin:0;flex:0 0 auto}
-.detail-drawer-order-number{margin-left:auto;color:#ff6210;font-size:14px;font-weight:800;line-height:1.2;white-space:nowrap;font-variant-numeric:tabular-nums}
-@media(max-width:700px){.detail-drawer-topbar{margin:0 0 10px}.detail-drawer-order-number{font-size:13px}}
+.detail-drawer-order-number{margin-left:auto;color:#ff6210;white-space:nowrap;font-variant-numeric:tabular-nums}
+@media(max-width:700px){.detail-drawer-topbar{margin:0 0 10px}}
