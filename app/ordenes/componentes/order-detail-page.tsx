@@ -389,7 +389,7 @@ export default function OrderDetailPage({
           </nav>
 
           {tab === "resumen" && (
-            <section className="detail-content summary-view">
+            <section className={`detail-content summary-view ${isCommissioning ? "commissioning-summary" : ""}`}>
               <div className="detailgrid summary-metrics">
                 <div className="detailbox">
                   <small>Estado actual</small>
