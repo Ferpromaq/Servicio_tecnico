@@ -350,3 +350,6 @@
   .commissioning-completed-heading{flex-direction:column;gap:10px}
   .commissioning-state{min-height:27px}
 }
+
+/* El estado listo para entregar debe destacar como una confirmación positiva. */
+.commissioning-completed-heading h2.commissioning-ready-title{color:#247548}
