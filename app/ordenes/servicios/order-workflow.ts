@@ -35,6 +35,7 @@ export type OrderEvent = {
   created_at: string;
   actor: { full_name: string } | null;
   actor_id?: string | null;
+  testing_technician?: { full_name: string } | null;
 };
 
 async function requireSupabase() {
@@ -63,7 +64,8 @@ export async function getOrderWorkflow(orderId: string) {
     .order("created_at", { ascending: false });
   // Esta consulta es complementaria: su fallo no debe ocultar la trazabilidad.
   const reportRows = reports.error ? [] : (reports.data ?? []);
-  const actorIds = [...new Set([...eventRows.map((event) => event.actor_id), ...reportRows.map((report) => report.created_by)].filter((id): id is string => Boolean(id)))];
+  const testingTechnicianIds = eventRows.map((event) => event.metadata?.testing_technician_id).filter((id): id is string => typeof id === "string");
+  const actorIds = [...new Set([...eventRows.map((event) => event.actor_id), ...testingTechnicianIds, ...reportRows.map((report) => report.created_by)].filter((id): id is string => Boolean(id)))];
   const actorsResult = actorIds.length
     ? await client.from("profiles").select("id,full_name").in("id", actorIds)
     : { data: [], error: null };
@@ -77,14 +79,18 @@ export async function getOrderWorkflow(orderId: string) {
     events: eventRows.map((event) => ({
       ...event,
       actor: event.actor_id ? { full_name: actorNames.get(event.actor_id) ?? "Usuario" } : null,
+      testing_technician: typeof event.metadata?.testing_technician_id === "string"
+        ? { full_name: actorNames.get(event.metadata.testing_technician_id) ?? "Técnico" }
+        : null,
     })) as unknown as OrderEvent[],
   };
 }
 
-export async function confirmCommissioningReady(orderId: string) {
+export async function confirmCommissioningReady(orderId: string, testingTechnicianId: string) {
   const client = await requireSupabase();
   const { error } = await client.rpc("confirm_commissioning_ready", {
     p_order_id: orderId,
+    p_testing_technician_id: testingTechnicianId,
   });
   if (error) throw error;
 }
