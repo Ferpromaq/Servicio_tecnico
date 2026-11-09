@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import {
   authorizePart,
+  confirmCommissioningReady,
   getOrderWorkflow,
   markPartMilestone,
   saveDiagnosis,
@@ -278,6 +279,12 @@ export default function OrderDetailPage({
       currency: "CLP",
       maximumFractionDigits: 0,
     }).format(value);
+  const isCommissioning = Boolean(
+    (order as (ServiceOrder & { commissioning?: boolean; intake_type?: string }) | null)
+      ?.commissioning ||
+    (order as (ServiceOrder & { commissioning?: boolean; intake_type?: string }) | null)
+      ?.intake_type === "commissioning",
+  );
   const totalParts = parts.reduce(
     (sum, part) => sum + Number(part.quantity) * Number(part.unit_price),
     0,
@@ -357,13 +364,20 @@ export default function OrderDetailPage({
             </button>
           </header>
           <nav className="detail-tabs">
-            {[
-              ["resumen", "Resumen"],
-              ["diagnostico", "Diagnóstico"],
-              ["repuestos", "Repuestos"],
-              ["pagos", "Pagos"],
-              ["historial", "Historial"],
-            ].map(([value, label]) => (
+            {(
+              isCommissioning
+                ? [
+                    ["resumen", "Resumen"],
+                    ["historial", "Historial"],
+                  ]
+                : [
+                    ["resumen", "Resumen"],
+                    ["diagnostico", "Diagnóstico"],
+                    ["repuestos", "Repuestos"],
+                    ["pagos", "Pagos"],
+                    ["historial", "Historial"],
+                  ]
+            ).map(([value, label]) => (
               <button
                 key={value}
                 className={tab === value ? "active" : ""}
@@ -396,6 +410,43 @@ export default function OrderDetailPage({
                   <strong>{money(totalPaid)}</strong>
                 </div>
               </div>
+
+              {isCommissioning && (
+                <article className="card commissioning-ready-card">
+                  <h2>Puesta en Marcha</h2>
+                  <p className="muted">
+                    Este servicio no requiere diagnóstico, solicitud de repuestos
+                    ni registro de pagos de reparación. Cuando hayas terminado
+                    las pruebas y confirmado que el equipo está operativo, marca
+                    la orden como lista para entregar.
+                  </p>
+                  {order.status === "recepcion" ? (
+                    role === "tecnico" || role === "admin" || role === "supervisor" ? (
+                      <button
+                        type="button"
+                        className="primary"
+                        disabled={busy}
+                        onClick={() =>
+                          void run(
+                            () => confirmCommissioningReady(order.id),
+                            "Puesta en Marcha confirmada. La orden quedó lista para entregar.",
+                          )
+                        }
+                      >
+                        <Check size={15} /> Confirmar lista para entregar
+                      </button>
+                    ) : (
+                      <p className="muted">La confirmación está disponible para el técnico asignado.</p>
+                    )
+                  ) : order.status === "listas" || order.status === "entregadas" ? (
+                    <p className="commissioning-ready-status">
+                      <Check size={16} /> {order.status === "entregadas" ? "Equipo entregado" : "Equipo listo para entregar"}
+                    </p>
+                  ) : (
+                    <p className="muted">Estado actual: {orderStatusLabel(order.status)}.</p>
+                  )}
+                </article>
+              )}
 
               <div className="summary-overview">
                 <article className="card summary-info-card">
@@ -570,6 +621,7 @@ export default function OrderDetailPage({
                     <span>Editar datos administrativos</span>
                   </summary>
                   <div className="detail-admin-tools-content">
+                    {!isCommissioning && (
                     <div className="card status-control">
                       <div>
                         <h2>Gestión del estado</h2>
@@ -647,6 +699,7 @@ export default function OrderDetailPage({
                         </div>
                       )}
                     </div>
+                    )}
                     <div className="detail-columns settings-grid">
                       <article className="card">
                         <h3 className="sectiontitle">Garantía y comprobante</h3>
@@ -818,7 +871,7 @@ export default function OrderDetailPage({
             </section>
           )}
 
-          {tab === "diagnostico" && (
+          {!isCommissioning && tab === "diagnostico" && (
             <section className="detail-content">
               <div className="card">
                 <h2>Nuevo informe de diagnóstico</h2>
@@ -878,7 +931,7 @@ export default function OrderDetailPage({
             </section>
           )}
 
-          {tab === "repuestos" && (
+          {!isCommissioning && tab === "repuestos" && (
             <section className="detail-content">
               <div className="card">
                 <h2>Solicitar repuestos</h2>
@@ -1246,7 +1299,7 @@ export default function OrderDetailPage({
             </section>
           )}
 
-          {tab === "pagos" && (
+          {!isCommissioning && tab === "pagos" && (
             <section className="card detail-content">
               <div className="detailgrid">
                 <div className="detailbox">
