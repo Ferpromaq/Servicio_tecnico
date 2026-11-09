@@ -198,9 +198,9 @@ export default function OrderDetailPage({ orderNumber, embedded = false, onClose
             </div>
             <div className="summary-document-preview">
               {((order as ServiceOrder & {intake_type?:string}).intake_type === "no_warranty") ? <>
-                <div className="summary-document-label"><span>Comprobante de pago del diagnóstico</span><span className="summary-image-hint">Clic para ampliar</span></div>
+                <div className="summary-document-label"><span>Comprobante de pago del diagnóstico</span></div>
                 {diagnosisReceiptPhotoUrl
-                  ? <button type="button" className="summary-image-link" onClick={() => { setReceiptPreview({src:diagnosisReceiptPhotoUrl,alt:"Comprobante de pago del diagnóstico"}); setReceiptPreviewOpen(true); }} aria-label="Ampliar comprobante de pago del diagnóstico"><img className="summary-invoice-image" src={diagnosisReceiptPhotoUrl} alt="Comprobante de pago del diagnóstico"/></button>
+                  ? <button type="button" className="summary-image-link" onClick={() => { setReceiptPreview({src:diagnosisReceiptPhotoUrl,alt:"Comprobante de pago del diagnóstico"}); setReceiptPreviewOpen(true); }} aria-label="Ampliar comprobante de pago del diagnóstico"><img className="summary-invoice-image" src={diagnosisReceiptPhotoUrl} alt="Comprobante de pago del diagnóstico"/><span className="summary-image-hover-hint" aria-hidden="true">Clic para ampliar</span></button>
                   : <div className="summary-no-image">No se adjuntó una imagen del comprobante de diagnóstico.</div>}
                 <div className="summary-document-meta">{money(Number((order as ServiceOrder & {diagnosis_receipt_amount?:number|string|null}).diagnosis_receipt_amount ?? 0))}</div>
               </> : <>
