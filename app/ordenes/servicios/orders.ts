@@ -17,7 +17,7 @@ export const ORDER_STATUSES = [
   { value: "recepcion", label: "Recepción" },
   { value: "diagnostico", label: "Diagnóstico" },
   { value: "en_reparacion", label: "En reparación" },
-  { value: "listas", label: "Listas" },
+  { value: "listas", label: "Lista para entrega" },
   { value: "entregadas", label: "Entregadas" },
   { value: "rechazadas", label: "Rechazadas" },
 ] as const;
