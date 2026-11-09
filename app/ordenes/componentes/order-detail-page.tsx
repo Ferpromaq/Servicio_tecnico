@@ -16,6 +16,7 @@ import { supabase } from "@/lib/supabase";
 import {
   authorizePart,
   confirmCommissioningReady,
+  confirmCommissioningDelivery,
   getOrderWorkflow,
   markPartMilestone,
   saveDiagnosis,
@@ -1683,13 +1684,12 @@ export default function OrderDetailPage({
                   const { error: uploadError } = await supabase.storage.from("order-documents").upload(photoPath, deliveryPhotoFile, { contentType: deliveryPhotoFile.type, upsert: false });
                   if (uploadError) throw uploadError;
                   try {
-                    const { error: deliveryError } = await supabase.rpc("confirm_commissioning_delivery", {
-                      p_order_id: order.id,
-                      p_delivered_by_name: deliveryByName.trim(),
-                      p_received_by_name: deliveryReceivedBy.trim(),
-                      p_delivery_photo_path: photoPath,
+                    await confirmCommissioningDelivery({
+                      orderId: order.id,
+                      deliveredByName: deliveryByName.trim(),
+                      receivedByName: deliveryReceivedBy.trim(),
+                      deliveryPhotoPath: photoPath,
                     });
-                    if (deliveryError) throw deliveryError;
                   } catch (deliveryError) {
                     await supabase.storage.from("order-documents").remove([photoPath]);
                     throw deliveryError;
