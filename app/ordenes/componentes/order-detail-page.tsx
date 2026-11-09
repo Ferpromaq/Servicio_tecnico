@@ -462,22 +462,41 @@ export default function OrderDetailPage({
                       )}
                     </>
                   ) : order.status === "listas" || order.status === "entregadas" ? (
-                    <div className="commissioning-completed-row">
-                      <p className="commissioning-ready-status">
-                        {order.status === "entregadas" ? "Equipo entregado" : "Equipo listo para entregar"}
-                      </p>
-                      {(() => {
-                        const confirmation = events.find((event) => event.event_type === "commissioning_ready");
-                        const tester = confirmation?.testing_technician;
-                        return confirmation ? (
-                          <div className="commissioning-audit">
-                            <span>Pruebas: <strong>{tester?.full_name ?? "Técnico no identificado"}</strong></span>
-                            <span>Confirmó: <strong>{confirmation.actor?.full_name ?? "Usuario"}</strong></span>
-                            <span>Fecha: <strong>{new Intl.DateTimeFormat("es-CL", { dateStyle: "medium", timeStyle: "short" }).format(new Date(confirmation.created_at))}</strong></span>
+                    {(() => {
+                      const confirmation = events.find((event) => event.event_type === "commissioning_ready");
+                      const tester = confirmation?.testing_technician;
+                      return (
+                        <div className="commissioning-completed">
+                          <div className="commissioning-completed-heading">
+                            <div>
+                              <span className="commissioning-completed-eyebrow">PUESTA EN MARCHA</span>
+                              <h2>{order.status === "entregadas" ? "Equipo entregado" : "Equipo listo para entregar"}</h2>
+                            </div>
+                            <span className={order.status === "entregadas" ? "commissioning-state delivered" : "commissioning-state ready"}>
+                              {order.status === "entregadas" ? "Entrega completada" : "Pendiente de entrega"}
+                            </span>
                           </div>
-                        ) : null;
-                      })()}
-                    </div>
+                          {confirmation ? (
+                            <div className="commissioning-audit-grid">
+                              <div className="commissioning-audit-item">
+                                <span>Pruebas realizadas por</span>
+                                <strong>{tester?.full_name ?? "Técnico no identificado"}</strong>
+                              </div>
+                              <div className="commissioning-audit-item">
+                                <span>Confirmación registrada por</span>
+                                <strong>{confirmation.actor?.full_name ?? "Usuario"}</strong>
+                              </div>
+                              <div className="commissioning-audit-item">
+                                <span>Fecha y hora de confirmación</span>
+                                <strong>{new Intl.DateTimeFormat("es-CL", { dateStyle: "medium", timeStyle: "short" }).format(new Date(confirmation.created_at))}</strong>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="commissioning-audit-missing">La confirmación quedó registrada, pero no se encontró el detalle de trazabilidad.</p>
+                          )}
+                        </div>
+                      );
+                    })()}
                   ) : (
                     <p className="muted">Estado actual: {orderStatusLabel(order.status)}.</p>
                   )}
