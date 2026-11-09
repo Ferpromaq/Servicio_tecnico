@@ -280,7 +280,7 @@ export function Dashboard() {
             </section>
             <section className="drawer-info-card">
               <div className="drawer-info-heading"><Wrench size={15}/><span>Equipo</span></div>
-              <strong>{[drawerOrder.machines?.brand, drawerOrder.machines?.model].filter(Boolean).join(" ") || drawerOrder.machines?.equipment_type || "Sin información"}</strong>
+              <strong>{[drawerOrder.machines?.brand]}</strong>
               <small>Serie: {drawerOrder.machines?.serial_number ?? "No registrada"}</small>
             </section>
           </div>
