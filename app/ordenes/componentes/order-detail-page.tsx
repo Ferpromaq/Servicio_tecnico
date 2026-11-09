@@ -51,6 +51,7 @@ export default function OrderDetailPage({ orderNumber, embedded = false, onClose
   const [error, setError] = useState("");
   const [warrantyPhotoUrl, setWarrantyPhotoUrl] = useState("");
   const [purchaseInvoicePhotoUrl, setPurchaseInvoicePhotoUrl] = useState("");
+  const [diagnosisReceiptPhotoUrl, setDiagnosisReceiptPhotoUrl] = useState("");
 
   const load = useCallback(async () => {
     if (!supabase) { setError("Configura Supabase para consultar esta orden."); return; }
@@ -106,6 +107,8 @@ export default function OrderDetailPage({ orderNumber, embedded = false, onClose
       setCommissioning(Boolean(row.commissioning));
       setWarrantyPhotoUrl("");
       setPurchaseInvoicePhotoUrl("");
+      setDiagnosisReceiptPhotoUrl("");
+      if (row.diagnosis_receipt_photo_path) { const { data: file, error: fileError } = await supabase.storage.from("order-documents").createSignedUrl(row.diagnosis_receipt_photo_path, 3600); if (fileError) throw fileError; if (file?.signedUrl) setDiagnosisReceiptPhotoUrl(file.signedUrl); }
       if (row.warranty_photo_path) { const { data: file } = await supabase.storage.from("order-documents").createSignedUrl(row.warranty_photo_path, 3600); if (file?.signedUrl) setWarrantyPhotoUrl(file.signedUrl); }
       if (row.purchase_invoice_photo_path) { const { data: file } = await supabase.storage.from("order-documents").createSignedUrl(row.purchase_invoice_photo_path, 3600); if (file?.signedUrl) setPurchaseInvoicePhotoUrl(file.signedUrl); }
       const workflow = await getOrderWorkflow(baseRow.id);
@@ -178,10 +181,18 @@ export default function OrderDetailPage({ orderNumber, embedded = false, onClose
               <div><small>Comprobante del diagnóstico</small><strong>{(order as ServiceOrder & {diagnosis_receipt_type?:string|null}).diagnosis_receipt_type ? String((order as ServiceOrder & {diagnosis_receipt_type?:string|null}).diagnosis_receipt_type).toUpperCase() : "No registrado"} <span>{(order as ServiceOrder & {diagnosis_receipt_number?:string|null}).diagnosis_receipt_number ? `N° ${(order as ServiceOrder & {diagnosis_receipt_number?:string|null}).diagnosis_receipt_number}` : "· Sin número"}</span></strong></div>
             </div>
             <div className="summary-document-preview">
-              <div className="summary-document-label"><span>Factura de compra</span>{purchaseInvoicePhotoUrl && <a href={purchaseInvoicePhotoUrl} target="_blank" rel="noreferrer">Abrir original ↗</a>}</div>
-              {purchaseInvoicePhotoUrl
-                ? <a className="summary-image-link" href={purchaseInvoicePhotoUrl} target="_blank" rel="noreferrer"><img className="summary-invoice-image" src={purchaseInvoicePhotoUrl} alt="Factura de compra de la orden"/></a>
-                : <div className="summary-no-image">No se adjuntó una imagen de la factura.</div>}
+              {((order as ServiceOrder & {intake_type?:string}).intake_type === "no_warranty") ? <>
+                <div className="summary-document-label"><span>Comprobante de pago del diagnóstico</span>{diagnosisReceiptPhotoUrl && <a href={diagnosisReceiptPhotoUrl} target="_blank" rel="noreferrer">Abrir original ↗</a>}</div>
+                {diagnosisReceiptPhotoUrl
+                  ? <a className="summary-image-link" href={diagnosisReceiptPhotoUrl} target="_blank" rel="noreferrer"><img className="summary-invoice-image" src={diagnosisReceiptPhotoUrl} alt="Comprobante de pago del diagnóstico"/></a>
+                  : <div className="summary-no-image">No se adjuntó una imagen del comprobante de diagnóstico.</div>}
+                <div className="summary-document-meta">{money(Number((order as ServiceOrder & {diagnosis_receipt_amount?:number|string|null}).diagnosis_receipt_amount ?? 0))}</div>
+              </> : <>
+                <div className="summary-document-label"><span>Factura de compra</span>{purchaseInvoicePhotoUrl && <a href={purchaseInvoicePhotoUrl} target="_blank" rel="noreferrer">Abrir original ↗</a>}</div>
+                {purchaseInvoicePhotoUrl
+                  ? <a className="summary-image-link" href={purchaseInvoicePhotoUrl} target="_blank" rel="noreferrer"><img className="summary-invoice-image" src={purchaseInvoicePhotoUrl} alt="Factura de compra de la orden"/></a>
+                  : <div className="summary-no-image">No se adjuntó una imagen de la factura.</div>}
+              </>}
             </div>
             {warrantyPhotoUrl && <div className="summary-warranty-link"><a href={warrantyPhotoUrl} target="_blank" rel="noreferrer">Ver fotografía del comprobante de garantía ↗</a></div>}
           </article>
