@@ -159,7 +159,7 @@ export default function OrderDetailPage({ orderNumber, embedded = false, onClose
   return <main className={embedded ? "detail-drawer-content detail-page" : "main detail-page"}>
     <div className={embedded ? "detail-drawer-topbar" : undefined}>
       <button className="back-link" onClick={() => onClose ? onClose() : router.push("/ordenes")}><ArrowLeft size={16}/> {embedded ? "Volver al resumen" : "Volver a órdenes"}</button>
-      {embedded && order && <span className="detail-drawer-order-number">Orden #{order.order_number}</span>}
+      {embedded && order && <span className="detail-drawer-order-number heading">Orden #{order.order_number}</span>}
     </div>
     {error && <div className="notice error">{error}</div>}
     {notice && <div className="notice success"><Check size={16}/>{notice}</div>}
