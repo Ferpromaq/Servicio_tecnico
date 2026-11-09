@@ -10,6 +10,7 @@ export type PartRequest = {
   warranty_covered: boolean;
   client_contacted: boolean;
   from_stock: boolean;
+  catalog_part_id: string | null;
   received_at: string | null;
   installed_at: string | null;
   created_at: string;
