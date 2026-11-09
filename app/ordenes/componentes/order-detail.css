@@ -376,3 +376,99 @@
   .commissioning-delivery-photo{max-width:none}
   .commissioning-delivery-photo .summary-image-link{height:190px}
 }
+
+
+/* Acción de entrega: bloque independiente, jerarquía clara y botón legible. */
+.commissioning-ready-card .commissioning-delivery-action{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:28px;
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  margin:4px 0 0;
+  padding:22px 24px;
+  border:1px solid #f0d8c9;
+  border-radius:14px;
+  background:linear-gradient(110deg,#fff8f3 0%,#fffdfb 72%);
+}
+.commissioning-ready-card .commissioning-delivery-copy{
+  display:grid;
+  gap:6px;
+  min-width:0;
+  max-width:650px;
+}
+.commissioning-ready-card .commissioning-delivery-kicker{
+  color:#c6531b;
+  font-size:10px;
+  line-height:1.2;
+  font-weight:800;
+  letter-spacing:.11em;
+}
+.commissioning-ready-card .commissioning-delivery-copy h3{
+  margin:0;
+  color:#263548;
+  font-size:17px;
+  line-height:1.3;
+  font-weight:750;
+}
+.commissioning-ready-card .commissioning-delivery-copy p{
+  margin:0;
+  color:#667587;
+  font-size:13px;
+  line-height:1.55;
+}
+.commissioning-ready-card .commissioning-delivery-button{
+  display:inline-flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  min-height:48px;
+  padding:0 20px;
+  border:1px solid #e9570b;
+  border-radius:10px;
+  background:#ff6210;
+  color:#fff;
+  box-shadow:0 3px 8px rgba(224,83,17,.16);
+  font-family:inherit;
+  font-size:14px;
+  line-height:1.2;
+  font-weight:750;
+  white-space:nowrap;
+  cursor:pointer;
+  transition:background .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+.commissioning-ready-card .commissioning-delivery-button:hover:not(:disabled){
+  background:#e9570b;
+  box-shadow:0 5px 13px rgba(224,83,17,.22);
+  transform:translateY(-1px);
+}
+.commissioning-ready-card .commissioning-delivery-button:focus-visible{
+  outline:3px solid rgba(255,98,16,.25);
+  outline-offset:3px;
+}
+.commissioning-ready-card .commissioning-delivery-button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+@media(max-width:760px){
+  .commissioning-ready-card .commissioning-delivery-action{
+    align-items:stretch;
+    flex-direction:column;
+    gap:16px;
+    padding:17px;
+  }
+  .commissioning-ready-card .commissioning-delivery-copy h3{font-size:16px}
+  .commissioning-ready-card .commissioning-delivery-copy p{font-size:13px}
+  .commissioning-ready-card .commissioning-delivery-button{
+    width:100%;
+    min-height:48px;
+    white-space:normal;
+    font-size:14px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .commissioning-ready-card .commissioning-delivery-button{transition:none}
+}
