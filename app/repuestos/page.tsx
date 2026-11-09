@@ -105,6 +105,7 @@ export default function PartsPage() {
   const [notice, setNotice] = useState("");
   const [saving, setSaving] = useState(false);
   const [editingPart, setEditingPart] = useState<CatalogPart | null>(null);
+  const [partFormOpen, setPartFormOpen] = useState(false);
   const [partForm, setPartForm] = useState(emptyPart);
   const [costPart, setCostPart] = useState<CatalogPart | null>(null);
   const [costForm, setCostForm] = useState({
@@ -201,12 +202,14 @@ export default function PartsPage() {
 
   function startCreate() {
     setEditingPart(null);
+    setPartFormOpen(true);
     setPartForm(emptyPart);
     setNotice("");
   }
 
   function startEdit(part: CatalogPart) {
     setEditingPart(part);
+    setPartFormOpen(true);
     setPartForm({
       name: part.name,
       description: part.description ?? "",
@@ -239,6 +242,7 @@ export default function PartsPage() {
       if (saveError) throw saveError;
       setNotice(editingPart ? "Repuesto actualizado." : "Repuesto agregado al catálogo.");
       setEditingPart(null);
+      setPartFormOpen(false);
       setPartForm(emptyPart);
       await load();
     } catch (err) {
@@ -320,7 +324,7 @@ export default function PartsPage() {
               </div>
             )}
 
-            {canManageCatalog && (
+            {canManageCatalog && partFormOpen && (
               <form className="card" onSubmit={saveCatalogPart}>
                 <h3>{editingPart ? "Editar repuesto" : "Nuevo repuesto"}</h3>
                 <div className="detail-columns">
@@ -357,7 +361,7 @@ export default function PartsPage() {
                 )}
                 <div className="parts-draft-footer">
                   <button className="primary" type="submit" disabled={saving || !partForm.name.trim()}>{saving ? "Guardando…" : editingPart ? "Guardar cambios" : "Crear repuesto"}</button>
-                  <button className="secondary" type="button" onClick={() => { setEditingPart(null); setPartForm(emptyPart); }}>Cancelar</button>
+                  <button className="secondary" type="button" onClick={() => { setEditingPart(null); setPartFormOpen(false); setPartForm(emptyPart); }}>Cancelar</button>
                 </div>
               </form>
             )}
