@@ -621,6 +621,7 @@ export default function OrderDetailPage({
                     <span>Editar datos administrativos</span>
                   </summary>
                   <div className="detail-admin-tools-content">
+                    {!isCommissioning && (
                     <div className="card status-control">
                       <div>
                         <h2>Gestión del estado</h2>
@@ -698,6 +699,7 @@ export default function OrderDetailPage({
                         </div>
                       )}
                     </div>
+                    )}
                     <div className="detail-columns settings-grid">
                       <article className="card">
                         <h3 className="sectiontitle">Garantía y comprobante</h3>
