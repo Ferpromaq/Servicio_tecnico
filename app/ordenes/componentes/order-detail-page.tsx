@@ -62,7 +62,9 @@ export default function OrderDetailPage({
   const resolvedOrderNumber = orderNumber ?? params.id;
   const router = useRouter();
   const [order, setOrder] = useState<ServiceOrder | null>(null);
-  const [parts, setParts] = useState<PartRequest[]>([]);\n  const [catalogParts, setCatalogParts] = useState<CatalogPart[]>([]);\n  const [catalogLoadError, setCatalogLoadError] = useState("");
+  const [parts, setParts] = useState<PartRequest[]>([]);
+  const [catalogParts, setCatalogParts] = useState<CatalogPart[]>([]);
+  const [catalogLoadError, setCatalogLoadError] = useState("");
   const [payments, setPayments] = useState<OrderPayment[]>([]);
   const [events, setEvents] = useState<OrderEvent[]>([]);
   const [diagnosisReports, setDiagnosisReports] = useState<
