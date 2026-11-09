@@ -1218,7 +1218,7 @@ export default function OrderDetailPage({
                               )
                             }
                           />{" "}
-                          Disponible desde stock
+                          Repuesto de Ferpromaq (sin descuento de existencias)
                         </label>
                       </div>
                       <div className="parts-draft-subtotal">
