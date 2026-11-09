@@ -66,6 +66,9 @@ export default function OrderDetailPage({
     { description: "", quantity: "1", unitPrice: "0", fromStock: false },
   ]);
   const [role, setRole] = useState<Role | null>(null);
+  const [activeTechnicians, setActiveTechnicians] = useState<{ id: string; full_name: string }[]>([]);
+  const [commissioningModalOpen, setCommissioningModalOpen] = useState(false);
+  const [testingTechnicianId, setTestingTechnicianId] = useState("");
   const [tab, setTab] = useState("resumen");
   const [diagnosis, setDiagnosis] = useState("");
   const [partDescription, setPartDescription] = useState("");
@@ -181,6 +184,7 @@ export default function OrderDetailPage({
         forced_by: forcedByResult.data,
       };
       setOrder(row as unknown as ServiceOrder);
+      setTestingTechnicianId(baseRow.assigned_technician ?? "");
       setNextStatus(row.status);
       setDiagnosis("");
       setDiagnosisAmount(String(row.diagnosis_amount ?? 0));
@@ -213,6 +217,15 @@ export default function OrderDetailPage({
           .createSignedUrl(row.purchase_invoice_photo_path, 3600);
         if (file?.signedUrl) setPurchaseInvoicePhotoUrl(file.signedUrl);
       }
+      const { data: technicianRows, error: techniciansError } = await supabase
+        .from("profiles")
+        .select("id,full_name")
+        .eq("role", "tecnico")
+        .eq("active", true)
+        .order("full_name", { ascending: true });
+      if (techniciansError) throw techniciansError;
+      setActiveTechnicians(technicianRows ?? []);
+      setTestingTechnicianId((current) => current || baseRow.assigned_technician || "");
       const workflow = await getOrderWorkflow(baseRow.id);
       setParts(workflow.parts);
       setPayments(workflow.payments);
@@ -425,31 +438,44 @@ export default function OrderDetailPage({
               {isCommissioning && (
                 <article className="card commissioning-ready-card">
                   <h2>Puesta en Marcha</h2>
-                  <p className="muted">
-                    Cuando termines las pruebas y confirmes que el equipo está operativo, márcalo como listo para entregar.
-                  </p>
                   {order.status === "recepcion" ? (
-                    role === "tecnico" || role === "admin" || role === "supervisor" ? (
-                      <button
-                        type="button"
-                        className="primary"
-                        disabled={busy}
-                        onClick={() =>
-                          void run(
-                            () => confirmCommissioningReady(order.id),
-                            "Puesta en Marcha confirmada. La orden quedó lista para entregar.",
-                          )
-                        }
-                      >
-                        <Check size={15} /> Confirmar lista para entregar
-                      </button>
-                    ) : (
-                      <p className="muted">La confirmación está disponible para el técnico asignado.</p>
-                    )
+                    <>
+                      <p className="muted">
+                        Cuando terminen las pruebas y el equipo esté operativo, registra quién realizó las pruebas para confirmar que está listo para entregar.
+                      </p>
+                      {role === "tecnico" || role === "admin" || role === "supervisor" ? (
+                        <button
+                          type="button"
+                          className="primary"
+                          disabled={busy || activeTechnicians.length === 0}
+                          onClick={() => setCommissioningModalOpen(true)}
+                        >
+                          <Check size={15} /> Confirmar lista para entregar
+                        </button>
+                      ) : (
+                        <p className="muted">La confirmación está disponible para el técnico asignado o supervisión.</p>
+                      )}
+                      {activeTechnicians.length === 0 && (
+                        <p className="muted">No hay técnicos activos disponibles para registrar las pruebas.</p>
+                      )}
+                    </>
                   ) : order.status === "listas" || order.status === "entregadas" ? (
-                    <p className="commissioning-ready-status">
-                      {order.status === "entregadas" ? "Equipo entregado" : "Equipo listo para entregar"}
-                    </p>
+                    <>
+                      <p className="commissioning-ready-status">
+                        {order.status === "entregadas" ? "Equipo entregado" : "Equipo listo para entregar"}
+                      </p>
+                      {(() => {
+                        const confirmation = events.find((event) => event.event_type === "commissioning_ready");
+                        const tester = confirmation?.testing_technician;
+                        return confirmation ? (
+                          <div className="commissioning-audit">
+                            <span>Pruebas realizadas por: <strong>{tester?.full_name ?? "Técnico no identificado"}</strong></span>
+                            <span>Confirmado por: <strong>{confirmation.actor?.full_name ?? "Usuario"}</strong></span>
+                            <span>Fecha: <strong>{new Intl.DateTimeFormat("es-CL", { dateStyle: "medium", timeStyle: "short" }).format(new Date(confirmation.created_at))}</strong></span>
+                          </div>
+                        ) : null;
+                      })()}
+                    </>
                   ) : (
                     <p className="muted">Estado actual: {orderStatusLabel(order.status)}.</p>
                   )}
@@ -1515,6 +1541,30 @@ export default function OrderDetailPage({
             </section>
           )}
         </>
+      )}
+      {commissioningModalOpen && order && (
+        <div className="commissioning-modal-backdrop" role="presentation" onClick={() => setCommissioningModalOpen(false)}>
+          <section className="commissioning-modal" role="dialog" aria-modal="true" aria-labelledby="commissioning-modal-title" onClick={(event) => event.stopPropagation()}>
+            <button type="button" className="commissioning-modal-close" aria-label="Cerrar" onClick={() => setCommissioningModalOpen(false)}>×</button>
+            <span className="eyebrow">PUESTA EN MARCHA · ORDEN #{order.order_number}</span>
+            <h2 id="commissioning-modal-title">¿Quién realizó las pruebas?</h2>
+            <p>Selecciona al técnico que probó el equipo y verificó que funciona correctamente. Esta persona quedará registrada como responsable de las pruebas, aunque otra persona confirme la orden.</p>
+            <label htmlFor="commissioning-testing-technician">Técnico responsable de las pruebas</label>
+            <select id="commissioning-testing-technician" value={testingTechnicianId} onChange={(event) => setTestingTechnicianId(event.target.value)}>
+              <option value="">Seleccionar técnico</option>
+              {activeTechnicians.map((technician) => <option key={technician.id} value={technician.id}>{technician.full_name}</option>)}
+            </select>
+            <div className="commissioning-modal-actions">
+              <button type="button" className="secondary" disabled={busy} onClick={() => setCommissioningModalOpen(false)}>Cancelar</button>
+              <button type="button" className="primary" disabled={busy || !testingTechnicianId} onClick={() => {
+                void run(
+                  () => confirmCommissioningReady(order.id, testingTechnicianId),
+                  "Puesta en Marcha confirmada. La orden quedó lista para entregar.",
+                ).then(() => setCommissioningModalOpen(false));
+              }}>Confirmar y registrar</button>
+            </div>
+          </section>
+        </div>
       )}
       {receiptPreview && (
         <div
