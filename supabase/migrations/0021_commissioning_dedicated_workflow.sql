@@ -13,6 +13,9 @@ declare
   v_is_commissioning boolean;
 begin
   if tg_table_name = 'service_orders' then
+    if old.commissioning is true and new.commissioning is distinct from true then
+      raise exception 'Una orden de Puesta en Marcha no puede convertirse en una orden de reparación';
+    end if;
     if old.commissioning is true
        and new.status is distinct from old.status
        and current_setting('app.allow_commissioning_ready', true) is distinct from 'on' then
@@ -42,7 +45,7 @@ $$;
 
 drop trigger if exists commissioning_status_guard on public.service_orders;
 create trigger commissioning_status_guard
-before update of status on public.service_orders
+before update on public.service_orders
 for each row execute function public.guard_commissioning_order_workflow();
 
 drop trigger if exists commissioning_parts_guard on public.parts_requests;
