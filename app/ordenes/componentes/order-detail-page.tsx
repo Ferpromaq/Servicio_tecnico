@@ -466,46 +466,13 @@ export default function OrderDetailPage({
                     </span>
                   </div>
                   <div className="summary-document-row">
-                    <div>
-                      <small>Comprobante del diagnóstico</small>
-                      <strong>
-                        {(
-                          order as ServiceOrder & {
-                            diagnosis_receipt_type?: string | null;
-                          }
-                        ).diagnosis_receipt_type
-                          ? String(
-                              (
-                                order as ServiceOrder & {
-                                  diagnosis_receipt_type?: string | null;
-                                }
-                              ).diagnosis_receipt_type,
-                            ).toUpperCase()
-                          : "No registrado"}{" "}
-                        <span>
-                          {(
-                            order as ServiceOrder & {
-                              diagnosis_receipt_number?: string | null;
-                            }
-                          ).diagnosis_receipt_number
-                            ? `N° ${(order as ServiceOrder & { diagnosis_receipt_number?: string | null }).diagnosis_receipt_number}`
-                            : "· Sin número"}
-                        </span>
-                        <div className="summary-document-meta">
-                          {money(
-                            Number(
-                              (
-                                order as ServiceOrder & {
-                                  diagnosis_receipt_amount?:
-                                    | number
-                                    | string
-                                    | null;
-                                }
-                              ).diagnosis_receipt_amount ?? 0,
-                            ),
-                          )}
-                        </div>
-                      </strong>
+                    <div className="summary-document-column">
+                      <small>{(order as ServiceOrder & { diagnosis_receipt_type?: string | null }).diagnosis_receipt_type ? String((order as ServiceOrder & { diagnosis_receipt_type?: string | null }).diagnosis_receipt_type).toUpperCase() : "Comprobante"}</small>
+                      <strong>{(order as ServiceOrder & { diagnosis_receipt_number?: string | null }).diagnosis_receipt_number ? `N° ${(order as ServiceOrder & { diagnosis_receipt_number?: string | null }).diagnosis_receipt_number}` : "Sin número"}</strong>
+                    </div>
+                    <div className="summary-document-column summary-document-amount">
+                      <small>Monto</small>
+                      <strong>{money(Number((order as ServiceOrder & { diagnosis_receipt_amount?: number | string | null }).diagnosis_receipt_amount ?? 0))}</strong>
                     </div>
                   </div>
                   <div className="summary-document-preview">
