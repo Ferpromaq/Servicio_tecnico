@@ -40,6 +40,15 @@ import {
 
 type Role = "admin" | "supervisor" | "tecnico";
 
+type CatalogPart = {
+  id: string;
+  name: string;
+  internal_code: string | null;
+  brand: string | null;
+  model: string | null;
+  sale_price: number | null;
+};
+
 export default function OrderDetailPage({
   orderNumber,
   embedded = false,
@@ -53,7 +62,7 @@ export default function OrderDetailPage({
   const resolvedOrderNumber = orderNumber ?? params.id;
   const router = useRouter();
   const [order, setOrder] = useState<ServiceOrder | null>(null);
-  const [parts, setParts] = useState<PartRequest[]>([]);
+  const [parts, setParts] = useState<PartRequest[]>([]);\n  const [catalogParts, setCatalogParts] = useState<CatalogPart[]>([]);\n  const [catalogLoadError, setCatalogLoadError] = useState("");
   const [payments, setPayments] = useState<OrderPayment[]>([]);
   const [events, setEvents] = useState<OrderEvent[]>([]);
   const [diagnosisReports, setDiagnosisReports] = useState<
@@ -65,7 +74,7 @@ export default function OrderDetailPage({
     }[]
   >([]);
   const [partDrafts, setPartDrafts] = useState([
-    { description: "", quantity: "1", unitPrice: "0", fromStock: false },
+    { description: "", quantity: "1", unitPrice: "0", fromStock: false, catalogPartId: "" },
   ]);
   const [role, setRole] = useState<Role | null>(null);
   const [activeTechnicians, setActiveTechnicians] = useState<{ id: string; full_name: string }[]>([]);
@@ -232,6 +241,18 @@ export default function OrderDetailPage({
         .order("full_name", { ascending: true });
       if (techniciansError) throw techniciansError;
       setActiveTechnicians(technicianRows ?? []);
+      const { data: catalogRows, error: catalogError } = await supabase
+        .from("parts_catalog")
+        .select("id,name,internal_code,brand,model,sale_price")
+        .eq("active", true)
+        .order("name", { ascending: true });
+      if (catalogError) {
+        setCatalogParts([]);
+        setCatalogLoadError("No se pudo cargar el catálogo. Verifica que esté aplicada la migración 0020.");
+      } else {
+        setCatalogParts((catalogRows ?? []) as CatalogPart[]);
+        setCatalogLoadError("");
+      }
       setTestingTechnicianId((current) => current || baseRow.assigned_technician || "");
       const workflow = await getOrderWorkflow(baseRow.id);
       setParts(workflow.parts);
@@ -1073,6 +1094,12 @@ export default function OrderDetailPage({
                   Agrega todos los repuestos necesarios y registra la solicitud
                   en conjunto.
                 </p>
+                {catalogLoadError && <div className="notice error">{catalogLoadError}</div>}
+                {!catalogLoadError && catalogParts.length > 0 && (
+                  <p className="catalog-availability-note">
+                    Puedes seleccionar repuestos ya registrados en el catálogo de Ferpromaq o ingresar uno manualmente.
+                  </p>
+                )}
                 <div className="parts-draft-list">
                   {partDrafts.map((item, index) => (
                     <div className="parts-draft-row" key={index}>
@@ -1090,6 +1117,38 @@ export default function OrderDetailPage({
                           >
                             Quitar
                           </button>
+                        )}
+                      </div>
+                      <div className="field catalog-part-picker">
+                        <label>Repuesto existente en el catálogo de Ferpromaq</label>
+                        <select
+                          value={item.catalogPartId}
+                          onChange={(e) => {
+                            const selected = catalogParts.find((part) => part.id === e.target.value);
+                            setPartDrafts((current) =>
+                              current.map((row, i) =>
+                                i === index
+                                  ? {
+                                      ...row,
+                                      catalogPartId: e.target.value,
+                                      description: selected?.name ?? "",
+                                      unitPrice: selected?.sale_price == null ? row.unitPrice : String(selected.sale_price),
+                                      fromStock: Boolean(selected),
+                                    }
+                                  : row,
+                              ),
+                            );
+                          }}
+                        >
+                          <option value="">Ingresar repuesto manualmente</option>
+                          {catalogParts.map((part) => (
+                            <option key={part.id} value={part.id}>
+                              {[part.internal_code, part.name, part.brand, part.model].filter(Boolean).join(" · ")}
+                            </option>
+                          ))}
+                        </select>
+                        {item.catalogPartId && (
+                          <small>Vinculado al catálogo de la empresa. No modifica ni descuenta existencias.</small>
                         )}
                       </div>
                       <div className="detail-columns">
@@ -1186,6 +1245,7 @@ export default function OrderDetailPage({
                           quantity: "1",
                           unitPrice: "0",
                           fromStock: false,
+                          catalogPartId: "",
                         },
                       ])
                     }
@@ -1227,6 +1287,7 @@ export default function OrderDetailPage({
                           quantity: Number(item.quantity),
                           unitPrice: Number(item.unitPrice),
                           fromStock: item.fromStock,
+                          catalogPartId: item.catalogPartId || undefined,
                         })),
                       });
                       setPartDrafts([
@@ -1235,6 +1296,7 @@ export default function OrderDetailPage({
                           quantity: "1",
                           unitPrice: "0",
                           fromStock: false,
+                          catalogPartId: "",
                         },
                       ]);
                     }, "Repuestos solicitados correctamente")
