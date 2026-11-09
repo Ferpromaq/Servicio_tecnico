@@ -279,3 +279,74 @@
   .commissioning-completed-row .commissioning-audit{justify-content:flex-start;width:100%;gap:6px 12px}
   .commissioning-completed-row .commissioning-audit span{white-space:normal}
 }
+
+
+/* Puesta en Marcha: estado y trazabilidad en una franja amplia, legible y ordenada. */
+.commissioning-ready-card.commissioning-ready-card{
+  display:block;
+  width:100%;
+  max-width:none;
+  box-sizing:border-box;
+  margin:12px 0 16px;
+  padding:20px 22px;
+  border:1px solid #e5eaf0;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 2px 8px rgba(25,42,62,.035);
+}
+.commissioning-completed{display:grid;gap:18px;width:100%;min-width:0}
+.commissioning-completed-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  width:100%;padding-bottom:15px;border-bottom:1px solid #edf0f3
+}
+.commissioning-completed-heading>div{display:grid;gap:5px;min-width:0}
+.commissioning-completed-eyebrow{
+  color:#8793a1;font-size:10px;font-weight:800;letter-spacing:.09em
+}
+.commissioning-completed-heading h2{
+  margin:0;color:#253244;font-size:18px;font-weight:750;line-height:1.3
+}
+.commissioning-state{
+  display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+  min-height:30px;padding:6px 11px;border-radius:999px;
+  font-size:11px;font-weight:750;white-space:nowrap
+}
+.commissioning-state.ready{background:#eaf7ef;color:#247548}
+.commissioning-state.delivered{background:#edf2f8;color:#43566d}
+.commissioning-audit-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  width:100%;min-width:0
+}
+.commissioning-audit-item{
+  display:flex;flex-direction:column;justify-content:center;gap:7px;
+  min-width:0;padding:2px 20px
+}
+.commissioning-audit-item:first-child{padding-left:0}
+.commissioning-audit-item:last-child{padding-right:0}
+.commissioning-audit-item+.commissioning-audit-item{border-left:1px solid #edf0f3}
+.commissioning-audit-item>span{
+  color:#778494;font-size:11px;font-weight:600;line-height:1.35
+}
+.commissioning-audit-item>strong{
+  color:#263548;font-size:14px;font-weight:700;line-height:1.4;
+  overflow-wrap:anywhere
+}
+.commissioning-audit-missing{margin:0;color:#788594;font-size:12px;line-height:1.5}
+@media(max-width:760px){
+  .commissioning-ready-card.commissioning-ready-card{padding:16px;margin:10px 0 13px}
+  .commissioning-completed{gap:13px}
+  .commissioning-completed-heading{align-items:flex-start;padding-bottom:12px}
+  .commissioning-completed-heading h2{font-size:16px}
+  .commissioning-audit-grid{grid-template-columns:1fr;gap:0}
+  .commissioning-audit-item,.commissioning-audit-item:first-child,.commissioning-audit-item:last-child{
+    padding:10px 0
+  }
+  .commissioning-audit-item+.commissioning-audit-item{
+    border-left:0;border-top:1px solid #edf0f3
+  }
+  .commissioning-audit-item>strong{font-size:13px}
+}
+@media(max-width:420px){
+  .commissioning-completed-heading{flex-direction:column;gap:10px}
+  .commissioning-state{min-height:27px}
+}
