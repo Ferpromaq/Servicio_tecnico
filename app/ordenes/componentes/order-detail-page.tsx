@@ -401,24 +401,25 @@ export default function OrderDetailPage({
                     {orderPriorityLabel(order.priority)}
                   </span>
                 </div>
-                <div className="detailbox">
-                  <small>Repuestos solicitados</small>
-                  <strong>{parts.length}</strong>
-                </div>
-                <div className="detailbox">
-                  <small>Total pagado</small>
-                  <strong>{money(totalPaid)}</strong>
-                </div>
+                {!isCommissioning && (
+                  <>
+                    <div className="detailbox">
+                      <small>Repuestos solicitados</small>
+                      <strong>{parts.length}</strong>
+                    </div>
+                    <div className="detailbox">
+                      <small>Total pagado</small>
+                      <strong>{money(totalPaid)}</strong>
+                    </div>
+                  </>
+                )}
               </div>
 
               {isCommissioning && (
                 <article className="card commissioning-ready-card">
                   <h2>Puesta en Marcha</h2>
                   <p className="muted">
-                    Este servicio no requiere diagnóstico, solicitud de repuestos
-                    ni registro de pagos de reparación. Cuando hayas terminado
-                    las pruebas y confirmado que el equipo está operativo, marca
-                    la orden como lista para entregar.
+                    Cuando termines las pruebas y confirmes que el equipo está operativo, márcalo como listo para entregar.
                   </p>
                   {order.status === "recepcion" ? (
                     role === "tecnico" || role === "admin" || role === "supervisor" ? (
@@ -614,7 +615,7 @@ export default function OrderDetailPage({
                 </article>
               </div>
 
-              {(role === "admin" || role === "supervisor") && (
+              {(role === "admin" || role === "supervisor") && !isCommissioning && (
                 <details className="detail-admin-tools">
                   <summary>
                     Gestión de la orden, garantía y costos{" "}
