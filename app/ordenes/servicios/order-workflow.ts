@@ -49,7 +49,7 @@ export async function getOrderWorkflow(orderId: string) {
   // de que exista la tabla nueva de informes de diagnóstico. Si la migración
   // 0015 aún no está aplicada, mantenemos disponibles los eventos anteriores.
   const [parts, payments, events] = await Promise.all([
-    client.from("parts_requests").select("id,order_id,description,quantity,unit_price,status,warranty_covered,client_contacted,from_stock,received_at,installed_at,created_at").eq("order_id", orderId).order("created_at", { ascending: false }),
+    client.from("parts_requests").select("id,order_id,description,quantity,unit_price,status,warranty_covered,client_contacted,from_stock,catalog_part_id,received_at,installed_at,created_at").eq("order_id", orderId).order("created_at", { ascending: false }),
     client.from("payments").select("id,payment_type,amount,method,reference,receipt_received,paid_at").eq("order_id", orderId).order("paid_at", { ascending: false }),
     client.from("order_events").select("id,event_type,description,metadata,created_at,actor_id").eq("order_id", orderId).order("created_at", { ascending: false }),
   ]);
