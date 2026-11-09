@@ -573,16 +573,18 @@ export default function OrderDetailPage({
                       ] ?? "Sin clasificar"}
                     </span>
                   </div>
-                  <div className="summary-document-row">
-                    <div className="summary-document-column">
-                      <small>{(order as ServiceOrder & { diagnosis_receipt_type?: string | null }).diagnosis_receipt_type ? String((order as ServiceOrder & { diagnosis_receipt_type?: string | null }).diagnosis_receipt_type).toUpperCase() : "Comprobante"}</small>
-                      <strong>{(order as ServiceOrder & { diagnosis_receipt_number?: string | null }).diagnosis_receipt_number ? `N° ${(order as ServiceOrder & { diagnosis_receipt_number?: string | null }).diagnosis_receipt_number}` : "Sin número"}</strong>
+                  {!isCommissioning && (
+                    <div className="summary-document-row">
+                      <div className="summary-document-column">
+                        <small>{(order as ServiceOrder & { diagnosis_receipt_type?: string | null }).diagnosis_receipt_type ? String((order as ServiceOrder & { diagnosis_receipt_type?: string | null }).diagnosis_receipt_type).toUpperCase() : "Comprobante"}</small>
+                        <strong>{(order as ServiceOrder & { diagnosis_receipt_number?: string | null }).diagnosis_receipt_number ? `N° ${(order as ServiceOrder & { diagnosis_receipt_number?: string | null }).diagnosis_receipt_number}` : "Sin número"}</strong>
+                      </div>
+                      <div className="summary-document-column summary-document-amount">
+                        <small>Monto</small>
+                        <strong>{money(Number((order as ServiceOrder & { diagnosis_receipt_amount?: number | string | null }).diagnosis_receipt_amount ?? 0))}</strong>
+                      </div>
                     </div>
-                    <div className="summary-document-column summary-document-amount">
-                      <small>Monto</small>
-                      <strong>{money(Number((order as ServiceOrder & { diagnosis_receipt_amount?: number | string | null }).diagnosis_receipt_amount ?? 0))}</strong>
-                    </div>
-                  </div>
+                  )}
                   <div className="summary-document-preview">
                     {(order as ServiceOrder & { intake_type?: string })
                       .intake_type === "no_warranty" ? (
@@ -626,29 +628,32 @@ export default function OrderDetailPage({
                       <>
                         <div className="summary-document-label">
                           <span>Factura de compra</span>
-                          {purchaseInvoicePhotoUrl && (
-                            <a
-                              href={purchaseInvoicePhotoUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Abrir original ↗
-                            </a>
-                          )}
                         </div>
                         {purchaseInvoicePhotoUrl ? (
-                          <a
+                          <button
+                            type="button"
                             className="summary-image-link"
-                            href={purchaseInvoicePhotoUrl}
-                            target="_blank"
-                            rel="noreferrer"
+                            onClick={() => {
+                              setReceiptPreview({
+                                src: purchaseInvoicePhotoUrl,
+                                alt: "Factura de compra de la orden",
+                              });
+                              setReceiptPreviewOpen(true);
+                            }}
+                            aria-label="Ampliar factura de compra"
                           >
                             <img
                               className="summary-invoice-image"
                               src={purchaseInvoicePhotoUrl}
                               alt="Factura de compra de la orden"
                             />
-                          </a>
+                            <span
+                              className="summary-image-hover-hint"
+                              aria-hidden="true"
+                            >
+                              Clic para acercar
+                            </span>
+                          </button>
                         ) : (
                           <div className="summary-no-image">
                             No se adjuntó una imagen de la factura.
