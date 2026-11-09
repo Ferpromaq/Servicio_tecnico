@@ -213,3 +213,22 @@
   .detail-content .part-main{max-width:720px}
   .payment-form .detail-columns{grid-template-columns:repeat(2,minmax(180px,1fr))}
 }
+
+
+/* Vista ampliada del comprobante: modal centrado con entrada y salida suaves. */
+.summary-image-link{width:100%;padding:0;cursor:zoom-in;border:1px solid #e9edf1}
+.summary-image-hint{font-size:9px;font-weight:500;color:#8a96a4}
+.receipt-lightbox{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:28px;background:rgba(12,18,27,.78);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.receipt-lightbox.is-open{animation:receiptLightboxIn .24s ease-out both}
+.receipt-lightbox.is-closing{animation:receiptLightboxOut .22s ease-in both}
+.receipt-lightbox-content{position:relative;display:flex;align-items:center;justify-content:center;max-width:min(92vw,1100px);max-height:90vh;animation:receiptImageIn .28s cubic-bezier(.2,.75,.25,1) both}
+.receipt-lightbox.is-closing .receipt-lightbox-content{animation:receiptImageOut .2s ease-in both}
+.receipt-lightbox-content img{display:block;max-width:100%;max-height:90vh;width:auto;height:auto;object-fit:contain;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.38);background:#fff}
+.receipt-lightbox-close{position:absolute;z-index:1;top:-14px;right:-14px;width:36px;height:36px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.35);border-radius:50%;background:#fff;color:#253244;font-size:25px;line-height:1;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:transform .18s ease,background .18s ease}
+.receipt-lightbox-close:hover{transform:scale(1.07);background:#f4f6f8}
+@keyframes receiptLightboxIn{from{opacity:0}to{opacity:1}}
+@keyframes receiptLightboxOut{from{opacity:1}to{opacity:0}}
+@keyframes receiptImageIn{from{opacity:0;transform:translateY(10px) scale(.965)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes receiptImageOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(6px) scale(.975)}}
+@media(max-width:600px){.receipt-lightbox{padding:18px}.receipt-lightbox-content{max-width:96vw;max-height:88vh}.receipt-lightbox-content img{max-height:88vh;border-radius:9px}.receipt-lightbox-close{top:-13px;right:-7px;width:34px;height:34px}}
+@media(prefers-reduced-motion:reduce){.receipt-lightbox.is-open,.receipt-lightbox.is-closing,.receipt-lightbox-content,.receipt-lightbox.is-closing .receipt-lightbox-content{animation-duration:.01ms}}
