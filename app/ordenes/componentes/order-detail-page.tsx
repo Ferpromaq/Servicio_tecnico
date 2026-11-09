@@ -164,7 +164,7 @@ export default function OrderDetailPage({ orderNumber, embedded = false, onClose
     {error && <div className="notice error">{error}</div>}
     {notice && <div className="notice success"><Check size={16}/>{notice}</div>}
     {order && <>
-      <header className="detail-page-head"><div><div className="eyebrow">FERPROMAQ / ORDEN DE SERVICIO</div>{!embedded && <h1 className="heading">Orden #{order.order_number}</h1>}</div><button className="secondary" onClick={() => void load()} disabled={busy}><RefreshCw size={15}/> Actualizar</button></header>
+      <header className="detail-page-head"><div className={embedded ? "detail-page-head-copy" : undefined}><div className="eyebrow">FERPROMAQ / ORDEN DE SERVICIO</div>{!embedded && <h1 className="heading">Orden #{order.order_number}</h1>}</div><button className="secondary" onClick={() => void load()} disabled={busy}><RefreshCw size={15}/> Actualizar</button></header>
       <nav className="detail-tabs">{[["resumen","Resumen"],["diagnostico","Diagnóstico"],["repuestos","Repuestos"],["pagos","Pagos"],["historial","Historial"]].map(([value,label])=><button key={value} className={tab===value?"active":""} onClick={()=>setTab(value)}>{label}</button>)}</nav>
 
       {tab === "resumen" && <section className="detail-content summary-view">
