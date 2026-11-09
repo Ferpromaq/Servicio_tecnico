@@ -439,7 +439,7 @@ export default function OrderDetailPage({
 
               {isCommissioning && (
                 <article className="card commissioning-ready-card">
-                  <h2>Puesta en Marcha</h2>
+                  {order.status === "recepcion" && <h2>Puesta en Marcha</h2>}
                   {order.status === "recepcion" ? (
                     <>
                       <p className="muted">
@@ -470,7 +470,9 @@ export default function OrderDetailPage({
                           <div className="commissioning-completed-heading">
                             <div>
                               <span className="commissioning-completed-eyebrow">PUESTA EN MARCHA</span>
-                              <h2>{order.status === "entregadas" ? "Equipo entregado" : "Equipo listo para entregar"}</h2>
+                              <h2 className={order.status === "listas" ? "commissioning-ready-title" : undefined}>
+                                {order.status === "entregadas" ? "Equipo entregado" : "Equipo listo para entregar"}
+                              </h2>
                             </div>
                             <span className={order.status === "entregadas" ? "commissioning-state delivered" : "commissioning-state ready"}>
                               {order.status === "entregadas" ? "Entrega completada" : "Pendiente de entrega"}
