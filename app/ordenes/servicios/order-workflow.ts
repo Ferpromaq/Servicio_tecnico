@@ -81,6 +81,14 @@ export async function getOrderWorkflow(orderId: string) {
   };
 }
 
+export async function confirmCommissioningReady(orderId: string) {
+  const client = await requireSupabase();
+  const { error } = await client.rpc("confirm_commissioning_ready", {
+    p_order_id: orderId,
+  });
+  if (error) throw error;
+}
+
 export async function saveDiagnosis(orderId: string, diagnosis: string) {
   const client = await requireSupabase();
   const { error } = await client.rpc("save_order_diagnosis", {
