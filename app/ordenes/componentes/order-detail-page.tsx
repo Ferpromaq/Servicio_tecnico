@@ -52,6 +52,8 @@ export default function OrderDetailPage({ orderNumber, embedded = false, onClose
   const [warrantyPhotoUrl, setWarrantyPhotoUrl] = useState("");
   const [purchaseInvoicePhotoUrl, setPurchaseInvoicePhotoUrl] = useState("");
   const [diagnosisReceiptPhotoUrl, setDiagnosisReceiptPhotoUrl] = useState("");
+  const [receiptPreview, setReceiptPreview] = useState<{src:string;alt:string}|null>(null);
+  const [receiptPreviewOpen, setReceiptPreviewOpen] = useState(false);
 
   const load = useCallback(async () => {
     if (!supabase) { setError("Configura Supabase para consultar esta orden."); return; }
@@ -124,6 +126,20 @@ export default function OrderDetailPage({ orderNumber, embedded = false, onClose
 
   useEffect(() => { void load(); }, [load]);
 
+  useEffect(() => {
+    if (!receiptPreview) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setReceiptPreviewOpen(false);
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [receiptPreview]);
+
   async function run(action: () => Promise<unknown>, success: string) {
     setBusy(true); setError(""); setNotice("");
     try { await action(); setNotice(success); await load(); }
@@ -182,9 +198,9 @@ export default function OrderDetailPage({ orderNumber, embedded = false, onClose
             </div>
             <div className="summary-document-preview">
               {((order as ServiceOrder & {intake_type?:string}).intake_type === "no_warranty") ? <>
-                <div className="summary-document-label"><span>Comprobante de pago del diagnóstico</span>{diagnosisReceiptPhotoUrl && <a href={diagnosisReceiptPhotoUrl} target="_blank" rel="noreferrer">Abrir original ↗</a>}</div>
+                <div className="summary-document-label"><span>Comprobante de pago del diagnóstico</span><span className="summary-image-hint">Clic para ampliar</span></div>
                 {diagnosisReceiptPhotoUrl
-                  ? <a className="summary-image-link" href={diagnosisReceiptPhotoUrl} target="_blank" rel="noreferrer"><img className="summary-invoice-image" src={diagnosisReceiptPhotoUrl} alt="Comprobante de pago del diagnóstico"/></a>
+                  ? <button type="button" className="summary-image-link" onClick={() => { setReceiptPreview({src:diagnosisReceiptPhotoUrl,alt:"Comprobante de pago del diagnóstico"}); setReceiptPreviewOpen(true); }} aria-label="Ampliar comprobante de pago del diagnóstico"><img className="summary-invoice-image" src={diagnosisReceiptPhotoUrl} alt="Comprobante de pago del diagnóstico"/></button>
                   : <div className="summary-no-image">No se adjuntó una imagen del comprobante de diagnóstico.</div>}
                 <div className="summary-document-meta">{money(Number((order as ServiceOrder & {diagnosis_receipt_amount?:number|string|null}).diagnosis_receipt_amount ?? 0))}</div>
               </> : <>
@@ -221,5 +237,11 @@ export default function OrderDetailPage({ orderNumber, embedded = false, onClose
 
       {tab === "historial" && <section className="card detail-content"><h2>Actividad de la orden</h2>{events.length===0?<div className="empty">Todavía no hay eventos registrados.</div>:<div className="timeline">{events.map(event=><div className="event" key={event.id}><strong>{event.description}</strong><div className="eyebrow">{new Intl.DateTimeFormat("es-CL",{dateStyle:"medium",timeStyle:"short"}).format(new Date(event.created_at))} · {event.actor?.full_name ?? "Sistema"}</div></div>)}</div>}</section>}
     </>}
+    {receiptPreview && <div className={`receipt-lightbox ${receiptPreviewOpen ? "is-open" : "is-closing"}`} role="presentation" onClick={() => setReceiptPreviewOpen(false)} onAnimationEnd={event => { if (event.target === event.currentTarget && !receiptPreviewOpen) setReceiptPreview(null); }}>
+      <div className="receipt-lightbox-content" role="dialog" aria-modal="true" aria-label="Vista ampliada del comprobante" onClick={event => event.stopPropagation()}>
+        <button type="button" className="receipt-lightbox-close" onClick={() => setReceiptPreviewOpen(false)} aria-label="Cerrar imagen">×</button>
+        <img src={receiptPreview.src} alt={receiptPreview.alt}/>
+      </div>
+    </div>}
   </main>;
 }
