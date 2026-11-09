@@ -263,11 +263,18 @@ export default function OrderDetailPage({
       setNotice(success);
       await load();
     } catch (err) {
-      setError(
+      const detail =
         err instanceof Error
           ? err.message
-          : "No se pudo completar la operación.",
-      );
+          : err && typeof err === "object" && "message" in err &&
+              typeof err.message === "string"
+            ? err.message
+            : err && typeof err === "object" && "details" in err &&
+                typeof err.details === "string"
+              ? err.details
+              : "Error desconocido. Revisa la consola del navegador.";
+      setError(detail);
+      console.error("Error en operación de orden:", err);
     } finally {
       setBusy(false);
     }
