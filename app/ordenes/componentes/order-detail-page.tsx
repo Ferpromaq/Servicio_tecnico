@@ -275,6 +275,7 @@ export default function OrderDetailPage({
       await action();
       setNotice(success);
       await load();
+      return true;
     } catch (err) {
       const detail =
         err instanceof Error
@@ -288,6 +289,7 @@ export default function OrderDetailPage({
               : "Error desconocido. Revisa la consola del navegador.";
       setError(detail);
       console.error("Error en operación de orden:", err);
+      return false;
     } finally {
       setBusy(false);
     }
@@ -1560,7 +1562,9 @@ export default function OrderDetailPage({
                 void run(
                   () => confirmCommissioningReady(order.id, testingTechnicianId),
                   "Puesta en Marcha confirmada. La orden quedó lista para entregar.",
-                ).then(() => setCommissioningModalOpen(false));
+                ).then((succeeded) => {
+                  if (succeeded) setCommissioningModalOpen(false);
+                });
               }}>Confirmar y registrar</button>
             </div>
           </section>
