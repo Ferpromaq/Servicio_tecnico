@@ -9,6 +9,7 @@ import {
   Check,
   ClipboardList,
   PackagePlus,
+  PackageCheck,
   RefreshCw,
   Save,
 } from "lucide-react";
@@ -516,12 +517,22 @@ export default function OrderDetailPage({
                             <p className="commissioning-audit-missing">La confirmación quedó registrada, pero no se encontró el detalle de trazabilidad.</p>
                           )}
                           {order.status === "listas" && (role === "admin" || role === "supervisor") && (
-                            <div className="commissioning-delivery-action">
-                              <p>Cuando el cliente retire el equipo, registra quién lo entrega, quién lo recibe y adjunta una fotografía de la persona que lo retira.</p>
-                              <button type="button" className="primary" disabled={busy} onClick={() => setDeliveryModalOpen(true)}>
-                                <Check size={15} /> Registrar entrega al cliente
+                            <section className="commissioning-delivery-action" aria-labelledby="commissioning-delivery-title">
+                              <div className="commissioning-delivery-copy">
+                                <span className="commissioning-delivery-kicker">SIGUIENTE PASO</span>
+                                <h3 id="commissioning-delivery-title">Entrega al cliente</h3>
+                                <p>Al retirar el equipo, registra quién lo entrega y quién lo recibe. También deberás adjuntar una fotografía de la persona que lo retira.</p>
+                              </div>
+                              <button
+                                type="button"
+                                className="commissioning-delivery-button"
+                                disabled={busy}
+                                onClick={() => setDeliveryModalOpen(true)}
+                              >
+                                <PackageCheck size={19} strokeWidth={2.2} />
+                                <span>Registrar entrega al cliente</span>
                               </button>
-                            </div>
+                            </section>
                           )}
                           {order.status === "entregadas" && delivery && (
                             <div className="commissioning-delivery-audit">
