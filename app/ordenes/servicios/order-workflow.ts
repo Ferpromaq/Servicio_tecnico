@@ -120,12 +120,18 @@ export async function saveDiagnosis(orderId: string, diagnosis: string) {
   if (error) throw error;
 }
 
-export async function requestParts(input: { orderId: string; items: { description: string; quantity: number; unitPrice: number; fromStock?: boolean }[] }) {
+export async function requestParts(input: { orderId: string; items: { description: string; quantity: number; unitPrice: number; fromStock?: boolean; catalogPartId?: string }[] }) {
   const client = await requireSupabase();
   if (!input.items.length) throw new Error("Agrega al menos un repuesto.");
   const { error } = await client.rpc("request_order_parts", {
     p_order_id: input.orderId,
-    p_parts: input.items.map((item) => ({ description: item.description, quantity: item.quantity, unit_price: item.unitPrice, from_stock: item.fromStock ?? false })),
+    p_parts: input.items.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      unit_price: item.unitPrice,
+      from_stock: item.fromStock ?? false,
+      catalog_part_id: item.catalogPartId ?? null,
+    })),
   });
   if (error) throw error;
 }
