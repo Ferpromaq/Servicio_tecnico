@@ -416,3 +416,15 @@ html,body{height:100%;min-height:100%}
   .commissioning-summary .commissioning-ready-card{gap:9px;margin:12px 0 14px;padding:14px}
   .commissioning-summary .commissioning-ready-card p{font-size:12px}
 }
+
+
+/* Mensaje de confirmación de Puesta en Marcha: sin icono y con estado positivo. */
+.commissioning-ready-status{
+  display:inline-flex;
+  align-items:center;
+  margin:4px 0 0;
+  color:#218653;
+  font-size:14px;
+  font-weight:700;
+  line-height:1.45;
+}
