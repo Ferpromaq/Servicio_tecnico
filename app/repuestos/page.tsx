@@ -35,7 +35,7 @@ export default function PartsPage(){
    supabase.auth.getSession()
   ]);
   if(c.error)setError("No se pudo cargar el catálogo. Ejecuta primero la migración 0020 en Supabase.");else setCatalog((c.data??[]) as CatalogPart[]);
-  if(r.error)setError((v)=>v||r.error.message);else setRequests((r.data??[]) as unknown as PartRequest[]);
+  const requestError=r.error?.message;if(requestError)setError((v)=>v||requestError);else setRequests((r.data??[]) as unknown as PartRequest[]);
   if(!h.error){const rows=(h.data??[]) as Acquisition[];setHistory(rows);const ids=[...new Set(rows.map(x=>x.recorded_by).filter(Boolean))];if(ids.length){const {data}=await supabase.from("profiles").select("id,full_name").in("id",ids);setNames(Object.fromEntries((data??[]).map(x=>[x.id,x.full_name])));}}
   const uid=s.data.session?.user.id;if(uid){const {data}=await supabase.from("profiles").select("role").eq("id",uid).maybeSingle();setRole(data?.role??"");}
   setLoading(false);
