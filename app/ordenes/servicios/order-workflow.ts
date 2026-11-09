@@ -95,6 +95,22 @@ export async function confirmCommissioningReady(orderId: string, testingTechnici
   if (error) throw error;
 }
 
+export async function confirmCommissioningDelivery(input: {
+  orderId: string;
+  deliveredByName: string;
+  receivedByName: string;
+  deliveryPhotoPath: string;
+}) {
+  const client = await requireSupabase();
+  const { error } = await client.rpc("confirm_commissioning_delivery", {
+    p_order_id: input.orderId,
+    p_delivered_by_name: input.deliveredByName,
+    p_received_by_name: input.receivedByName,
+    p_delivery_photo_path: input.deliveryPhotoPath,
+  });
+  if (error) throw error;
+}
+
 export async function saveDiagnosis(orderId: string, diagnosis: string) {
   const client = await requireSupabase();
   const { error } = await client.rpc("save_order_diagnosis", {
