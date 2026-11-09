@@ -462,7 +462,7 @@ export default function OrderDetailPage({
                       )}
                     </>
                   ) : order.status === "listas" || order.status === "entregadas" ? (
-                    <>
+                    <div className="commissioning-completed-row">
                       <p className="commissioning-ready-status">
                         {order.status === "entregadas" ? "Equipo entregado" : "Equipo listo para entregar"}
                       </p>
@@ -471,13 +471,13 @@ export default function OrderDetailPage({
                         const tester = confirmation?.testing_technician;
                         return confirmation ? (
                           <div className="commissioning-audit">
-                            <span>Pruebas realizadas por: <strong>{tester?.full_name ?? "Técnico no identificado"}</strong></span>
-                            <span>Confirmado por: <strong>{confirmation.actor?.full_name ?? "Usuario"}</strong></span>
+                            <span>Pruebas: <strong>{tester?.full_name ?? "Técnico no identificado"}</strong></span>
+                            <span>Confirmó: <strong>{confirmation.actor?.full_name ?? "Usuario"}</strong></span>
                             <span>Fecha: <strong>{new Intl.DateTimeFormat("es-CL", { dateStyle: "medium", timeStyle: "short" }).format(new Date(confirmation.created_at))}</strong></span>
                           </div>
                         ) : null;
                       })()}
-                    </>
+                    </div>
                   ) : (
                     <p className="muted">Estado actual: {orderStatusLabel(order.status)}.</p>
                   )}
