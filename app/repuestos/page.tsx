@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { ModuleShell } from "@/components/layout/module-shell";
 import { supabase } from "@/lib/supabase";
@@ -222,7 +222,7 @@ export default function PartsPage() {
     setNotice("");
   }
 
-  async function saveCatalogPart(event: React.FormEvent<HTMLFormElement>) {
+  async function saveCatalogPart(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!supabase) return;
     setSaving(true);
@@ -264,7 +264,7 @@ export default function PartsPage() {
     setNotice("");
   }
 
-  async function saveCost(event: React.FormEvent<HTMLFormElement>) {
+  async function saveCost(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!supabase || !costPart) return;
     setSaving(true);
@@ -317,7 +317,7 @@ export default function PartsPage() {
 
         {tab === "catalogo" && (
           <>
-            {canManageCatalog && !editingPart && !costPart && (
+            {canManageCatalog && !partFormOpen && !costPart && (
               <div className="section-head">
                 <span className="muted">Los repuestos del catálogo pueden existir sin estar asociados a una orden.</span>
                 <button className="primary" type="button" onClick={startCreate}>Agregar repuesto</button>
