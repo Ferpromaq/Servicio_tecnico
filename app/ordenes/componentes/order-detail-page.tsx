@@ -462,7 +462,7 @@ export default function OrderDetailPage({
                       )}
                     </>
                   ) : order.status === "listas" || order.status === "entregadas" ? (
-                    {(() => {
+                    (() => {
                       const confirmation = events.find((event) => event.event_type === "commissioning_ready");
                       const tester = confirmation?.testing_technician;
                       return (
@@ -496,7 +496,7 @@ export default function OrderDetailPage({
                           )}
                         </div>
                       );
-                    })()}
+                    })()
                   ) : (
                     <p className="muted">Estado actual: {orderStatusLabel(order.status)}.</p>
                   )}
