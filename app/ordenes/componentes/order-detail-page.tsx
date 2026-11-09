@@ -448,7 +448,7 @@ export default function OrderDetailPage({
                     )
                   ) : order.status === "listas" || order.status === "entregadas" ? (
                     <p className="commissioning-ready-status">
-                      <Check size={16} /> {order.status === "entregadas" ? "Equipo entregado" : "Equipo listo para entregar"}
+                      {order.status === "entregadas" ? "Equipo entregado" : "Equipo listo para entregar"}
                     </p>
                   ) : (
                     <p className="muted">Estado actual: {orderStatusLabel(order.status)}.</p>
