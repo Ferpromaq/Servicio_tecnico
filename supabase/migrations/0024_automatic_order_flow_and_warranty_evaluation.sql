@@ -835,6 +835,9 @@ $$;
 revoke all on function public.save_order_warranty_purchase_date(uuid, date) from public, anon;
 grant execute on function public.save_order_warranty_purchase_date(uuid, date) to authenticated;
 
+revoke all on function public.update_order_warranty(uuid, boolean, boolean, text, text, date, boolean) from public, anon, authenticated;
+revoke all on function public.update_order_costs(uuid, numeric, numeric) from public, anon, authenticated;
+
 revoke all on function public.save_brand_warranty_policy(text, boolean) from public, anon;
 grant execute on function public.save_brand_warranty_policy(text, boolean) to authenticated;
 revoke all on function public.save_order_diagnosis(uuid, text, boolean) from public, anon;
