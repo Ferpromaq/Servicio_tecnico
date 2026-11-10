@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 type CatalogPart={id:string;name:string;internal_code:string|null;brand:string|null;model:string|null;description:string|null;sale_price:number|null;active:boolean;created_at:string};
 type PartRequest={id:string;order_id:string;description:string;quantity:number;unit_price:number;status:string;warranty_covered:boolean;created_at:string;service_orders?:{order_number:number;clients?:{name:string}|null}|null};
 type Acquisition={id:string;catalog_part_id:string|null;origin:string;cost_responsibility:string;purchase_cost:number|null;notes:string|null;recorded_at:string;recorded_by:string};
+type WarrantyPolicy={brand_key:string;brand_name:string;diagnosis_covered_when_customer_caused:boolean;updated_at:string};
 type Form={name:string;internal_code:string;brand:string;model:string;description:string;sale_price:string;active:boolean};
 const empty:Form={name:"",internal_code:"",brand:"",model:"",description:"",sale_price:"",active:true};
 const statuses:Record<string,string>={pendiente:"Pendiente",autorizado:"Autorizado",rechazado:"Rechazado",comprado:"Comprado"};
@@ -19,6 +20,9 @@ export default function PartsPage(){
  const [tab,setTab]=useState<"catalogo"|"solicitudes">("catalogo");
  const [catalog,setCatalog]=useState<CatalogPart[]>([]),[requests,setRequests]=useState<PartRequest[]>([]);
  const [history,setHistory]=useState<Acquisition[]>([]),[names,setNames]=useState<Record<string,string>>({});
+ const [policies,setPolicies]=useState<WarrantyPolicy[]>([]);
+ const [policyBrand,setPolicyBrand]=useState("");
+ const [policyDiagnosis,setPolicyDiagnosis]=useState(false);
  const [role,setRole]=useState(""),[query,setQuery]=useState(""),[status,setStatus]=useState("todas");
  const [form,setForm]=useState<Form>(empty),[editing,setEditing]=useState<string|null>(null);
  const [historyPart,setHistoryPart]=useState<string|null>(null);
@@ -28,15 +32,17 @@ export default function PartsPage(){
  const load=useCallback(async()=>{
   if(!supabase){setError("Configura Supabase.");setLoading(false);return;}
   setLoading(true);setError("");
-  const [c,r,h,s]=await Promise.all([
+  const [c,r,h,p,s]=await Promise.all([
    supabase.from("parts_catalog").select("id,name,internal_code,brand,model,description,sale_price,active,created_at").order("name"),
    supabase.from("parts_requests").select("id,order_id,description,quantity,unit_price,status,warranty_covered,created_at,service_orders(order_number,clients(name))").order("created_at",{ascending:false}),
    supabase.from("part_acquisition_records").select("id,catalog_part_id,origin,cost_responsibility,purchase_cost,notes,recorded_at,recorded_by").order("recorded_at",{ascending:false}),
+   supabase.from("brand_warranty_policies").select("brand_key,brand_name,diagnosis_covered_when_customer_caused,updated_at").order("brand_name"),
    supabase.auth.getSession()
   ]);
   if(c.error)setError("No se pudo cargar el catálogo. Ejecuta primero la migración 0020 en Supabase.");else setCatalog((c.data??[]) as CatalogPart[]);
   const requestError=r.error?.message;if(requestError)setError((v)=>v||requestError);else setRequests((r.data??[]) as unknown as PartRequest[]);
   if(!h.error){const rows=(h.data??[]) as Acquisition[];setHistory(rows);const ids=[...new Set(rows.map(x=>x.recorded_by).filter(Boolean))];if(ids.length){const {data}=await supabase.from("profiles").select("id,full_name").in("id",ids);setNames(Object.fromEntries((data??[]).map(x=>[x.id,x.full_name])));}}
+  if(p.error)setError((v)=>v||"No se pudieron cargar las políticas de garantía. Ejecuta la migración 0024 en Supabase.");else setPolicies((p.data??[]) as WarrantyPolicy[]);
   const uid=s.data.session?.user.id;if(uid){const {data}=await supabase.from("profiles").select("role").eq("id",uid).maybeSingle();setRole(data?.role??"");}
   setLoading(false);
  },[]);
@@ -61,6 +67,17 @@ export default function PartsPage(){
   setSaving(true);setError("");setNotice("");
   try{const {error}=await supabase.rpc("record_part_acquisition",{p_catalog_part_id:historyPart,p_part_request_id:null,p_origin:origin,p_cost_responsibility:responsible,p_purchase_cost:amount,p_notes:notes||null});if(error)throw error;setNotice("Procedencia y costo registrados.");setCost("");setNotes("");await load();}
   catch(e){setError(e instanceof Error?e.message:"No se pudo registrar.");}finally{setSaving(false);}
+ }
+ async function savePolicy(){
+  if(!supabase||!policyBrand.trim())return setError("Indica el nombre de la marca.");
+  setSaving(true);setError("");setNotice("");
+  try{
+   const {error}=await supabase.rpc("save_brand_warranty_policy",{p_brand:policyBrand.trim(),p_diagnosis_covered_when_customer_caused:policyDiagnosis});
+   if(error)throw error;
+   setNotice("Política de garantía guardada.");
+   setPolicyBrand("");setPolicyDiagnosis(false);await load();
+  }catch(e){setError(e instanceof Error?e.message:"No se pudo guardar la política.");}
+  finally{setSaving(false);}
  }
  return <ModuleShell title="Repuestos" description="Catálogo de Ferpromaq, solicitudes y trazabilidad">
   <section className="card module-list parts-module">
@@ -93,6 +110,20 @@ export default function PartsPage(){
       <button className="primary" disabled={saving} onClick={()=>void saveHistory()}>{saving?"Guardando…":"Registrar procedencia y costo"}</button>
      </div>}
      {selectedHistory.length===0?<div className="empty">Todavía no hay registros de procedencia o costos.</div>:selectedHistory.map(h=><div className="catalog-history-row" key={h.id}><div><strong>{origins[h.origin]??h.origin}</strong><span>{costs[h.cost_responsibility]??h.cost_responsibility}</span>{h.notes&&<p>{h.notes}</p>}</div><div><strong>{h.purchase_cost==null?"Costo no informado":money(Number(h.purchase_cost))}</strong><span>{new Intl.DateTimeFormat("es-CL",{dateStyle:"medium",timeStyle:"short"}).format(new Date(h.recorded_at))}</span><span>{names[h.recorded_by]??"Usuario"}</span></div></div>)}
+    </section>}
+    {role==="admin"&&<section className="brand-policy-panel">
+     <div className="brand-policy-heading"><div><h3>Políticas de garantía por marca</h3><p>Define si la marca cubre el diagnóstico cuando el daño fue provocado por el cliente. Los repuestos seguirán siendo responsabilidad del cliente en ese escenario.</p></div></div>
+     <div className="brand-policy-form">
+      <label>Marca<input value={policyBrand} onChange={e=>setPolicyBrand(e.target.value)} placeholder="Ej. MAKITA"/></label>
+      <label className="brand-policy-check"><input type="checkbox" checked={policyDiagnosis} onChange={e=>setPolicyDiagnosis(e.target.checked)}/> La marca cubre el diagnóstico incluso si el cliente provocó el daño</label>
+      <button className="primary" disabled={saving||!policyBrand.trim()} onClick={()=>void savePolicy()}>{saving?"Guardando…":"Guardar política"}</button>
+     </div>
+     <div className="brand-policy-list">
+      {policies.length===0?<div className="empty">Todavía no hay políticas específicas. Por defecto, si el cliente provocó el daño, el diagnóstico y los repuestos quedan a su cargo.</div>:policies.map(item=><div className="brand-policy-row" key={item.brand_key}>
+       <div><strong>{item.brand_name}</strong><span>{item.diagnosis_covered_when_customer_caused?"La marca cubre el diagnóstico":"El cliente paga el diagnóstico si provocó el daño"}</span></div>
+       <button className="secondary" onClick={()=>{setPolicyBrand(item.brand_name);setPolicyDiagnosis(item.diagnosis_covered_when_customer_caused);}}>Editar</button>
+      </div>)}
+     </div>
     </section>}
    </>}
    {tab==="solicitudes"&&<><div className="tabs">{["todas","pendiente","autorizado","comprado","rechazado"].map(s=><button key={s} className={status===s?"tab active":"tab"} onClick={()=>setStatus(s)}>{s==="todas"?"Todas":statuses[s]}</button>)}</div>
