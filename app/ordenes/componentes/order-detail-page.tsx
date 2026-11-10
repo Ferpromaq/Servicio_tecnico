@@ -192,6 +192,7 @@ export default function OrderDetailPage({
       setDiagnosis("");
       setDiagnosisAmount(String(row.diagnosis_amount ?? 0));
       setInstallationAmount(String(row.installation_amount ?? 0));
+      if (row.diagnosis_covered_by_brand) setPaymentType("abono");
       setDamageCausedByClient(
         typeof baseRow.damage_caused_by_client === "boolean"
           ? baseRow.damage_caused_by_client
@@ -1415,7 +1416,7 @@ export default function OrderDetailPage({
                   <strong>{money(totalPaid)}</strong>
                 </div>
                 <div className="detailbox">
-                  <small>60% mínimo de repuestos</small>
+                  <small>60% mínimo de repuestos a cargo del cliente</small>
                   <strong>{money(minimumPartsPayment)}</strong>
                   <span className="subline">Pagado: {money(partsPaid)}</span>
                 </div>
@@ -1436,9 +1437,9 @@ export default function OrderDetailPage({
                           }
                         >
                           <option value="abono">Abono</option>
-                          <option value="repuestos">Repuestos</option>
+                          {eligiblePartsTotal > 0 && <option value="repuestos">Repuestos</option>}
                           {diagnosisDue > 0 && <option value="diagnostico">Diagnóstico</option>}
-                          <option value="instalacion">Instalación</option>
+                          {Number(installationAmount) > 0 && <option value="instalacion">Instalación</option>}
                         </select>
                       </div>
                       <div className="field">
