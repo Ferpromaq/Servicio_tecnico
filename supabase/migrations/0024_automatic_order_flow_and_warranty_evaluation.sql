@@ -89,7 +89,7 @@ $$;
 drop function if exists public.save_order_diagnosis(uuid, text);
 drop function if exists public.save_order_diagnosis(uuid, text, text);
 
-create function public.save_order_diagnosis(
+create or replace function public.save_order_diagnosis(
   p_order_id uuid,
   p_diagnosis text,
   p_damage_caused_by_client boolean default null
