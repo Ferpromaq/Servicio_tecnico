@@ -353,6 +353,62 @@ begin
 end;
 $$;
 
+
+
+create or replace function public.start_order_repair(p_order_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $
+declare
+  v_role public.app_role;
+  v_order public.service_orders%rowtype;
+begin
+  select role into v_role
+  from public.profiles
+  where id = auth.uid() and active = true;
+  if v_role is null or v_role not in ('admin','supervisor','tecnico') then
+    raise exception 'No tienes permiso para iniciar la reparación';
+  end if;
+
+  select * into v_order
+  from public.service_orders
+  where id = p_order_id
+  for update;
+  if not found then raise exception 'La orden no existe'; end if;
+  if v_order.commissioning then
+    raise exception 'Las órdenes de Puesta en Marcha no requieren reparación';
+  end if;
+  if v_order.status <> 'diagnostico' then
+    raise exception 'La orden debe estar en Diagnóstico para iniciar la reparación';
+  end if;
+  if nullif(trim(coalesce(v_order.diagnosis, '')), '') is null then
+    raise exception 'Primero debes completar el diagnóstico';
+  end if;
+  if v_order.warranty_entry
+     and v_order.receipt_date between current_date - interval '6 months' and current_date
+     and v_order.warranty_evaluation_completed_at is null then
+    raise exception 'Falta completar la evaluación de garantía';
+  end if;
+
+  perform set_config('app.allow_automatic_order_status', 'on', true);
+  update public.service_orders
+  set status = 'en_reparacion', updated_at = now()
+  where id = p_order_id;
+  perform set_config('app.allow_automatic_order_status', 'off', true);
+
+  insert into public.order_events(order_id,event_type,description,actor_id,metadata)
+  values (
+    p_order_id, 'reparacion_inicio', 'Reparación iniciada', auth.uid(),
+    jsonb_build_object('previous_status', v_order.status, 'new_status', 'en_reparacion')
+  );
+end;
+$;
+
+revoke all on function public.start_order_repair(uuid) from public, anon;
+grant execute on function public.start_order_repair(uuid) to authenticated;
+
 -- Registra el fin de reparación como una acción, no como una edición manual del estado.
 create or replace function public.mark_order_ready_for_delivery(p_order_id uuid)
 returns void
