@@ -30,6 +30,9 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
   const [technicianId, setTechnicianId] = useState("");
   const [intakeType, setIntakeType] = useState<IntakeType>("no_warranty");
   const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [receiptDate, setReceiptDate] = useState("");
+  const [diagnosisAmount, setDiagnosisAmount] = useState("25000");
+  const [installationAmount, setInstallationAmount] = useState("0");
   const [diagnosisReceiptType, setDiagnosisReceiptType] = useState("boleta");
   const [diagnosisReceiptNumber, setDiagnosisReceiptNumber] = useState("");
   const [diagnosisReceiptAmount, setDiagnosisReceiptAmount] = useState("");
@@ -94,15 +97,15 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
         commissioning: intakeType === "commissioning",
         receipt_type: intakeType === "warranty" || intakeType === "commissioning" ? "factura" : null,
         receipt_number: intakeType === "warranty" || intakeType === "commissioning" ? invoiceNumber.trim() : null,
-        receipt_date: null,
+        receipt_date: needsInvoice ? receiptDate : null,
         warranty_photo_path: intakeType === "warranty" ? documentPath : null,
         purchase_invoice_photo_path: intakeType === "commissioning" ? documentPath : null,
         diagnosis_receipt_type: intakeType === "no_warranty" ? diagnosisReceiptType : null,
         diagnosis_receipt_number: intakeType === "no_warranty" ? diagnosisReceiptNumber.trim() : null,
         diagnosis_receipt_amount: intakeType === "no_warranty" ? Number(diagnosisReceiptAmount) : null,
         diagnosis_receipt_photo_path: intakeType === "no_warranty" ? documentPath : null,
-        diagnosis_amount: intakeType === "commissioning" ? 0 : undefined,
-        installation_amount: intakeType === "commissioning" ? 0 : undefined
+        diagnosis_amount: intakeType === "commissioning" ? 0 : intakeType === "warranty" ? Number(diagnosisAmount) : Number(diagnosisReceiptAmount),
+        installation_amount: intakeType === "commissioning" ? 0 : Number(installationAmount)
       };
       const { error: saveError } = await supabase.from("service_orders").update(details).eq("id", createdOrderId);
       if (saveError) throw new Error("La orden se creó, pero faltó guardar sus datos de ingreso: " + saveError.message);
@@ -147,6 +150,8 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
       <section className="intake-section">
         {needsInvoice ? <div className="intake-fields">
           <div className="field"><label>Número de Folio *</label><input required value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} placeholder="N° de Folio"/></div>
+          <div className="field"><label>Fecha de compra *</label><input required type="date" value={receiptDate} onChange={e => setReceiptDate(e.target.value)}/></div>
+          {intakeType === "warranty" && <div className="field"><label>Valor del diagnóstico (CLP) *</label><input required type="number" min="0" step="1" value={diagnosisAmount} onChange={e => setDiagnosisAmount(e.target.value)} placeholder="Ej. 25000"/></div>}
           <div className="field upload-field"><label>{photoLabel} *</label><input id="intake-document" className="file-input-hidden" type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setDocumentFile(e.target.files?.[0] ?? null)}/><label className="upload-control" htmlFor="intake-document"><Upload size={17}/><span><strong>{documentFile ? "Cambiar fotografía" : "Seleccionar fotografía"}</strong><small>{documentFile ? documentFile.name : "JPG, PNG o WEBP · máximo 8 MB"}</small></span></label></div>
         </div> : <div className="intake-fields">
           <div className="field"><label>Tipo de comprobante *</label><select value={diagnosisReceiptType} onChange={e => setDiagnosisReceiptType(e.target.value)}><option value="boleta">Boleta</option><option value="factura">Factura</option></select></div>
@@ -176,12 +181,13 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
           <div className="field"><label>Número de serie</label><input value={serial} onChange={e => setSerial(e.target.value)}/></div>
           <div className="field"><label>Prioridad</label><select value={priority} onChange={e => setPriority(e.target.value)}><option value="baja">Baja</option><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div>
           <div className="field"><label>Técnico asignado</label><select value={technicianId} onChange={e => setTechnicianId(e.target.value)}><option value="">Sin asignar</option>{technicians.map(tech => <option key={tech.id} value={tech.id}>{tech.full_name}</option>)}</select></div>
+          {intakeType !== "commissioning" && <div className="field"><label>Valor de instalación (CLP)</label><input type="number" min="0" step="1" value={installationAmount} onChange={e => setInstallationAmount(e.target.value)} placeholder="0"/></div>}
           <div className="field intake-wide"><label>Problema informado *</label><textarea required rows={2} value={problem} onChange={e => setProblem(e.target.value)} placeholder="Describe brevemente lo que informa el cliente…"/></div>
         </div>
       </section>
 
         </div>
-      <div className="form-actions"><button type="button" className="secondary" onClick={() => onClose ? onClose() : router.push("/")}>Cancelar</button><button type="submit" className="primary" disabled={loading || !role || role === "tecnico" || !validDocument || (intakeType === "no_warranty" && (!diagnosisReceiptAmount || Number(diagnosisReceiptAmount) <= 0))}><Save size={14}/>{loading ? "Creando…" : "Crear orden"}</button></div>
+      <div className="form-actions"><button type="button" className="secondary" onClick={() => onClose ? onClose() : router.push("/")}>Cancelar</button><button type="submit" className="primary" disabled={loading || !role || role === "tecnico" || !validDocument || (needsInvoice && !receiptDate) || (intakeType === "warranty" && (!diagnosisAmount || Number(diagnosisAmount) < 0)) || (intakeType === "no_warranty" && (!diagnosisReceiptAmount || Number(diagnosisReceiptAmount) <= 0)) || (Number(installationAmount) < 0)}><Save size={14}/>{loading ? "Creando…" : "Crear orden"}</button></div>
       </form>
     </div>
   </main>;
