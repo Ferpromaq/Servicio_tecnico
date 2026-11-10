@@ -23,6 +23,7 @@ import {
   markOrderReadyForDelivery,
   saveDiagnosis,
   requestParts,
+  transitionOrderStatus,
   updatePartCoverage,
   type OrderEvent,
   type OrderPayment,
@@ -88,6 +89,7 @@ export default function OrderDetailPage({
   const [deliveryPhotoUrl, setDeliveryPhotoUrl] = useState("");
   const [tab, setTab] = useState("resumen");
   const [diagnosis, setDiagnosis] = useState("");
+  const [forcedReason, setForcedReason] = useState("");
   const [damageCausedByClient, setDamageCausedByClient] = useState<boolean | null>(null);
   const [partDescription, setPartDescription] = useState("");
   const [partQuantity, setPartQuantity] = useState("1");
@@ -844,6 +846,38 @@ export default function OrderDetailPage({
               </div>
 
 
+              {!isCommissioning && (role === "admin" || role === "supervisor") && (order.status === "diagnostico" || order.status === "en_reparacion") && (
+                <article className="card order-forced-delivery">
+                  <div>
+                    <h3>¿El cliente rechazó la reparación?</h3>
+                    <p className="muted">Si el cliente decidió no reparar el equipo, registra el motivo. La orden quedará lista para coordinar su retiro, sin marcar la reparación como terminada.</p>
+                  </div>
+                  <div className="field">
+                    <label>Motivo del rechazo</label>
+                    <textarea rows={2} value={forcedReason} onChange={(event) => setForcedReason(event.target.value)} placeholder="Indica qué decidió el cliente y por qué se entrega sin reparar…"/>
+                  </div>
+                  <button className="secondary" disabled={busy || !forcedReason.trim()} onClick={() => void run(
+                    () => transitionOrderStatus({orderId: order.id,status:"listas",forcedDelivery:true,reason:forcedReason}),
+                    "Rechazo registrado. La orden quedó lista para entrega.",
+                  ).then((success) => { if(success) setForcedReason(""); })}>
+                    Registrar rechazo y dejar lista para entrega
+                  </button>
+                </article>
+              )}
+              {!isCommissioning && (role === "admin" || role === "supervisor") && order.status === "listas" && (
+                <article className="card order-standard-delivery">
+                  <div>
+                    <h3>Entrega al cliente</h3>
+                    <p className="muted">Confirma cuando el cliente retire el equipo. Se validarán nuevamente los pagos pendientes antes de cerrar la orden.</p>
+                  </div>
+                  <button className="primary" disabled={busy} onClick={() => void run(
+                    () => transitionOrderStatus({orderId: order.id,status:"entregadas"}),
+                    "Entrega registrada. La orden quedó entregada.",
+                  )}>
+                    <PackageCheck size={16}/> Registrar entrega
+                  </button>
+                </article>
+              )}
               {(
                 order as ServiceOrder & {
                   forced_delivery?: boolean;
