@@ -942,6 +942,26 @@ export default function OrderDetailPage({
                   Cada guardado crea un informe nuevo. Los anteriores no se
                   sobrescriben.
                 </p>
+                <section className="diagnosis-intake-reference" aria-label="Datos del ingreso de la máquina">
+                  <div className="diagnosis-intake-heading">
+                    <ClipboardList size={16} />
+                    <h3>Informe del ingreso</h3>
+                    <span>Registrado en recepción</span>
+                  </div>
+                  <div className="diagnosis-intake-machine">
+                    <strong>{order.machines?.equipment_type || "Equipo sin tipo especificado"}</strong>
+                    <span>
+                      {[order.machines?.brand, order.machines?.model].filter(Boolean).join(" · ") || "Marca y modelo no especificados"}
+                    </span>
+                    {order.machines?.serial_number && (
+                      <small>N.º de serie: {order.machines.serial_number}</small>
+                    )}
+                  </div>
+                  <div className="diagnosis-intake-report">
+                    <span>Problema informado por el cliente</span>
+                    <p>{order.problem_description?.trim() || "No se registró un informe del ingreso."}</p>
+                  </div>
+                </section>
                 <div className="field">
                   <label>Informe</label>
                   <textarea
