@@ -44,7 +44,7 @@ set damage_caused_by_client = false,
 where warranty_entry = true
   and warranty_covers_damage = true
   and receipt_date is not null
-  and receipt_date between current_date - interval '6 months' and current_date
+  and receipt_date between received_at::date - interval '6 months' and received_at::date
   and warranty_evaluation_completed_at is null;
 
 create or replace function public.save_brand_warranty_policy(
@@ -136,7 +136,7 @@ begin
 
   v_warranty_active := coalesce(v_order.warranty_entry, false)
     and v_order.receipt_date is not null
-    and v_order.receipt_date between current_date - interval '6 months' and current_date;
+    and v_order.receipt_date between received_at::date - interval '6 months' and received_at::date;
 
   if v_warranty_active and p_damage_caused_by_client is null then
     raise exception 'Debes indicar si el daño fue provocado por el cliente para evaluar la garantía';
@@ -235,7 +235,7 @@ begin
     raise exception 'Primero debes completar el diagnóstico';
   end if;
   if v_order.warranty_entry
-     and v_order.receipt_date between current_date - interval '6 months' and current_date
+     and v_order.receipt_date between received_at::date - interval '6 months' and received_at::date
      and v_order.warranty_evaluation_completed_at is null then
     raise exception 'Primero debes completar la evaluación de garantía del diagnóstico';
   end if;
@@ -387,7 +387,7 @@ begin
     raise exception 'Primero debes completar el diagnóstico';
   end if;
   if v_order.warranty_entry
-     and v_order.receipt_date between current_date - interval '6 months' and current_date
+     and v_order.receipt_date between received_at::date - interval '6 months' and received_at::date
      and v_order.warranty_evaluation_completed_at is null then
     raise exception 'Falta completar la evaluación de garantía';
   end if;
@@ -447,7 +447,7 @@ begin
     raise exception 'Primero debes completar el diagnóstico';
   end if;
   if v_order.warranty_entry
-     and v_order.receipt_date between current_date - interval '6 months' and current_date
+     and v_order.receipt_date between received_at::date - interval '6 months' and received_at::date
      and v_order.warranty_evaluation_completed_at is null then
     raise exception 'Falta completar la evaluación de garantía';
   end if;
