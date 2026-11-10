@@ -42,6 +42,12 @@
 .summary-card-title-row .summary-warranty-badge{
   margin-left:auto
 }
+.summary-card-title-row.is-warranty-pending{
+  justify-content:flex-start
+}
+.summary-card-title-row.is-warranty-pending .summary-warranty-badge{
+  margin-left:0
+}
 .summary-order-date,.summary-intake-type{
   display:block;font-size:10px;color:#788594;white-space:nowrap;
   line-height:1.35
