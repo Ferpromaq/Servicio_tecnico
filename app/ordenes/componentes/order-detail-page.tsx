@@ -20,11 +20,9 @@ import {
   confirmCommissioningDelivery,
   getOrderWorkflow,
   markPartMilestone,
+  markOrderReadyForDelivery,
   saveDiagnosis,
   requestParts,
-  transitionOrderStatus,
-  updateOrderCosts,
-  updateOrderWarranty,
   updatePartCoverage,
   type OrderEvent,
   type OrderPayment,
@@ -90,6 +88,7 @@ export default function OrderDetailPage({
   const [deliveryPhotoUrl, setDeliveryPhotoUrl] = useState("");
   const [tab, setTab] = useState("resumen");
   const [diagnosis, setDiagnosis] = useState("");
+  const [damageCausedByClient, setDamageCausedByClient] = useState<boolean | null>(null);
   const [partDescription, setPartDescription] = useState("");
   const [partQuantity, setPartQuantity] = useState("1");
   const [partPrice, setPartPrice] = useState("0");
@@ -102,24 +101,8 @@ export default function OrderDetailPage({
   const [paymentReference, setPaymentReference] = useState("");
   const [paymentPartId, setPaymentPartId] = useState("");
   const [receiptReceived, setReceiptReceived] = useState(false);
-  const [nextStatus, setNextStatus] = useState<
-    | "recepcion"
-    | "diagnostico"
-    | "en_reparacion"
-    | "listas"
-    | "entregadas"
-    | "rechazadas"
-  >("diagnostico");
-  const [forcedDelivery, setForcedDelivery] = useState(false);
-  const [forcedReason, setForcedReason] = useState("");
   const [diagnosisAmount, setDiagnosisAmount] = useState("0");
   const [installationAmount, setInstallationAmount] = useState("0");
-  const [warrantyEntry, setWarrantyEntry] = useState(false);
-  const [warrantyCoversDamage, setWarrantyCoversDamage] = useState(false);
-  const [receiptType, setReceiptType] = useState("boleta");
-  const [receiptNumber, setReceiptNumber] = useState("");
-  const [receiptDate, setReceiptDate] = useState("");
-  const [commissioning, setCommissioning] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -204,16 +187,14 @@ export default function OrderDetailPage({
       };
       setOrder(row as unknown as ServiceOrder);
       setTestingTechnicianId(baseRow.assigned_technician ?? "");
-      setNextStatus(row.status);
       setDiagnosis("");
       setDiagnosisAmount(String(row.diagnosis_amount ?? 0));
       setInstallationAmount(String(row.installation_amount ?? 0));
-      setWarrantyEntry(Boolean(row.warranty_entry));
-      setWarrantyCoversDamage(Boolean(row.warranty_covers_damage));
-      setReceiptType(row.receipt_type ?? "boleta");
-      setReceiptNumber(row.receipt_number ?? "");
-      setReceiptDate(row.receipt_date ?? "");
-      setCommissioning(Boolean(row.commissioning));
+      setDamageCausedByClient(
+        typeof baseRow.damage_caused_by_client === "boolean"
+          ? baseRow.damage_caused_by_client
+          : null,
+      );
       setWarrantyPhotoUrl("");
       setPurchaseInvoicePhotoUrl("");
       setDiagnosisReceiptPhotoUrl("");
@@ -439,6 +420,27 @@ export default function OrderDetailPage({
     .filter((payment) => payment.payment_type === "repuestos")
     .reduce((sum, payment) => sum + Number(payment.amount), 0);
   const minimumPartsPayment = eligiblePartsTotal * 0.6;
+  const diagnosisCoveredByBrand = Boolean((order as ServiceOrder & { diagnosis_covered_by_brand?: boolean } | null)?.diagnosis_covered_by_brand);
+  const diagnosisDue = diagnosisCoveredByBrand ? 0 : Number(diagnosisAmount);
+  const warrantyEntryFlag = Boolean((order as ServiceOrder & { warranty_entry?: boolean } | null)?.warranty_entry);
+  const receiptDateValue = (order as ServiceOrder & { receipt_date?: string | null } | null)?.receipt_date;
+  const warrantyReceiptDate = receiptDateValue ? new Date(`${receiptDateValue}T00:00:00`) : null;
+  const warrantyExpiryBoundary = new Date();
+  warrantyExpiryBoundary.setMonth(warrantyExpiryBoundary.getMonth() - 6);
+  const isWarrantyActive = Boolean(
+    warrantyEntryFlag &&
+    warrantyReceiptDate &&
+    warrantyReceiptDate <= new Date() &&
+    warrantyReceiptDate >= warrantyExpiryBoundary
+  );
+  const warrantyBadgeLabel = !warrantyEntryFlag
+    ? "SIN GARANTÍA"
+    : !receiptDateValue
+      ? "GARANTÍA POR VERIFICAR"
+      : isWarrantyActive
+        ? "CON GARANTÍA"
+        : "GARANTÍA VENCIDA";
+  const warrantyBadgeClass = `summary-warranty-badge ${isWarrantyActive ? "active" : warrantyEntryFlag ? "expired" : "none"}`;
 
   if (!order && !error)
     return (
@@ -673,6 +675,7 @@ export default function OrderDetailPage({
                 <article className="card summary-info-card">
                   <div className="summary-card-heading">
                     <h3 className="sectiontitle">Cliente y equipo</h3>
+                    <span className={warrantyBadgeClass}>{warrantyBadgeLabel}</span>
                     <span className="summary-order-date">
                       Ingreso:{" "}
                       {new Intl.DateTimeFormat("es-CL", {
@@ -840,238 +843,7 @@ export default function OrderDetailPage({
                 </article>
               </div>
 
-              {(role === "admin" || role === "supervisor") && !isCommissioning && (
-                <details className="detail-admin-tools">
-                  <summary>
-                    Gestión de la orden, garantía y costos{" "}
-                    <span>Editar datos administrativos</span>
-                  </summary>
-                  <div className="detail-admin-tools-content">
-                    {!isCommissioning && (
-                    <div className="card status-control">
-                      <div>
-                        <h2>Gestión del estado</h2>
-                        <p className="muted">
-                          Los cambios se registran automáticamente en el
-                          historial.
-                        </p>
-                      </div>
-                      <div className="status-form">
-                        <select
-                          value={nextStatus}
-                          onChange={(e) => {
-                            const value = e.target.value as typeof nextStatus;
-                            setNextStatus(value);
-                            if (value !== "listas") setForcedDelivery(false);
-                          }}
-                        >
-                          <option value="recepcion">Recepción</option>
-                          <option value="diagnostico">Diagnóstico</option>
-                          <option value="en_reparacion">En reparación</option>
-                          <option value="listas">Lista para entrega</option>
-                          <option value="entregadas">Entregada</option>
-                          <option value="rechazadas">Rechazada</option>
-                        </select>
-                        <button
-                          className="primary"
-                          disabled={
-                            busy ||
-                            nextStatus === order.status ||
-                            (forcedDelivery &&
-                              (nextStatus !== "listas" || !forcedReason.trim()))
-                          }
-                          onClick={() =>
-                            void run(
-                              () =>
-                                transitionOrderStatus({
-                                  orderId: order.id,
-                                  status: nextStatus,
-                                  forcedDelivery,
-                                  reason: forcedReason,
-                                }),
-                              "Estado de la orden actualizado",
-                            )
-                          }
-                        >
-                          Actualizar estado
-                        </button>
-                      </div>
-                      {nextStatus === "listas" && (
-                        <div className="forced-control">
-                          <label className="checkline">
-                            <input
-                              type="checkbox"
-                              checked={forcedDelivery}
-                              onChange={(e) =>
-                                setForcedDelivery(e.target.checked)
-                              }
-                            />{" "}
-                            Entrega forzada porque el cliente rechazó la
-                            reparación
-                          </label>
-                          {forcedDelivery && (
-                            <div className="field">
-                              <label>Motivo obligatorio</label>
-                              <textarea
-                                rows={2}
-                                value={forcedReason}
-                                onChange={(e) =>
-                                  setForcedReason(e.target.value)
-                                }
-                                placeholder="Describe por qué se deja lista para entrega…"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    )}
-                    <div className="detail-columns settings-grid">
-                      <article className="card">
-                        <h3 className="sectiontitle">Garantía y comprobante</h3>
-                        <label className="checkline">
-                          <input
-                            type="checkbox"
-                            checked={commissioning}
-                            onChange={(e) => {
-                              setCommissioning(e.target.checked);
-                              if (e.target.checked) setWarrantyEntry(true);
-                            }}
-                          />{" "}
-                          Puesta en Marcha
-                        </label>
-                        <label className="checkline">
-                          <input
-                            type="checkbox"
-                            checked={warrantyEntry}
-                            onChange={(e) => setWarrantyEntry(e.target.checked)}
-                            disabled={commissioning}
-                          />{" "}
-                          Ingreso con garantía
-                        </label>
-                        <label className="checkline">
-                          <input
-                            type="checkbox"
-                            checked={warrantyCoversDamage}
-                            onChange={(e) =>
-                              setWarrantyCoversDamage(e.target.checked)
-                            }
-                          />{" "}
-                          Garantía cubre el daño
-                        </label>
-                        <div className="field">
-                          <label>Tipo de comprobante</label>
-                          <select
-                            value={receiptType}
-                            onChange={(e) => setReceiptType(e.target.value)}
-                          >
-                            <option value="boleta">Boleta</option>
-                            <option value="factura">Factura</option>
-                          </select>
-                        </div>
-                        <div className="field">
-                          <label>Número de boleta / factura</label>
-                          <input
-                            value={receiptNumber}
-                            onChange={(e) => setReceiptNumber(e.target.value)}
-                          />
-                        </div>
-                        {!commissioning && (
-                          <div className="field">
-                            <label>Fecha del comprobante (opcional)</label>
-                            <input
-                              type="date"
-                              value={receiptDate}
-                              onChange={(e) => setReceiptDate(e.target.value)}
-                            />
-                          </div>
-                        )}
-                        <button
-                          className="secondary"
-                          disabled={
-                            busy || (commissioning && !receiptNumber.trim())
-                          }
-                          onClick={() =>
-                            void run(async () => {
-                              await updateOrderWarranty({
-                                orderId: order.id,
-                                warrantyEntry,
-                                warrantyCoversDamage,
-                                receiptType,
-                                receiptNumber,
-                                receiptDate,
-                                commissioning,
-                              });
-                              if (commissioning) {
-                                const response = await fetch(
-                                  "/api/notifications/commissioning",
-                                  {
-                                    method: "POST",
-                                    headers: {
-                                      "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({ orderId: order.id }),
-                                  },
-                                );
-                                if (!response.ok)
-                                  throw new Error(
-                                    "La garantía se guardó, pero no se pudo enviar el aviso al técnico.",
-                                  );
-                              }
-                            }, "Datos de garantía guardados")
-                          }
-                        >
-                          Guardar garantía
-                        </button>
-                      </article>
-                      <article className="card">
-                        <h3 className="sectiontitle">Costos del servicio</h3>
-                        <div className="field">
-                          <label>Valor del diagnóstico (CLP)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={diagnosisAmount}
-                            onChange={(e) => setDiagnosisAmount(e.target.value)}
-                          />
-                        </div>
-                        <div className="field">
-                          <label>Valor de instalación (CLP)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={installationAmount}
-                            onChange={(e) =>
-                              setInstallationAmount(e.target.value)
-                            }
-                          />
-                        </div>
-                        <button
-                          className="secondary"
-                          disabled={
-                            busy ||
-                            Number(diagnosisAmount) < 0 ||
-                            Number(installationAmount) < 0
-                          }
-                          onClick={() =>
-                            void run(
-                              () =>
-                                updateOrderCosts(
-                                  order.id,
-                                  Number(diagnosisAmount),
-                                  Number(installationAmount),
-                                ),
-                              "Costos actualizados",
-                            )
-                          }
-                        >
-                          Guardar costos
-                        </button>
-                      </article>
-                    </div>
-                  </div>
-                </details>
-              )}
+
               {(
                 order as ServiceOrder & {
                   forced_delivery?: boolean;
@@ -1114,17 +886,48 @@ export default function OrderDetailPage({
                     placeholder="Describe la falla detectada, las pruebas realizadas y los hallazgos…"
                   />
                 </div>
+                {isWarrantyActive ? (
+                  <div className="diagnosis-warranty-evaluation">
+                    <div>
+                      <h3>Evaluación de garantía</h3>
+                      <p>El equipo ingresó con garantía vigente. Indica si el daño fue provocado por el cliente.</p>
+                    </div>
+                    <div className="diagnosis-warranty-options">
+                      <label className={damageCausedByClient === true ? "selected" : ""}>
+                        <input type="radio" name="damage-caused-by-client" checked={damageCausedByClient === true} onChange={() => setDamageCausedByClient(true)} />
+                        <span><strong>Sí, el cliente provocó el daño</strong><small>La cobertura del diagnóstico dependerá de la política de la marca. Los repuestos serán a cargo del cliente.</small></span>
+                      </label>
+                      <label className={damageCausedByClient === false ? "selected" : ""}>
+                        <input type="radio" name="damage-caused-by-client" checked={damageCausedByClient === false} onChange={() => setDamageCausedByClient(false)} />
+                        <span><strong>No, el cliente no provocó el daño</strong><small>La marca cubrirá el diagnóstico y los repuestos asociados al daño reconocido.</small></span>
+                      </label>
+                    </div>
+                    {Boolean((order as ServiceOrder & { warranty_evaluation_completed_at?: string | null }).warranty_evaluation_completed_at) && (
+                      <div className="diagnosis-warranty-result">
+                        <strong>Resultado de la evaluación registrada</strong>
+                        <span>Diagnóstico: {(order as ServiceOrder & { diagnosis_covered_by_brand?: boolean }).diagnosis_covered_by_brand ? "Cubierto por la marca" : "A cargo del cliente"}</span>
+                        <span>Repuestos: {(order as ServiceOrder & { parts_covered_by_brand?: boolean }).parts_covered_by_brand ? "Cubiertos por la marca" : "A cargo del cliente"}</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="notice">
+                    {Boolean((order as ServiceOrder & { warranty_entry?: boolean }).warranty_entry)
+                      ? "La garantía de ingreso está vencida o no tiene fecha de compra válida. El diagnóstico y los repuestos quedan a cargo del cliente."
+                      : "Este equipo ingresó sin garantía. El diagnóstico y los repuestos quedan a cargo del cliente."}
+                  </div>
+                )}
                 <button
                   className="primary"
-                  disabled={busy || !diagnosis.trim()}
+                  disabled={busy || !diagnosis.trim() || (isWarrantyActive && damageCausedByClient === null)}
                   onClick={() =>
                     void run(
-                      () => saveDiagnosis(order.id, diagnosis),
-                      "Informe de diagnóstico guardado correctamente",
+                      () => saveDiagnosis(order.id, diagnosis, isWarrantyActive ? damageCausedByClient : null),
+                      "Informe de diagnóstico y evaluación de garantía guardados correctamente",
                     )
                   }
                 >
-                  <Save size={15} /> Guardar informe
+                  <Save size={15} /> Guardar diagnóstico
                 </button>
               </div>
               <div className="card">
@@ -1154,6 +957,20 @@ export default function OrderDetailPage({
                   </div>
                 )}
               </div>
+              {(order.status === "diagnostico" || order.status === "en_reparacion") && ["admin", "supervisor", "tecnico"].includes(role ?? "") && (
+                <div className="card order-ready-action">
+                  <div>
+                    <h2>Finalizar reparación</h2>
+                    <p className="muted">Cuando el equipo esté operativo y todos los repuestos estén instalados, confirma que está listo para entregar. El sistema verificará las autorizaciones y los pagos obligatorios.</p>
+                  </div>
+                  <button className="primary" disabled={busy} onClick={() => void run(
+                    () => markOrderReadyForDelivery(order.id),
+                    "Reparación finalizada. La orden quedó lista para entregar.",
+                  )}>
+                    <Check size={15} /> Confirmar reparación terminada
+                  </button>
+                </div>
+              )}
             </section>
           )}
 
@@ -1410,8 +1227,8 @@ export default function OrderDetailPage({
                               {" "}
                               ·{" "}
                               {part.warranty_covered
-                                ? "Cubierto por garantía"
-                                : "No marcado como garantía"}{" "}
+                                ? "Cubierto por la marca"
+                                : "A cargo del cliente"}{" "}
                               ·{" "}
                               {part.from_stock
                                 ? "Desde stock"
@@ -1420,24 +1237,6 @@ export default function OrderDetailPage({
                           </small>
                           {(role === "admin" || role === "supervisor") && (
                             <div className="part-flags">
-                              <label>
-                                <input
-                                  type="checkbox"
-                                  checked={part.warranty_covered}
-                                  onChange={(e) =>
-                                    void run(
-                                      () =>
-                                        updatePartCoverage(
-                                          part.id,
-                                          e.target.checked,
-                                          part.client_contacted,
-                                        ),
-                                      "Cobertura del repuesto actualizada",
-                                    )
-                                  }
-                                />{" "}
-                                Cubierto por garantía
-                              </label>
                               <label>
                                 <input
                                   type="checkbox"
@@ -1570,6 +1369,10 @@ export default function OrderDetailPage({
             <section className="card detail-content">
               <div className="detailgrid">
                 <div className="detailbox">
+                  <small>Diagnóstico</small>
+                  <strong>{diagnosisCoveredByBrand ? "Cubierto por la marca" : money(diagnosisDue)}</strong>
+                </div>
+                <div className="detailbox">
                   <small>Total de repuestos</small>
                   <strong>{money(totalParts)}</strong>
                 </div>
@@ -1585,7 +1388,7 @@ export default function OrderDetailPage({
               </div>
               {(role === "admin" || role === "supervisor") &&
                 (eligiblePartsTotal > 0 ||
-                  Number(diagnosisAmount) > 0 ||
+                  diagnosisDue > 0 ||
                   Number(installationAmount) > 0) && (
                   <div className="payment-form">
                     <h2>Registrar pago</h2>
@@ -1600,7 +1403,7 @@ export default function OrderDetailPage({
                         >
                           <option value="abono">Abono</option>
                           <option value="repuestos">Repuestos</option>
-                          <option value="diagnostico">Diagnóstico</option>
+                          {diagnosisDue > 0 && <option value="diagnostico">Diagnóstico</option>}
                           <option value="instalacion">Instalación</option>
                         </select>
                       </div>
