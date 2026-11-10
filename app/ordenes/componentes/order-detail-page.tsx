@@ -686,8 +686,10 @@ export default function OrderDetailPage({
               <div className="summary-overview">
                 <article className="card summary-info-card">
                   <div className="summary-card-heading">
-                    <h3 className="sectiontitle">Cliente y equipo</h3>
-                    <span className={warrantyBadgeClass}>{warrantyBadgeLabel}</span>
+                    <div className="summary-card-title-row">
+                      <h3 className="sectiontitle">Cliente y equipo</h3>
+                      <span className={warrantyBadgeClass}>{warrantyBadgeLabel}</span>
+                    </div>
                     <span className="summary-order-date">
                       Ingreso:{" "}
                       {new Intl.DateTimeFormat("es-CL", {
