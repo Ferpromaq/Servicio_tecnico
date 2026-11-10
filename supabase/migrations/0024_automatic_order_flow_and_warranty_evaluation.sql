@@ -32,7 +32,8 @@ create policy "admin manage brand warranty policies"
 
 -- Conserva la cobertura explícita que ya se había evaluado en órdenes antiguas.
 update public.service_orders
-set diagnosis_covered_by_brand = true,
+set damage_caused_by_client = false,
+    diagnosis_covered_by_brand = true,
     parts_covered_by_brand = true,
     warranty_evaluation_completed_at = coalesce(updated_at, created_at),
     warranty_policy_brand = (
@@ -304,7 +305,7 @@ begin
 end;
 $$;
 
--- No se permite alterar manualmente la cobertura de un repuesto: se hereda de la orden.
+-- La orden determina si existe cobertura posible; administración puede confirmarla por repuesto.
 create or replace function public.update_part_coverage(
   p_part_id uuid,
   p_warranty_covered boolean,
