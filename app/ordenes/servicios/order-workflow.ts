@@ -136,11 +136,24 @@ export async function confirmCommissioningDelivery(input: {
   if (error) throw error;
 }
 
-export async function saveDiagnosis(orderId: string, diagnosis: string) {
+export async function saveDiagnosis(
+  orderId: string,
+  diagnosis: string,
+  damageCausedByClient: boolean | null = null,
+) {
   const client = await requireSupabase();
   const { error } = await client.rpc("save_order_diagnosis", {
     p_order_id: orderId,
     p_diagnosis: diagnosis,
+    p_damage_caused_by_client: damageCausedByClient,
+  });
+  if (error) throw error;
+}
+
+export async function markOrderReadyForDelivery(orderId: string) {
+  const client = await requireSupabase();
+  const { error } = await client.rpc("mark_order_ready_for_delivery", {
+    p_order_id: orderId,
   });
   if (error) throw error;
 }
