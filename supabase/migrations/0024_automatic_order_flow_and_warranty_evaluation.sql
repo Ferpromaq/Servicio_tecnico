@@ -795,7 +795,7 @@ create or replace function public.save_order_warranty_purchase_date(
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 declare
   v_role public.app_role;
   v_order public.service_orders%rowtype;
@@ -830,7 +830,7 @@ begin
     jsonb_build_object('previous_receipt_date', v_order.receipt_date, 'receipt_date', p_receipt_date)
   );
 end;
-$;
+$$;
 
 revoke all on function public.save_order_warranty_purchase_date(uuid, date) from public, anon;
 grant execute on function public.save_order_warranty_purchase_date(uuid, date) to authenticated;
