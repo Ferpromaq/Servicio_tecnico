@@ -142,7 +142,14 @@ begin
     raise exception 'Debes indicar si el daño fue provocado por el cliente para evaluar la garantía';
   end if;
 
-  if v_warranty_active then
+  if v_warranty_active and v_order.status = 'en_reparacion'
+     and v_order.warranty_evaluation_completed_at is not null then
+    if p_damage_caused_by_client is distinct from v_order.damage_caused_by_client then
+      raise exception 'La evaluación de garantía ya está vinculada a solicitudes de reparación y no puede cambiarse desde un nuevo informe';
+    end if;
+    v_diagnosis_covered := coalesce(v_order.diagnosis_covered_by_brand, false);
+    v_parts_covered := coalesce(v_order.parts_covered_by_brand, false);
+  elsif v_warranty_active then
     if p_damage_caused_by_client then
       select coalesce(diagnosis_covered_when_customer_caused, false)
       into v_brand_policy
