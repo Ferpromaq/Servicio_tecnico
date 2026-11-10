@@ -472,3 +472,14 @@
 @media(prefers-reduced-motion:reduce){
   .commissioning-ready-card .commissioning-delivery-button{transition:none}
 }
+
+
+/* El selector de fotografía debe comunicar claramente que es interactivo. */
+.commissioning-delivery-modal input[type="file"],
+.commissioning-delivery-modal input[type="file"]::file-selector-button{
+  cursor:pointer;
+}
+.commissioning-delivery-modal input[type="file"]:disabled,
+.commissioning-delivery-modal input[type="file"]:disabled::file-selector-button{
+  cursor:not-allowed;
+}
