@@ -554,6 +554,122 @@ begin
 end;
 $$;
 
+
+
+-- Los cambios manuales de etapa dejan de estar disponibles. Solo se conservan
+-- las acciones de negocio: rechazo de reparación, entrega forzada y entrega real.
+create or replace function public.transition_order_status(
+  p_order_id uuid,
+  p_new_status public.order_status,
+  p_forced_delivery boolean default false,
+  p_reason text default null
+) returns void
+language plpgsql
+security definer
+set search_path = public
+as $
+declare
+  v_role public.app_role;
+  v_order public.service_orders%rowtype;
+  v_diagnosis_required numeric;
+  v_diagnosis_paid numeric;
+  v_parts_total numeric;
+  v_parts_paid numeric;
+  v_installation_paid numeric;
+begin
+  select role into v_role from public.profiles where id = auth.uid() and active = true;
+  if v_role is null or v_role not in ('admin','supervisor') then
+    raise exception 'Solo administración o supervisión puede registrar esta acción';
+  end if;
+
+  select * into v_order from public.service_orders where id = p_order_id for update;
+  if not found then raise exception 'La orden no existe'; end if;
+
+  if p_new_status not in ('listas','entregadas','rechazadas') then
+    raise exception 'El estado de la orden avanza automáticamente según las acciones del servicio';
+  end if;
+  if p_forced_delivery and p_new_status <> 'listas' then
+    raise exception 'La entrega forzada debe dejar la orden lista para entrega';
+  end if;
+  if p_new_status = 'listas' and not p_forced_delivery then
+    raise exception 'Para finalizar una reparación utiliza la confirmación de reparación terminada';
+  end if;
+  if p_new_status = 'entregadas' and v_order.status <> 'listas' then
+    raise exception 'La orden debe estar lista para entrega antes de registrar su entrega';
+  end if;
+  if p_new_status = 'rechazadas' and nullif(trim(coalesce(p_reason,'')), '') is null then
+    raise exception 'Indica el motivo por el que se rechaza la orden';
+  end if;
+  if p_forced_delivery and nullif(trim(coalesce(p_reason,'')), '') is null then
+    raise exception 'Debes indicar por qué el cliente rechazó la reparación';
+  end if;
+
+  if p_new_status in ('listas','entregadas') then
+    v_diagnosis_required := case
+      when v_order.diagnosis_covered_by_brand then 0
+      else coalesce(v_order.diagnosis_amount, 0)
+    end;
+    select coalesce(sum(amount),0) into v_diagnosis_paid
+    from public.payments
+    where order_id = p_order_id and payment_type = 'diagnostico';
+    if v_diagnosis_paid < v_diagnosis_required then
+      raise exception 'El diagnóstico debe estar pagado al 100%%. Pendiente: %',
+        greatest(v_diagnosis_required - v_diagnosis_paid, 0);
+    end if;
+
+    select coalesce(sum(quantity * unit_price),0) into v_parts_total
+    from public.parts_requests
+    where order_id = p_order_id
+      and status in ('autorizado','comprado')
+      and warranty_covered = false;
+    select coalesce(sum(amount),0) into v_parts_paid
+    from public.payments
+    where order_id = p_order_id and payment_type = 'repuestos';
+    if v_parts_paid < v_parts_total * 0.60 then
+      raise exception 'Para entregar se debe completar al menos el 60%% de los repuestos a cargo del cliente. Mínimo: %',
+        round(v_parts_total * 0.60, 0);
+    end if;
+
+    select coalesce(sum(amount),0) into v_installation_paid
+    from public.payments
+    where order_id = p_order_id and payment_type = 'instalacion';
+    if v_installation_paid < coalesce(v_order.installation_amount, 0) then
+      raise exception 'La instalación debe estar pagada al 100%%. Pendiente: %',
+        greatest(coalesce(v_order.installation_amount, 0) - v_installation_paid, 0);
+    end if;
+  end if;
+
+  update public.service_orders
+  set status = p_new_status,
+      forced_delivery = case when p_forced_delivery then true else forced_delivery end,
+      forced_delivery_reason = case when p_forced_delivery then trim(p_reason) else forced_delivery_reason end,
+      forced_delivery_by = case when p_forced_delivery then auth.uid() else forced_delivery_by end,
+      forced_delivery_at = case when p_forced_delivery then now() else forced_delivery_at end,
+      delivered_at = case when p_new_status = 'entregadas' then now() else delivered_at end,
+      updated_at = now()
+  where id = p_order_id;
+
+  if p_forced_delivery then
+    insert into public.order_events(order_id,event_type,description,actor_id,metadata)
+    values (
+      p_order_id, 'entrega_forzada',
+      'Orden lista para entrega por rechazo del cliente: ' || trim(p_reason),
+      auth.uid(), jsonb_build_object('reason', trim(p_reason))
+    );
+  elsif p_new_status = 'rechazadas' then
+    insert into public.order_events(order_id,event_type,description,actor_id,metadata)
+    values (
+      p_order_id, 'orden_rechazada',
+      'Orden rechazada: ' || trim(p_reason),
+      auth.uid(), jsonb_build_object('reason', trim(p_reason))
+    );
+  end if;
+end;
+$;
+
+revoke all on function public.transition_order_status(uuid, public.order_status, boolean, text) from public, anon;
+grant execute on function public.transition_order_status(uuid, public.order_status, boolean, text) to authenticated;
+
 revoke all on function public.save_brand_warranty_policy(text, boolean) from public, anon;
 grant execute on function public.save_brand_warranty_policy(text, boolean) to authenticated;
 revoke all on function public.save_order_diagnosis(uuid, text, boolean) from public, anon;
