@@ -534,3 +534,28 @@
   .order-ready-action{align-items:stretch;flex-direction:column}
   .order-ready-action .primary{width:100%;min-height:44px}
 }
+
+.order-forced-delivery,.order-standard-delivery{
+  display:grid;gap:11px;margin-top:12px;padding:16px 18px;
+  border:1px solid #f1dfc7;background:#fffaf4
+}
+.order-forced-delivery h3,.order-standard-delivery h3{
+  margin:0 0 4px;color:#263548;font-size:14px
+}
+.order-forced-delivery p,.order-standard-delivery p{
+  max-width:760px;margin:0;color:#6b7888;font-size:11px;line-height:1.5
+}
+.order-forced-delivery .field{margin:0}
+.order-forced-delivery .field label{font-size:11px}
+.order-forced-delivery textarea{min-height:62px}
+.order-forced-delivery .secondary{justify-self:start;min-height:38px}
+.order-standard-delivery{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  border-color:#cfe8d8;background:#f7fcf8
+}
+.order-standard-delivery .primary{flex:0 0 auto;min-height:42px}
+@media(max-width:700px){
+  .order-forced-delivery .secondary{width:100%}
+  .order-standard-delivery{align-items:stretch;flex-direction:column}
+  .order-standard-delivery .primary{width:100%;min-height:44px}
+}
