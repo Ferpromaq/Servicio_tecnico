@@ -23,6 +23,7 @@ import {
   markOrderReadyForDelivery,
   startOrderRepair,
   saveDiagnosis,
+  saveOrderWarrantyPurchaseDate,
   requestParts,
   transitionOrderStatus,
   updatePartCoverage,
@@ -92,6 +93,7 @@ export default function OrderDetailPage({
   const [diagnosis, setDiagnosis] = useState("");
   const [forcedReason, setForcedReason] = useState("");
   const [damageCausedByClient, setDamageCausedByClient] = useState<boolean | null>(null);
+  const [warrantyPurchaseDateDraft, setWarrantyPurchaseDateDraft] = useState("");
   const [partDescription, setPartDescription] = useState("");
   const [partQuantity, setPartQuantity] = useState("1");
   const [partPrice, setPartPrice] = useState("0");
@@ -199,6 +201,7 @@ export default function OrderDetailPage({
           ? baseRow.damage_caused_by_client
           : null,
       );
+      setWarrantyPurchaseDateDraft(baseRow.receipt_date ?? "");
       setWarrantyPhotoUrl("");
       setPurchaseInvoicePhotoUrl("");
       setDiagnosisReceiptPhotoUrl("");
@@ -692,6 +695,25 @@ export default function OrderDetailPage({
                       }).format(new Date(order.received_at))}
                     </span>
                   </div>
+                  {warrantyEntryFlag && !receiptDateValue && (
+                    <div className="summary-warranty-date-fix">
+                      <div>
+                        <strong>Falta la fecha de compra</strong>
+                        <p>Esta orden ingresó con garantía. Completa la fecha de la factura para validar su vigencia antes de continuar con el diagnóstico.</p>
+                      </div>
+                      {(role === "admin" || role === "supervisor") ? (
+                        <div className="summary-warranty-date-form">
+                          <input type="date" value={warrantyPurchaseDateDraft} onChange={(event) => setWarrantyPurchaseDateDraft(event.target.value)} aria-label="Fecha de compra del equipo"/>
+                          <button type="button" className="secondary" disabled={busy || !warrantyPurchaseDateDraft} onClick={() => void run(
+                            () => saveOrderWarrantyPurchaseDate(order.id, warrantyPurchaseDateDraft),
+                            "Fecha de compra guardada. La garantía ya puede evaluarse.",
+                          )}>Guardar fecha</button>
+                        </div>
+                      ) : (
+                        <small>Solicita a administración o supervisión que complete la fecha de compra.</small>
+                      )}
+                    </div>
+                  )}
                   <div className="summary-client-name">
                     {order.clients?.name ?? "Sin cliente"}
                   </div>
@@ -953,14 +975,16 @@ export default function OrderDetailPage({
                   </div>
                 ) : (
                   <div className="notice">
-                    {Boolean((order as ServiceOrder & { warranty_entry?: boolean }).warranty_entry)
-                      ? "La garantía de ingreso está vencida o no tiene fecha de compra válida. El diagnóstico y los repuestos quedan a cargo del cliente."
-                      : "Este equipo ingresó sin garantía. El diagnóstico y los repuestos quedan a cargo del cliente."}
+                    {warrantyEntryFlag && !receiptDateValue
+                      ? "No se puede evaluar el diagnóstico todavía: falta completar la fecha de compra en la tarjeta Cliente y equipo."
+                      : warrantyEntryFlag
+                        ? "La garantía estaba vencida al ingresar el equipo. El diagnóstico y los repuestos quedan a cargo del cliente."
+                        : "Este equipo ingresó sin garantía. El diagnóstico y los repuestos quedan a cargo del cliente."}
                   </div>
                 )}
                 <button
                   className="primary"
-                  disabled={busy || !diagnosis.trim() || (isWarrantyActive && damageCausedByClient === null)}
+                  disabled={busy || !diagnosis.trim() || (warrantyEntryFlag && !receiptDateValue) || (isWarrantyActive && damageCausedByClient === null)}
                   onClick={() =>
                     void run(
                       () => saveDiagnosis(order.id, diagnosis, isWarrantyActive ? damageCausedByClient : null),
