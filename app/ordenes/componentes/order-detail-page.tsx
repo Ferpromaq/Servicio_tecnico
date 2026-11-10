@@ -21,6 +21,7 @@ import {
   getOrderWorkflow,
   markPartMilestone,
   markOrderReadyForDelivery,
+  startOrderRepair,
   saveDiagnosis,
   requestParts,
   transitionOrderStatus,
@@ -993,6 +994,20 @@ export default function OrderDetailPage({
                   </div>
                 )}
               </div>
+              {order.status === "diagnostico" && parts.length === 0 && ["admin", "supervisor", "tecnico"].includes(role ?? "") && (
+                <div className="card order-start-repair">
+                  <div>
+                    <h2>Iniciar reparación</h2>
+                    <p className="muted">El diagnóstico está registrado. Cuando el técnico comience la reparación, confirma este paso para actualizar automáticamente el estado de la orden.</p>
+                  </div>
+                  <button className="secondary" disabled={busy} onClick={() => void run(
+                    () => startOrderRepair(order.id),
+                    "Reparación iniciada. La orden pasó a En reparación.",
+                  )}>
+                    Iniciar reparación
+                  </button>
+                </div>
+              )}
               {(order.status === "diagnostico" || order.status === "en_reparacion") && ["admin", "supervisor", "tecnico"].includes(role ?? "") && (
                 <div className="card order-ready-action">
                   <div>
