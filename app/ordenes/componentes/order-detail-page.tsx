@@ -994,7 +994,7 @@ export default function OrderDetailPage({
                   </div>
                 )}
               </div>
-              {order.status === "diagnostico" && parts.length === 0 && ["admin", "supervisor", "tecnico"].includes(role ?? "") && (
+              {order.status === "diagnostico" && ["admin", "supervisor", "tecnico"].includes(role ?? "") && (
                 <div className="card order-start-repair">
                   <div>
                     <h2>Iniciar reparación</h2>
