@@ -49,12 +49,36 @@ export async function getOrderWorkflow(orderId: string) {
   // La trazabilidad histórica y los datos operativos no deben depender
   // de que exista la tabla nueva de informes de diagnóstico. Si la migración
   // 0015 aún no está aplicada, mantenemos disponibles los eventos anteriores.
-  const [parts, payments, events] = await Promise.all([
-    client.from("parts_requests").select("id,order_id,description,quantity,unit_price,status,warranty_covered,client_contacted,from_stock,catalog_part_id,received_at,installed_at,created_at").eq("order_id", orderId).order("created_at", { ascending: false }),
+  let partsResult = await client
+    .from("parts_requests")
+    .select("id,order_id,description,quantity,unit_price,status,warranty_covered,client_contacted,from_stock,catalog_part_id,received_at,installed_at,created_at")
+    .eq("order_id", orderId)
+    .order("created_at", { ascending: false });
+
+  // Si aún no se aplicó la migración 0020, el campo del catálogo no existe.
+  // En ese caso cargamos los repuestos con el esquema anterior para no bloquear
+  // la ficha completa de la orden.
+  const missingCatalogColumn =
+    partsResult.error &&
+    (partsResult.error.code === "42703" ||
+      partsResult.error.code === "PGRST204" ||
+      /catalog_part_id.*(column|schema cache)|(column|schema cache).*catalog_part_id/i.test(
+        partsResult.error.message,
+      ));
+
+  if (missingCatalogColumn) {
+    partsResult = await client
+      .from("parts_requests")
+      .select("id,order_id,description,quantity,unit_price,status,warranty_covered,client_contacted,from_stock,received_at,installed_at,created_at")
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: false });
+  }
+
+  const [payments, events] = await Promise.all([
     client.from("payments").select("id,payment_type,amount,method,reference,receipt_received,paid_at").eq("order_id", orderId).order("paid_at", { ascending: false }),
     client.from("order_events").select("id,event_type,description,metadata,created_at,actor_id").eq("order_id", orderId).order("created_at", { ascending: false }),
   ]);
-  if (parts.error) throw parts.error;
+  if (partsResult.error) throw partsResult.error;
   if (payments.error) throw payments.error;
   if (events.error) throw events.error;
 
@@ -74,7 +98,7 @@ export async function getOrderWorkflow(orderId: string) {
   const actorNames = new Map((actorsResult.data ?? []).map((actor) => [actor.id, actor.full_name]));
 
   return {
-    parts: (parts.data ?? []) as PartRequest[],
+    parts: (partsResult.data ?? []) as PartRequest[],
     payments: (payments.data ?? []) as OrderPayment[],
     diagnosisReports: reportRows.map((report) => ({ ...report, actor: report.created_by ? { full_name: actorNames.get(report.created_by) ?? "Usuario" } : null })) as DiagnosisReport[],
     events: eventRows.map((event) => ({
