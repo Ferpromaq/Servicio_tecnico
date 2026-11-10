@@ -158,6 +158,10 @@ begin
   insert into public.order_diagnosis_reports(order_id, report, created_by)
   values (p_order_id, trim(p_diagnosis), auth.uid());
 
+  if v_order.status = 'recepcion' then
+    perform set_config('app.allow_automatic_order_status', 'on', true);
+  end if;
+
   update public.service_orders
   set diagnosis = trim(p_diagnosis),
       damage_caused_by_client = case when v_warranty_active then p_damage_caused_by_client else null end,
@@ -170,6 +174,7 @@ begin
       status = case when status = 'recepcion' then 'diagnostico'::public.order_status else status end,
       updated_at = now()
   where id = p_order_id;
+  perform set_config('app.allow_automatic_order_status', 'off', true);
 
   insert into public.order_events(order_id, event_type, description, actor_id, metadata)
   values (
@@ -290,9 +295,11 @@ begin
   end loop;
 
   if v_order.status = 'diagnostico' then
+    perform set_config('app.allow_automatic_order_status', 'on', true);
     update public.service_orders
     set status = 'en_reparacion', updated_at = now()
     where id = p_order_id;
+    perform set_config('app.allow_automatic_order_status', 'off', true);
   end if;
 end;
 $$;
@@ -427,9 +434,11 @@ begin
       greatest(coalesce(v_order.installation_amount, 0) - v_installation_paid, 0);
   end if;
 
+  perform set_config('app.allow_automatic_order_status', 'on', true);
   update public.service_orders
   set status = 'listas', updated_at = now()
   where id = p_order_id;
+  perform set_config('app.allow_automatic_order_status', 'off', true);
 
   insert into public.order_events(order_id, event_type, description, actor_id, metadata)
   values (
@@ -639,6 +648,7 @@ begin
     end if;
   end if;
 
+  perform set_config('app.allow_automatic_order_status', 'on', true);
   update public.service_orders
   set status = p_new_status,
       forced_delivery = case when p_forced_delivery then true else forced_delivery end,
@@ -648,6 +658,7 @@ begin
       delivered_at = case when p_new_status = 'entregadas' then now() else delivered_at end,
       updated_at = now()
   where id = p_order_id;
+  perform set_config('app.allow_automatic_order_status', 'off', true);
 
   if p_forced_delivery then
     insert into public.order_events(order_id,event_type,description,actor_id,metadata)
@@ -669,6 +680,34 @@ $;
 
 revoke all on function public.transition_order_status(uuid, public.order_status, boolean, text) from public, anon;
 grant execute on function public.transition_order_status(uuid, public.order_status, boolean, text) to authenticated;
+
+
+
+-- Impide que un UPDATE directo vuelva a introducir cambios manuales de estado.
+create or replace function public.guard_automatic_order_status()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $
+begin
+  if old.status is distinct from new.status
+     and current_setting('app.allow_automatic_order_status', true) is distinct from 'on'
+     and current_setting('app.allow_commissioning_ready', true) is distinct from 'on'
+     and current_setting('app.allow_commissioning_delivery', true) is distinct from 'on' then
+    raise exception 'El estado de la orden solo puede avanzar mediante las acciones del flujo de servicio';
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists automatic_order_status_guard on public.service_orders;
+create trigger automatic_order_status_guard
+before update of status on public.service_orders
+for each row execute function public.guard_automatic_order_status();
+
+revoke all on function public.guard_automatic_order_status() from public, anon, authenticated;
+grant select on public.brand_warranty_policies to authenticated;
 
 revoke all on function public.save_brand_warranty_policy(text, boolean) from public, anon;
 grant execute on function public.save_brand_warranty_policy(text, boolean) to authenticated;
