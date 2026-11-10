@@ -686,7 +686,7 @@ export default function OrderDetailPage({
               <div className="summary-overview">
                 <article className="card summary-info-card">
                   <div className="summary-card-heading">
-                    <div className="summary-card-title-row">
+                    <div className={`summary-card-title-row${warrantyEntryFlag && !receiptDateValue ? " is-warranty-pending" : ""}`}>
                       <h3 className="sectiontitle">Cliente y equipo</h3>
                       <span className={warrantyBadgeClass}>{warrantyBadgeLabel}</span>
                     </div>
