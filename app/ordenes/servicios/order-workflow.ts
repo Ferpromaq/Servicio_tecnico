@@ -136,6 +136,15 @@ export async function confirmCommissioningDelivery(input: {
   if (error) throw error;
 }
 
+export async function saveOrderWarrantyPurchaseDate(orderId: string, receiptDate: string) {
+  const client = await requireSupabase();
+  const { error } = await client.rpc("save_order_warranty_purchase_date", {
+    p_order_id: orderId,
+    p_receipt_date: receiptDate,
+  });
+  if (error) throw error;
+}
+
 export async function saveDiagnosis(
   orderId: string,
   diagnosis: string,
