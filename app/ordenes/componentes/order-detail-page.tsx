@@ -424,6 +424,7 @@ export default function OrderDetailPage({
     .reduce((sum, payment) => sum + Number(payment.amount), 0);
   const minimumPartsPayment = eligiblePartsTotal * 0.6;
   const diagnosisCoveredByBrand = Boolean((order as ServiceOrder & { diagnosis_covered_by_brand?: boolean } | null)?.diagnosis_covered_by_brand);
+  const partsCoveredByBrand = Boolean((order as ServiceOrder & { parts_covered_by_brand?: boolean } | null)?.parts_covered_by_brand);
   const diagnosisDue = diagnosisCoveredByBrand ? 0 : Number(diagnosisAmount);
   const warrantyEntryFlag = Boolean((order as ServiceOrder & { warranty_entry?: boolean } | null)?.warranty_entry);
   const receiptDateValue = (order as ServiceOrder & { receipt_date?: string | null } | null)?.receipt_date;
@@ -1272,6 +1273,25 @@ export default function OrderDetailPage({
                           </small>
                           {(role === "admin" || role === "supervisor") && (
                             <div className="part-flags">
+                              <label>
+                                <input
+                                  type="checkbox"
+                                  checked={part.warranty_covered}
+                                  disabled={!partsCoveredByBrand}
+                                  onChange={(e) =>
+                                    void run(
+                                      () =>
+                                        updatePartCoverage(
+                                          part.id,
+                                          e.target.checked,
+                                          part.client_contacted,
+                                        ),
+                                      "Cobertura del repuesto actualizada",
+                                    )
+                                  }
+                                />{" "}
+                                Cobertura confirmada por la marca
+                              </label>
                               <label>
                                 <input
                                   type="checkbox"
