@@ -446,13 +446,13 @@ export default function OrderDetailPage({
     warrantyReceiptDate >= warrantyExpiryBoundary
   );
   const warrantyBadgeLabel = !warrantyEntryFlag
-    ? "SIN GARANTÍA"
+    ? "Sin garantía"
     : !receiptDateValue
-      ? "GARANTÍA POR VERIFICAR"
+      ? "Garantía por verificar"
       : isWarrantyActive
-        ? "CON GARANTÍA"
-        : "GARANTÍA VENCIDA";
-  const warrantyBadgeClass = `summary-warranty-badge ${isWarrantyActive ? "active" : warrantyEntryFlag ? "expired" : "none"}`;
+        ? "Con garantía"
+        : "Garantía vencida";
+  const warrantyBadgeClass = `summary-warranty-badge ${warrantyEntryFlag && !receiptDateValue ? "pending" : isWarrantyActive ? "active" : warrantyEntryFlag ? "expired" : "none"}`;
 
   if (!order && !error)
     return (
