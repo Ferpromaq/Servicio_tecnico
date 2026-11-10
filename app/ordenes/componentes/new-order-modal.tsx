@@ -36,6 +36,7 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
   const [diagnosisReceiptType, setDiagnosisReceiptType] = useState("boleta");
   const [diagnosisReceiptNumber, setDiagnosisReceiptNumber] = useState("");
   const [diagnosisReceiptAmount, setDiagnosisReceiptAmount] = useState("");
+  const [diagnosisReceiptMethod, setDiagnosisReceiptMethod] = useState("Efectivo");
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -109,6 +110,18 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
       };
       const { error: saveError } = await supabase.from("service_orders").update(details).eq("id", createdOrderId);
       if (saveError) throw new Error("La orden se creó, pero faltó guardar sus datos de ingreso: " + saveError.message);
+      if (intakeType === "no_warranty" && Number(diagnosisReceiptAmount) > 0) {
+        const { error: paymentError } = await supabase.rpc("register_order_payment", {
+          p_order_id: createdOrderId,
+          p_payment_type: "diagnostico",
+          p_amount: Number(diagnosisReceiptAmount),
+          p_method: diagnosisReceiptMethod,
+          p_reference: diagnosisReceiptNumber.trim(),
+          p_receipt_received: true,
+          p_part_allocations: [],
+        });
+        if (paymentError) throw new Error("La orden y sus datos de ingreso se guardaron, pero no se pudo registrar el pago del diagnóstico: " + paymentError.message);
+      }
       if (documentUploadWarning) {
         throw new Error("La orden y sus datos de ingreso se guardaron, pero falta la fotografía. Error de almacenamiento: " + documentUploadWarning);
       }
@@ -157,6 +170,7 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
           <div className="field"><label>Tipo de comprobante *</label><select value={diagnosisReceiptType} onChange={e => setDiagnosisReceiptType(e.target.value)}><option value="boleta">Boleta</option><option value="factura">Factura</option></select></div>
           <div className="field"><label>Número de Folio *</label><input required value={diagnosisReceiptNumber} onChange={e => setDiagnosisReceiptNumber(e.target.value)} placeholder="N° de Folio"/></div>
           <div className="field"><label>Monto pagado (CLP) *</label><input required type="number" min="1" step="1" inputMode="numeric" value={diagnosisReceiptAmount} onChange={e => setDiagnosisReceiptAmount(e.target.value)} placeholder="Ej. 25000"/></div>
+          <div className="field"><label>Medio de pago *</label><select value={diagnosisReceiptMethod} onChange={e => setDiagnosisReceiptMethod(e.target.value)}><option>Efectivo</option><option>Transferencia</option><option>Débito</option><option>Crédito</option><option>Otro</option></select></div>
           <div className="field upload-field"><label>Fotografía de la boleta o factura *</label><input id="intake-document" className="file-input-hidden" type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setDocumentFile(e.target.files?.[0] ?? null)}/><label className="upload-control" htmlFor="intake-document"><Upload size={17}/><span><strong>{documentFile ? "Cambiar fotografía" : "Seleccionar fotografía"}</strong><small>{documentFile ? documentFile.name : "JPG, PNG o WEBP · máximo 8 MB"}</small></span></label></div>
         </div>}
         {documentFile && !validDocument && <p className="file-selected file-error">El archivo debe ser JPG, PNG o WEBP y pesar máximo 8 MB.</p>}
