@@ -105,7 +105,7 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
         diagnosis_receipt_number: intakeType === "no_warranty" ? diagnosisReceiptNumber.trim() : null,
         diagnosis_receipt_amount: intakeType === "no_warranty" ? Number(diagnosisReceiptAmount) : null,
         diagnosis_receipt_photo_path: intakeType === "no_warranty" ? documentPath : null,
-        diagnosis_amount: intakeType === "commissioning" ? 0 : intakeType === "warranty" ? Number(diagnosisAmount) : Number(diagnosisReceiptAmount),
+        diagnosis_amount: intakeType === "commissioning" ? 0 : Number(diagnosisAmount),
         installation_amount: intakeType === "commissioning" ? 0 : Number(installationAmount)
       };
       const { error: saveError } = await supabase.from("service_orders").update(details).eq("id", createdOrderId);
@@ -169,6 +169,7 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
         </div> : <div className="intake-fields">
           <div className="field"><label>Tipo de comprobante *</label><select value={diagnosisReceiptType} onChange={e => setDiagnosisReceiptType(e.target.value)}><option value="boleta">Boleta</option><option value="factura">Factura</option></select></div>
           <div className="field"><label>Número de Folio *</label><input required value={diagnosisReceiptNumber} onChange={e => setDiagnosisReceiptNumber(e.target.value)} placeholder="N° de Folio"/></div>
+          <div className="field"><label>Valor del diagnóstico (CLP) *</label><input required type="number" min="0" step="1" value={diagnosisAmount} onChange={e => setDiagnosisAmount(e.target.value)} placeholder="Ej. 25000"/></div>
           <div className="field"><label>Monto pagado (CLP) *</label><input required type="number" min="1" step="1" inputMode="numeric" value={diagnosisReceiptAmount} onChange={e => setDiagnosisReceiptAmount(e.target.value)} placeholder="Ej. 25000"/></div>
           <div className="field"><label>Medio de pago *</label><select value={diagnosisReceiptMethod} onChange={e => setDiagnosisReceiptMethod(e.target.value)}><option>Efectivo</option><option>Transferencia</option><option>Débito</option><option>Crédito</option><option>Otro</option></select></div>
           <div className="field upload-field"><label>Fotografía de la boleta o factura *</label><input id="intake-document" className="file-input-hidden" type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setDocumentFile(e.target.files?.[0] ?? null)}/><label className="upload-control" htmlFor="intake-document"><Upload size={17}/><span><strong>{documentFile ? "Cambiar fotografía" : "Seleccionar fotografía"}</strong><small>{documentFile ? documentFile.name : "JPG, PNG o WEBP · máximo 8 MB"}</small></span></label></div>
@@ -201,7 +202,7 @@ export default function NewOrderModal({ onClose, onCreated }: { onClose?: () => 
       </section>
 
         </div>
-      <div className="form-actions"><button type="button" className="secondary" onClick={() => onClose ? onClose() : router.push("/")}>Cancelar</button><button type="submit" className="primary" disabled={loading || !role || role === "tecnico" || !validDocument || (needsInvoice && !receiptDate) || (intakeType === "warranty" && (!diagnosisAmount || Number(diagnosisAmount) < 0)) || (intakeType === "no_warranty" && (!diagnosisReceiptAmount || Number(diagnosisReceiptAmount) <= 0)) || (Number(installationAmount) < 0)}><Save size={14}/>{loading ? "Creando…" : "Crear orden"}</button></div>
+      <div className="form-actions"><button type="button" className="secondary" onClick={() => onClose ? onClose() : router.push("/")}>Cancelar</button><button type="submit" className="primary" disabled={loading || !role || role === "tecnico" || !validDocument || (needsInvoice && !receiptDate) || (intakeType !== "commissioning" && (!diagnosisAmount || Number(diagnosisAmount) < 0)) || (intakeType === "no_warranty" && (!diagnosisReceiptAmount || Number(diagnosisReceiptAmount) <= 0)) || (Number(installationAmount) < 0)}><Save size={14}/>{loading ? "Creando…" : "Crear orden"}</button></div>
       </form>
     </div>
   </main>;
