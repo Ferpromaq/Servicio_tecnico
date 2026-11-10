@@ -575,7 +575,7 @@ create or replace function public.transition_order_status(
 ) returns void
 language plpgsql
 security definer
-set search_path = publicas $
+set search_path = publicas $$
 declare
   v_role public.app_role;
   v_order public.service_orders%rowtype;
@@ -687,7 +687,7 @@ create or replace function public.guard_automatic_order_status()
 returns trigger
 language plpgsql
 security definer
-set search_path = publicas $
+set search_path = publicas $$
 begin
   if old.status is distinct from new.status
      and current_setting('app.allow_automatic_order_status', true) is distinct from 'on'
