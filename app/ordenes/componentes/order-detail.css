@@ -571,3 +571,23 @@
   .order-start-repair{align-items:stretch;flex-direction:column}
   .order-start-repair .secondary{width:100%;min-height:44px}
 }
+
+.summary-warranty-date-fix{
+  display:grid;gap:10px;margin:10px 0 13px;padding:12px 13px;
+  border:1px solid #f0d6a9;border-radius:10px;background:#fffaf0
+}
+.summary-warranty-date-fix>div:first-child{display:grid;gap:4px}
+.summary-warranty-date-fix strong{color:#8a5b14;font-size:11px}
+.summary-warranty-date-fix p,.summary-warranty-date-fix>small{
+  margin:0;color:#7b6a4e;font-size:10px;line-height:1.45
+}
+.summary-warranty-date-form{display:flex;align-items:center;gap:8px}
+.summary-warranty-date-form input{
+  min-height:35px;padding:6px 9px;border:1px solid #e5d6bd;
+  border-radius:8px;background:#fff;color:#263548;font:inherit;font-size:11px
+}
+.summary-warranty-date-form button{min-height:35px}
+@media(max-width:700px){
+  .summary-warranty-date-form{align-items:stretch;flex-direction:column}
+  .summary-warranty-date-form input,.summary-warranty-date-form button{width:100%;min-height:40px}
+}
