@@ -158,6 +158,14 @@ export async function markOrderReadyForDelivery(orderId: string) {
   if (error) throw error;
 }
 
+export async function startOrderRepair(orderId: string) {
+  const client = await requireSupabase();
+  const { error } = await client.rpc("start_order_repair", {
+    p_order_id: orderId,
+  });
+  if (error) throw error;
+}
+
 export async function requestParts(input: { orderId: string; items: { description: string; quantity: number; unitPrice: number; fromStock?: boolean; catalogPartId?: string }[] }) {
   const client = await requireSupabase();
   if (!input.items.length) throw new Error("Agrega al menos un repuesto.");
