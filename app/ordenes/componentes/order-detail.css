@@ -28,9 +28,24 @@
 .summary-metrics .detailbox strong{font-size:15px}
 .summary-overview{display:grid;grid-template-columns:1fr 1fr 1.12fr;gap:10px;align-items:stretch}
 .summary-overview>.card{min-width:0;padding:14px}
-.summary-card-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:11px}
-.summary-card-heading .sectiontitle{margin:0}
-.summary-order-date,.summary-intake-type{font-size:10px;color:#788594;white-space:nowrap}
+.summary-card-heading{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:6px;
+  margin-bottom:13px;min-width:0
+}
+.summary-card-title-row{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:7px 10px;min-width:0
+}
+.summary-card-title-row .sectiontitle{
+  margin:0;min-width:0;white-space:nowrap;line-height:1.25
+}
+.summary-card-title-row .summary-warranty-badge{
+  margin-left:auto
+}
+.summary-order-date,.summary-intake-type{
+  display:block;font-size:10px;color:#788594;white-space:nowrap;
+  line-height:1.35
+}
 .summary-client-name,.summary-equipment-name{font-size:13px;font-weight:750;color:#253244}
 .summary-compact-line{font-size:11px;margin-top:5px}
 .summary-divider{height:1px;background:#edf0f3;margin:11px 0}
@@ -61,7 +76,9 @@
 .detail-admin-tools-content .detail-columns{margin-top:0}
 .detail-admin-tools-content .card{padding:13px}
 @media(max-width:1000px){.summary-overview{grid-template-columns:1fr 1fr}.summary-documents-card{grid-column:1/-1}.summary-image-link{height:150px}}
-@media(max-width:700px){.summary-overview{grid-template-columns:1fr}.summary-documents-card{grid-column:auto}.summary-metrics{grid-template-columns:1fr 1fr}.summary-card-heading{align-items:flex-start;flex-direction:column}.detail-admin-tools>summary{align-items:flex-start;flex-wrap:wrap}.detail-admin-tools>summary span{margin-left:0;width:100%}}
+@media(max-width:700px){.summary-overview{grid-template-columns:1fr}.summary-documents-card{grid-column:auto}.summary-metrics{grid-template-columns:1fr 1fr}.summary-card-heading{gap:7px}
+.summary-card-title-row{align-items:center}
+.summary-card-title-row .sectiontitle{white-space:normal}.detail-admin-tools>summary{align-items:flex-start;flex-wrap:wrap}.detail-admin-tools>summary span{margin-left:0;width:100%}}
 
 
 /* Informes de diagnóstico y captura de varios repuestos */
@@ -529,7 +546,7 @@
 .order-ready-action p{max-width:650px;margin:0;font-size:12px;line-height:1.5}
 .order-ready-action .primary{flex:0 0 auto;min-height:42px}
 @media(max-width:700px){
-  .summary-card-heading{flex-wrap:wrap}
+  .summary-card-title-row{gap:7px}
   .diagnosis-warranty-options{grid-template-columns:1fr}
   .order-ready-action{align-items:stretch;flex-direction:column}
   .order-ready-action .primary{width:100%;min-height:44px}
