@@ -86,6 +86,7 @@ export default function OrderDetailPage({
   const [deliveryByName, setDeliveryByName] = useState("");
   const [deliveryReceivedBy, setDeliveryReceivedBy] = useState("");
   const [deliveryPhotoFile, setDeliveryPhotoFile] = useState<File | null>(null);
+  const [deliverySubmitting, setDeliverySubmitting] = useState(false);
   const [deliveryPhotoUrl, setDeliveryPhotoUrl] = useState("");
   const [tab, setTab] = useState("resumen");
   const [diagnosis, setDiagnosis] = useState("");
@@ -333,6 +334,74 @@ export default function OrderDetailPage({
       return false;
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function submitCommissioningDelivery() {
+    if (deliverySubmitting) return;
+    setDeliverySubmitting(true);
+    setError("");
+    setNotice("");
+    let uploadedPhotoPath = "";
+
+    try {
+      if (!supabase) throw new Error("Falta configurar la conexión con Supabase.");
+      if (!deliveryPhotoFile) throw new Error("Adjunta la fotografía de quien retira el equipo.");
+      if (!["image/jpeg", "image/png", "image/webp"].includes(deliveryPhotoFile.type)) {
+        throw new Error("La fotografía debe ser JPG, PNG o WEBP.");
+      }
+      if (deliveryPhotoFile.size > 8 * 1024 * 1024) {
+        throw new Error("La fotografía no puede superar los 8 MB.");
+      }
+
+      const extension =
+        deliveryPhotoFile.type === "image/png"
+          ? "png"
+          : deliveryPhotoFile.type === "image/webp"
+            ? "webp"
+            : "jpg";
+      uploadedPhotoPath = `${order!.id}/delivery/${crypto.randomUUID()}.${extension}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("order-documents")
+        .upload(uploadedPhotoPath, deliveryPhotoFile, {
+          contentType: deliveryPhotoFile.type,
+          upsert: false,
+        });
+      if (uploadError) throw uploadError;
+
+      try {
+        await confirmCommissioningDelivery({
+          orderId: order!.id,
+          deliveredByName: deliveryByName.trim(),
+          receivedByName: deliveryReceivedBy.trim(),
+          deliveryPhotoPath: uploadedPhotoPath,
+        });
+      } catch (deliveryError) {
+        await supabase.storage.from("order-documents").remove([uploadedPhotoPath]);
+        uploadedPhotoPath = "";
+        throw deliveryError;
+      }
+
+      // Cerrar el PopUp apenas el RPC confirma la entrega; la recarga va aparte.
+      setDeliveryModalOpen(false);
+      setDeliveryByName("");
+      setDeliveryReceivedBy("");
+      setDeliveryPhotoFile(null);
+      setNotice("Entrega registrada correctamente. La orden quedó entregada al cliente.");
+      void load();
+    } catch (err) {
+      const detail =
+        err instanceof Error
+          ? err.message
+          : err && typeof err === "object" && "message" in err &&
+              typeof err.message === "string"
+            ? err.message
+            : "No se pudo registrar la entrega. Inténtalo nuevamente.";
+      setError(detail);
+      console.error("Error al confirmar la entrega:", err);
+    } finally {
+      setDeliverySubmitting(false);
     }
   }
 
@@ -1733,9 +1802,9 @@ export default function OrderDetailPage({
         </div>
       )}
       {deliveryModalOpen && order && (
-        <div className="commissioning-modal-backdrop" role="presentation" onClick={() => !busy && setDeliveryModalOpen(false)}>
+        <div className="commissioning-modal-backdrop" role="presentation" onClick={() => !busy && !deliverySubmitting && setDeliveryModalOpen(false)}>
           <section className="commissioning-modal commissioning-delivery-modal" role="dialog" aria-modal="true" aria-labelledby="commissioning-delivery-title" onClick={(event) => event.stopPropagation()}>
-            <button type="button" className="commissioning-modal-close" aria-label="Cerrar" disabled={busy} onClick={() => setDeliveryModalOpen(false)}>×</button>
+            <button type="button" className="commissioning-modal-close" aria-label="Cerrar" disabled={busy || deliverySubmitting} onClick={() => setDeliveryModalOpen(false)}>×</button>
             <span className="eyebrow">PUESTA EN MARCHA · ORDEN #{order.order_number}</span>
             <h2 id="commissioning-delivery-title">Registrar entrega al cliente</h2>
             <p>Completa los datos de la persona que entrega y de quien retira el equipo. Adjunta una fotografía de quien lo recibe para dejar constancia de la entrega.</p>
@@ -1747,37 +1816,15 @@ export default function OrderDetailPage({
             <input id="commissioning-delivery-photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setDeliveryPhotoFile(event.target.files?.[0] ?? null)} />
             <small className="commissioning-delivery-file-hint">{deliveryPhotoFile ? deliveryPhotoFile.name : "Formatos permitidos: JPG, PNG o WEBP. Máximo 8 MB."}</small>
             <div className="commissioning-modal-actions">
-              <button type="button" className="secondary" disabled={busy} onClick={() => setDeliveryModalOpen(false)}>Cancelar</button>
-              <button type="button" className="primary" disabled={busy || !deliveryByName.trim() || !deliveryReceivedBy.trim() || !deliveryPhotoFile} onClick={() => {
-                void run(async () => {
-                  if (!supabase) throw new Error("Falta configurar la conexión con Supabase.");
-                  if (!deliveryPhotoFile) throw new Error("Adjunta la fotografía de quien retira el equipo.");
-                  if (!["image/jpeg", "image/png", "image/webp"].includes(deliveryPhotoFile.type)) throw new Error("La fotografía debe ser JPG, PNG o WEBP.");
-                  if (deliveryPhotoFile.size > 8 * 1024 * 1024) throw new Error("La fotografía no puede superar los 8 MB.");
-                  const extension = deliveryPhotoFile.type === "image/png" ? "png" : deliveryPhotoFile.type === "image/webp" ? "webp" : "jpg";
-                  const photoPath = `${order.id}/delivery/${crypto.randomUUID()}.${extension}`;
-                  const { error: uploadError } = await supabase.storage.from("order-documents").upload(photoPath, deliveryPhotoFile, { contentType: deliveryPhotoFile.type, upsert: false });
-                  if (uploadError) throw uploadError;
-                  try {
-                    await confirmCommissioningDelivery({
-                      orderId: order.id,
-                      deliveredByName: deliveryByName.trim(),
-                      receivedByName: deliveryReceivedBy.trim(),
-                      deliveryPhotoPath: photoPath,
-                    });
-                  } catch (deliveryError) {
-                    await supabase.storage.from("order-documents").remove([photoPath]);
-                    throw deliveryError;
-                  }
-                }, "Entrega registrada correctamente. La orden quedó entregada al cliente.").then((succeeded) => {
-                  if (succeeded) {
-                    setDeliveryModalOpen(false);
-                    setDeliveryByName("");
-                    setDeliveryReceivedBy("");
-                    setDeliveryPhotoFile(null);
-                  }
-                });
-              }}>Confirmar entrega</button>
+              <button type="button" className="secondary" disabled={busy || deliverySubmitting} onClick={() => setDeliveryModalOpen(false)}>Cancelar</button>
+              <button
+                type="button"
+                className="primary"
+                disabled={busy || deliverySubmitting || !deliveryByName.trim() || !deliveryReceivedBy.trim() || !deliveryPhotoFile}
+                onClick={() => void submitCommissioningDelivery()}
+              >
+                {deliverySubmitting ? "Confirmando…" : "Confirmar entrega"}
+              </button>
             </div>
           </section>
         </div>
