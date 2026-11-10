@@ -675,7 +675,7 @@ begin
     );
   end if;
 end;
-$;
+$$;
 
 revoke all on function public.transition_order_status(uuid, public.order_status, boolean, text) from public, anon;
 grant execute on function public.transition_order_status(uuid, public.order_status, boolean, text) to authenticated;
@@ -697,7 +697,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists automatic_order_status_guard on public.service_orders;
 create trigger automatic_order_status_guard
