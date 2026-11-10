@@ -317,36 +317,36 @@ as $$
 declare
   v_role public.app_role;
   v_order_id uuid;
-  v_expected boolean;
+  v_parts_eligible boolean;
   v_description text;
 begin
   select role into v_role
   from public.profiles
   where id = auth.uid() and active = true;
   if v_role is null or v_role not in ('admin','supervisor') then
-    raise exception 'Solo administración o supervisión puede actualizar este dato';
+    raise exception 'Solo administración o supervisión puede actualizar la cobertura del repuesto';
   end if;
 
   select pr.order_id, pr.description, coalesce(so.parts_covered_by_brand, false)
-  into v_order_id, v_description, v_expected
+  into v_order_id, v_description, v_parts_eligible
   from public.parts_requests pr
   join public.service_orders so on so.id = pr.order_id
   where pr.id = p_part_id;
   if not found then raise exception 'El repuesto no existe'; end if;
-  if coalesce(p_warranty_covered, false) is distinct from v_expected then
-    raise exception 'La cobertura del repuesto la determina la evaluación de garantía de la orden';
+  if coalesce(p_warranty_covered, false) and not v_parts_eligible then
+    raise exception 'La evaluación de esta orden determinó que los repuestos son responsabilidad del cliente';
   end if;
 
   update public.parts_requests
-  set warranty_covered = v_expected,
+  set warranty_covered = coalesce(p_warranty_covered, false),
       client_contacted = coalesce(p_client_contacted, false)
   where id = p_part_id;
 
   insert into public.order_events(order_id, event_type, description, actor_id, metadata)
   values (
-    v_order_id, 'garantia_repuesto', 'Contacto con cliente actualizado para: ' || v_description,
+    v_order_id, 'garantia_repuesto', 'Cobertura de garantía y contacto actualizados para: ' || v_description,
     auth.uid(),
-    jsonb_build_object('part_id', p_part_id, 'warranty_covered', v_expected,
+    jsonb_build_object('part_id', p_part_id, 'warranty_covered', coalesce(p_warranty_covered, false),
                        'client_contacted', coalesce(p_client_contacted, false))
   );
 end;
