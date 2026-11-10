@@ -360,7 +360,7 @@ returns void
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 declare
   v_role public.app_role;
   v_order public.service_orders%rowtype;
@@ -404,7 +404,7 @@ begin
     jsonb_build_object('previous_status', v_order.status, 'new_status', 'en_reparacion')
   );
 end;
-$;
+$$;
 
 revoke all on function public.start_order_repair(uuid) from public, anon;
 grant execute on function public.start_order_repair(uuid) to authenticated;
