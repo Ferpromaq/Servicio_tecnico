@@ -430,12 +430,16 @@ export default function OrderDetailPage({
   const warrantyEntryFlag = Boolean((order as ServiceOrder & { warranty_entry?: boolean } | null)?.warranty_entry);
   const receiptDateValue = (order as ServiceOrder & { receipt_date?: string | null } | null)?.receipt_date;
   const warrantyReceiptDate = receiptDateValue ? new Date(`${receiptDateValue}T00:00:00`) : null;
-  const warrantyExpiryBoundary = new Date();
-  warrantyExpiryBoundary.setMonth(warrantyExpiryBoundary.getMonth() - 6);
+  const orderReceivedAtValue = (order as ServiceOrder & { received_at?: string } | null)?.received_at;
+  const warrantyIntakeDate = orderReceivedAtValue ? new Date(orderReceivedAtValue) : null;
+  const warrantyExpiryBoundary = warrantyIntakeDate ? new Date(warrantyIntakeDate) : null;
+  if (warrantyExpiryBoundary) warrantyExpiryBoundary.setMonth(warrantyExpiryBoundary.getMonth() - 6);
   const isWarrantyActive = Boolean(
     warrantyEntryFlag &&
     warrantyReceiptDate &&
-    warrantyReceiptDate <= new Date() &&
+    warrantyIntakeDate &&
+    warrantyExpiryBoundary &&
+    warrantyReceiptDate <= warrantyIntakeDate &&
     warrantyReceiptDate >= warrantyExpiryBoundary
   );
   const warrantyBadgeLabel = !warrantyEntryFlag
