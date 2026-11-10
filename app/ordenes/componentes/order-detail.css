@@ -559,3 +559,15 @@
   .order-standard-delivery{align-items:stretch;flex-direction:column}
   .order-standard-delivery .primary{width:100%;min-height:44px}
 }
+
+.order-start-repair{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  margin-top:12px;padding:16px 18px;border:1px solid #dce7f0;background:#f8fbfd
+}
+.order-start-repair h2{margin:0 0 5px}
+.order-start-repair p{max-width:650px;margin:0;font-size:12px;line-height:1.5}
+.order-start-repair .secondary{flex:0 0 auto;min-height:40px}
+@media(max-width:700px){
+  .order-start-repair{align-items:stretch;flex-direction:column}
+  .order-start-repair .secondary{width:100%;min-height:44px}
+}
