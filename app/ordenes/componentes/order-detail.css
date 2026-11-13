@@ -719,16 +719,20 @@
   background:#fff1e8;
 }
 .diagnosis-workspace .diagnosis-intake-report>span{
-  color:#b54712;
+  color:#a94b1d;
+  font-family:"Inter","Segoe UI",Arial,sans-serif;
   font-size:10px;
-  font-weight:850;
-  letter-spacing:.045em;
+  font-weight:700;
+  letter-spacing:.055em;
 }
 .diagnosis-workspace .diagnosis-intake-report p{
-  color:#873b16;
-  font-size:13px;
-  font-weight:650;
-  line-height:1.5;
+  margin:0;
+  color:#713b26;
+  font-family:"Inter","Segoe UI",Arial,sans-serif;
+  font-size:14px;
+  font-weight:500;
+  letter-spacing:-.012em;
+  line-height:1.65;
 }
 .diagnosis-editor{
   display:grid;
