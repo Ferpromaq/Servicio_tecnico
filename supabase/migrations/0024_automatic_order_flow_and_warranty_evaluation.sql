@@ -308,13 +308,8 @@ begin
     );
   end loop;
 
-  if v_order.status = 'diagnostico' then
-    perform set_config('app.allow_automatic_order_status', 'on', true);
-    update public.service_orders
-    set status = 'en_reparacion', updated_at = now()
-    where id = p_order_id;
-    perform set_config('app.allow_automatic_order_status', 'off', true);
-  end if;
+  -- La solicitud de repuestos no inicia por sí sola la reparación.
+  -- El cambio a en_reparacion se registra con start_order_repair().
 end;
 $$;
 
@@ -459,8 +454,8 @@ begin
   if v_order.warranty_entry and v_order.receipt_date is null then
     raise exception 'Falta la fecha de compra para validar la garantía antes de finalizar la reparación';
   end if;
-  if v_order.status not in ('diagnostico','en_reparacion') then
-    raise exception 'La orden no está en diagnóstico o reparación';
+  if v_order.status <> 'en_reparacion' then
+    raise exception 'La orden debe estar en reparación para poder finalizarla';
   end if;
   if nullif(trim(coalesce(v_order.diagnosis, '')), '') is null then
     raise exception 'Primero debes completar el diagnóstico';
@@ -474,7 +469,10 @@ begin
   if exists (
     select 1 from public.parts_requests
     where order_id = p_order_id
-      and (status in ('pendiente','rechazado') or installed_at is null)
+      and (
+        status = 'pendiente'
+        or (status in ('autorizado','comprado') and installed_at is null)
+      )
   ) then
     raise exception 'Todos los repuestos deben estar autorizados, recibidos e instalados antes de finalizar la reparación';
   end if;
