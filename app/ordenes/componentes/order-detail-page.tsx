@@ -942,80 +942,84 @@ export default function OrderDetailPage({
                   Cada guardado crea un informe nuevo. Los anteriores no se
                   sobrescriben.
                 </p>
-                <section className="diagnosis-intake-reference" aria-label="Datos del ingreso de la máquina">
-                  <div className="diagnosis-intake-heading">
-                    <ClipboardList size={16} />
-                    <h3>Informe del ingreso</h3>
-                    <span>Registrado en recepción</span>
-                  </div>
-                  <div className="diagnosis-intake-machine">
-                    <strong>{order.machines?.equipment_type || "Equipo sin tipo especificado"}</strong>
-                    <span>
-                      {[order.machines?.brand, order.machines?.model].filter(Boolean).join(" · ") || "Marca y modelo no especificados"}
-                    </span>
-                    {order.machines?.serial_number && (
-                      <small>N.º de serie: {order.machines.serial_number}</small>
-                    )}
-                  </div>
-                  <div className="diagnosis-intake-report">
-                    <span>Problema informado por el cliente</span>
-                    <p>{order.problem_description?.trim() || "No se registró un informe del ingreso."}</p>
-                  </div>
-                </section>
-                <div className="field">
-                  <label>Informe</label>
-                  <textarea
-                    rows={5}
-                    value={diagnosis}
-                    onChange={(e) => setDiagnosis(e.target.value)}
-                    placeholder="Describe la falla detectada, las pruebas realizadas y los hallazgos…"
-                  />
-                </div>
-                {isWarrantyActive ? (
-                  <div className="diagnosis-warranty-evaluation">
-                    <div>
-                      <h3>Evaluación de garantía</h3>
-                      <p>El equipo ingresó con garantía vigente. Indica si el daño fue provocado por el cliente.</p>
+                <div className="diagnosis-workspace">
+                  <section className="diagnosis-intake-reference" aria-label="Datos del ingreso de la máquina">
+                    <div className="diagnosis-intake-heading">
+                      <ClipboardList size={16} />
+                      <h3>Informe del ingreso</h3>
+                      <span>Registrado en recepción</span>
                     </div>
-                    <div className="diagnosis-warranty-options">
-                      <label className={damageCausedByClient === true ? "selected" : ""}>
-                        <input type="radio" name="damage-caused-by-client" checked={damageCausedByClient === true} onChange={() => setDamageCausedByClient(true)} />
-                        <span><strong>Sí, el cliente provocó el daño</strong><small>La cobertura del diagnóstico dependerá de la política de la marca. Los repuestos serán a cargo del cliente.</small></span>
-                      </label>
-                      <label className={damageCausedByClient === false ? "selected" : ""}>
-                        <input type="radio" name="damage-caused-by-client" checked={damageCausedByClient === false} onChange={() => setDamageCausedByClient(false)} />
-                        <span><strong>No, el cliente no provocó el daño</strong><small>La marca cubrirá el diagnóstico y los repuestos asociados al daño reconocido.</small></span>
-                      </label>
+                    <div className="diagnosis-intake-machine">
+                      <strong>{order.machines?.equipment_type || "Equipo sin tipo especificado"}</strong>
+                      <span>
+                        {[order.machines?.brand, order.machines?.model].filter(Boolean).join(" · ") || "Marca y modelo no especificados"}
+                      </span>
+                      {order.machines?.serial_number && (
+                        <small>N.º de serie: {order.machines.serial_number}</small>
+                      )}
                     </div>
-                    {Boolean((order as ServiceOrder & { warranty_evaluation_completed_at?: string | null }).warranty_evaluation_completed_at) && (
-                      <div className="diagnosis-warranty-result">
-                        <strong>Resultado de la evaluación registrada</strong>
-                        <span>Diagnóstico: {(order as ServiceOrder & { diagnosis_covered_by_brand?: boolean }).diagnosis_covered_by_brand ? "Cubierto por la marca" : "A cargo del cliente"}</span>
-                        <span>Repuestos: {(order as ServiceOrder & { parts_covered_by_brand?: boolean }).parts_covered_by_brand ? "Cubiertos por la marca" : "A cargo del cliente"}</span>
+                    <div className="diagnosis-intake-report">
+                      <span>Problema informado por el cliente</span>
+                      <p>{order.problem_description?.trim() || "No se registró un informe del ingreso."}</p>
+                    </div>
+                  </section>
+                  <div className="diagnosis-editor">
+                    <div className="field">
+                      <label>Informe de diagnóstico</label>
+                      <textarea
+                        rows={4}
+                        value={diagnosis}
+                        onChange={(e) => setDiagnosis(e.target.value)}
+                        placeholder="Describe la falla detectada, las pruebas realizadas y los hallazgos…"
+                      />
+                    </div>
+                    {isWarrantyActive ? (
+                      <div className="diagnosis-warranty-evaluation">
+                        <div>
+                          <h3>Evaluación de garantía</h3>
+                          <p>El equipo ingresó con garantía vigente. Indica si el daño fue provocado por el cliente.</p>
+                        </div>
+                        <div className="diagnosis-warranty-options">
+                          <label className={damageCausedByClient === true ? "selected" : ""}>
+                            <input type="radio" name="damage-caused-by-client" checked={damageCausedByClient === true} onChange={() => setDamageCausedByClient(true)} />
+                            <span><strong>Sí, el cliente provocó el daño</strong><small>La cobertura del diagnóstico dependerá de la política de la marca. Los repuestos serán a cargo del cliente.</small></span>
+                          </label>
+                          <label className={damageCausedByClient === false ? "selected" : ""}>
+                            <input type="radio" name="damage-caused-by-client" checked={damageCausedByClient === false} onChange={() => setDamageCausedByClient(false)} />
+                            <span><strong>No, el cliente no provocó el daño</strong><small>La marca cubrirá el diagnóstico y los repuestos asociados al daño reconocido.</small></span>
+                          </label>
+                        </div>
+                        {Boolean((order as ServiceOrder & { warranty_evaluation_completed_at?: string | null }).warranty_evaluation_completed_at) && (
+                          <div className="diagnosis-warranty-result">
+                            <strong>Resultado de la evaluación registrada</strong>
+                            <span>Diagnóstico: {(order as ServiceOrder & { diagnosis_covered_by_brand?: boolean }).diagnosis_covered_by_brand ? "Cubierto por la marca" : "A cargo del cliente"}</span>
+                            <span>Repuestos: {(order as ServiceOrder & { parts_covered_by_brand?: boolean }).parts_covered_by_brand ? "Cubiertos por la marca" : "A cargo del cliente"}</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="notice">
+                        {warrantyEntryFlag && !receiptDateValue
+                          ? "No se puede evaluar el diagnóstico todavía: falta completar la fecha de compra en la tarjeta Cliente y equipo."
+                          : warrantyEntryFlag
+                            ? "La garantía estaba vencida al ingresar el equipo. El diagnóstico y los repuestos quedan a cargo del cliente."
+                            : "Este equipo ingresó sin garantía. El diagnóstico y los repuestos quedan a cargo del cliente."}
                       </div>
                     )}
+                    <button
+                      className="primary"
+                      disabled={busy || !diagnosis.trim() || (warrantyEntryFlag && !receiptDateValue) || (isWarrantyActive && damageCausedByClient === null)}
+                      onClick={() =>
+                        void run(
+                          () => saveDiagnosis(order.id, diagnosis, isWarrantyActive ? damageCausedByClient : null),
+                          "Informe de diagnóstico y evaluación de garantía guardados correctamente",
+                        )
+                      }
+                    >
+                      <Save size={15} /> Guardar diagnóstico
+                    </button>
                   </div>
-                ) : (
-                  <div className="notice">
-                    {warrantyEntryFlag && !receiptDateValue
-                      ? "No se puede evaluar el diagnóstico todavía: falta completar la fecha de compra en la tarjeta Cliente y equipo."
-                      : warrantyEntryFlag
-                        ? "La garantía estaba vencida al ingresar el equipo. El diagnóstico y los repuestos quedan a cargo del cliente."
-                        : "Este equipo ingresó sin garantía. El diagnóstico y los repuestos quedan a cargo del cliente."}
-                  </div>
-                )}
-                <button
-                  className="primary"
-                  disabled={busy || !diagnosis.trim() || (warrantyEntryFlag && !receiptDateValue) || (isWarrantyActive && damageCausedByClient === null)}
-                  onClick={() =>
-                    void run(
-                      () => saveDiagnosis(order.id, diagnosis, isWarrantyActive ? damageCausedByClient : null),
-                      "Informe de diagnóstico y evaluación de garantía guardados correctamente",
-                    )
-                  }
-                >
-                  <Save size={15} /> Guardar diagnóstico
-                </button>
+                </div>
               </div>
               <div className="card">
                 <h2>Historial de informes</h2>
@@ -1108,38 +1112,40 @@ export default function OrderDetailPage({
                           </button>
                         )}
                       </div>
-                      <div className="field catalog-part-picker">
-                        <label>Repuesto existente en el catálogo de Ferpromaq</label>
-                        <select
-                          value={item.catalogPartId}
-                          onChange={(e) => {
-                            const selected = catalogParts.find((part) => part.id === e.target.value);
-                            setPartDrafts((current) =>
-                              current.map((row, i) =>
-                                i === index
-                                  ? {
-                                      ...row,
-                                      catalogPartId: e.target.value,
-                                      description: selected?.name ?? "",
-                                      unitPrice: selected?.sale_price == null ? row.unitPrice : String(selected.sale_price),
-                                      fromStock: Boolean(selected),
-                                    }
-                                  : row,
-                              ),
-                            );
-                          }}
-                        >
-                          <option value="">Ingresar repuesto manualmente</option>
-                          {catalogParts.map((part) => (
-                            <option key={part.id} value={part.id}>
-                              {[part.internal_code, part.name, part.brand, part.model].filter(Boolean).join(" · ")}
-                            </option>
-                          ))}
-                        </select>
-                        {item.catalogPartId && (
-                          <small>Vinculado al catálogo de la empresa. No modifica ni descuenta existencias.</small>
-                        )}
-                      </div>
+                      {catalogParts.length > 0 && (
+                        <div className="field catalog-part-picker">
+                          <label>Repuesto existente en el catálogo de Ferpromaq</label>
+                          <select
+                            value={item.catalogPartId}
+                            onChange={(e) => {
+                              const selected = catalogParts.find((part) => part.id === e.target.value);
+                              setPartDrafts((current) =>
+                                current.map((row, i) =>
+                                  i === index
+                                    ? {
+                                        ...row,
+                                        catalogPartId: e.target.value,
+                                        description: selected?.name ?? "",
+                                        unitPrice: selected?.sale_price == null ? row.unitPrice : String(selected.sale_price),
+                                        fromStock: Boolean(selected),
+                                      }
+                                    : row,
+                                ),
+                              );
+                            }}
+                          >
+                            <option value="">Ingresar repuesto manualmente</option>
+                            {catalogParts.map((part) => (
+                              <option key={part.id} value={part.id}>
+                                {[part.internal_code, part.name, part.brand, part.model].filter(Boolean).join(" · ")}
+                              </option>
+                            ))}
+                          </select>
+                          {item.catalogPartId && (
+                            <small>Vinculado al catálogo de la empresa. No modifica ni descuenta existencias.</small>
+                          )}
+                        </div>
+                      )}
                       <div className="detail-columns">
                         <div className="field">
                           <label>Nombre / descripción</label>
