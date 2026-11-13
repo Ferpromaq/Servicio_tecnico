@@ -1062,7 +1062,7 @@ export default function OrderDetailPage({
                   </button>
                 </div>
               )}
-              {(order.status === "diagnostico" || order.status === "en_reparacion") && ["admin", "supervisor", "tecnico"].includes(role ?? "") && (
+              {order.status === "en_reparacion" && ["admin", "supervisor", "tecnico"].includes(role ?? "") && (
                 <div className="card order-ready-action">
                   <div>
                     <h2>Finalizar reparación</h2>
