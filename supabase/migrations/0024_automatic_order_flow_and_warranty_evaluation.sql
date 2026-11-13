@@ -652,7 +652,7 @@ create or replace function public.transition_order_status(
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 declare
   v_role public.app_role;
   v_order public.service_orders%rowtype;
@@ -768,7 +768,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 begin
   if old.status is distinct from new.status
      and current_setting('app.allow_automatic_order_status', true) is distinct from 'on'
