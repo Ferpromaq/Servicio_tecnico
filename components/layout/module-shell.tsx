@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ClipboardList, Users, Wrench, Cog, Package, CreditCard, BarChart3, LogOut } from "lucide-react";
+import { ClipboardList, Users, Wrench, Cog, Package, CreditCard, BarChart3, LogOut, HandCoins } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 // El middleware ya valida la sesión y los permisos en el servidor. Esta caché evita
@@ -38,6 +38,7 @@ const links = [
   { href: "/equipos", label: "Equipos", icon: Cog },
   { href: "/repuestos", label: "Repuestos", icon: Package },
   { href: "/pagos", label: "Pagos", icon: CreditCard },
+  { href: "/cobros", label: "Cobros", icon: HandCoins },
   { href: "/usuarios", label: "Usuarios y técnicos", icon: Users, admin: true },
   { href: "/reportes", label: "Reportes", icon: BarChart3 },
 ];
