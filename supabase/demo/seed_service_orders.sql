@@ -36,7 +36,7 @@ begin
       commissioning,demo_batch_id,damage_caused_by_client,diagnosis_covered_by_brand,parts_covered_by_brand,
       warranty_evaluation_completed_at,warranty_policy_brand)
     values(v_client,v_machine,r.problem,'normal',
-      case when v_idx=7 then 'recepcion'::public.order_status when v_idx in (3,4) then 'en_reparacion'::public.order_status else 'diagnostico'::public.order_status end,
+      case when v_idx=7 then 'recepcion'::public.order_status else 'diagnostico'::public.order_status end,
       r.warranty,r.warranty and not r.customer_damage,r.receipt_type,r.receipt_number,current_date-30,
       r.diagnosis_amount,case when v_idx=4 then 15000 else 0 end,v_idx=7,v_batch,
       case when r.warranty then r.customer_damage else null end,
