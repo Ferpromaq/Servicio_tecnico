@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-type SkeletonModule = "dashboard" | "orders" | "clients" | "machines" | "parts" | "payments" | "users" | "reports" | "order-form" | "order-detail";
+type SkeletonModule = "dashboard" | "orders" | "clients" | "machines" | "parts" | "payments" | "brand-charges" | "users" | "reports" | "order-form" | "order-detail";
 
 const nav = [
   ["Panel general", "/"],
@@ -9,6 +9,7 @@ const nav = [
   ["Equipos", "/equipos"],
   ["Repuestos", "/repuestos"],
   ["Pagos", "/pagos"],
+  ["Cobros", "/cobros"],
   ["Usuarios y técnicos", "/usuarios"],
   ["Reportes", "/reportes"],
 ];
@@ -27,11 +28,11 @@ function SkeletonTable({ rows = 6, columns = 4 }: { rows?: number; columns?: num
 export function ModuleLoadingSkeleton({ module }: { module: SkeletonModule }) {
   const titles: Record<SkeletonModule,string> = {
     dashboard:"Panel de servicio técnico",orders:"Órdenes de servicio",clients:"Clientes",machines:"Equipos",
-    parts:"Repuestos",payments:"Pagos",users:"Usuarios y técnicos",reports:"Reportes",
+    parts:"Repuestos",payments:"Pagos","brand-charges":"Cobros a marcas",users:"Usuarios y técnicos",reports:"Reportes",
     "order-form":"Nueva orden de servicio","order-detail":"Orden de servicio",
   };
-  const listOnly = ["parts","payments","reports"].includes(module);
-  const showStats = ["dashboard","payments","reports"].includes(module);
+  const listOnly = ["parts","payments","brand-charges","reports"].includes(module);
+  const showStats = ["dashboard","payments","brand-charges","reports"].includes(module);
   const showTable = !["order-form","order-detail"].includes(module);
   return <div className="shell skeleton-shell" role="status" aria-label={`Cargando ${titles[module].toLowerCase()}`}>
     <aside className="sidebar skeleton-sidebar">
