@@ -1,15 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import OrderDetailPage from "@/app/ordenes/componentes/order-detail-page";
-import { AlertCircle, CalendarDays, ClipboardList, RefreshCw, Search, Wrench, Users, UserRound, Cog, Package, CreditCard, BarChart3, Hash } from "lucide-react";
+import { AlertCircle, CalendarDays, ClipboardList, RefreshCw, Search, Wrench, Users, UserRound, Cog, Package, CreditCard, BarChart3, Hash, HandCoins } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import NewOrderModal from "@/app/ordenes/componentes/new-order-modal";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderPriorityClass, orderPriorityLabel, orderStatusClass, orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
 import { getOrderWorkflow, type OrderEvent } from "@/app/ordenes/servicios/order-workflow";
 import { useDrawerTransition } from "@/hooks/use-drawer-transition";
+import { ModuleLoadingSkeleton } from "@/components/layout/module-loading-skeleton";
 
 const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: boolean }[] = [
   { label: "Panel general", icon: ClipboardList, href: "/" },
@@ -18,6 +19,7 @@ const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: bo
   { label: "Equipos", icon: Cog, href: "/equipos" },
   { label: "Repuestos", icon: Package, href: "/repuestos" },
   { label: "Pagos", icon: CreditCard, href: "/pagos" },
+  { label: "Cobros", icon: HandCoins, href: "/cobros" },
   { label: "Usuarios y técnicos", icon: Users, href: "/usuarios", admin: true },
   { label: "Reportes", icon: BarChart3, href: "/reportes" },
 ];
@@ -29,6 +31,7 @@ export function Dashboard() {
   const [active, setActive] = useState<string>("todas");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [minimumLoadingElapsed, setMinimumLoadingElapsed] = useState(false);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<ServiceOrder | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -44,6 +47,11 @@ export function Dashboard() {
   const [userLabel, setUserLabel] = useState("Equipo de servicio");
   const [role, setRole] = useState("");
   const [roleReady, setRoleReady] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [hasMeasuredPageSize, setHasMeasuredPageSize] = useState(false);
+  const [hasInitializedPageFromUrl, setHasInitializedPageFromUrl] = useState(false);
+  const tableWrapRef = useRef<HTMLDivElement | null>(null);
 
   const syncDrawerFromUrl = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
@@ -107,16 +115,22 @@ export function Dashboard() {
   }, []);
 
   useEffect(() => {
+    setMinimumLoadingElapsed(false);
+    const timeout = window.setTimeout(() => setMinimumLoadingElapsed(true), 450);
+    return () => window.clearTimeout(timeout);
+  }, [pathname]);
+
+  useEffect(() => {
     void loadOrders();
     const client = supabase;
-    if (!client) return;
+    if (!client) { setRoleReady(true); return; }
     void client.auth.getUser().then(async ({ data }) => {
       if (!data.user) { setRoleReady(true); return; }
       const { data: profile } = await client.from("profiles").select("full_name,role").eq("id", data.user.id).maybeSingle();
       if (profile?.full_name) setUserLabel(profile.full_name);
       if (profile?.role) setRole(profile.role);
       setRoleReady(true);
-    });
+    }).catch(() => setRoleReady(true));
   }, [loadOrders]);
 
   useEffect(() => {
@@ -169,7 +183,59 @@ export function Dashboard() {
   }), [orders, active, query]);
 
   const count = (status: string) => orders.filter((order) => order.status === status).length;
+
+  const updatePageInUrl = useCallback((page: number, replace = false) => {
+    const url = new URL(window.location.href);
+    if (page <= 1) url.searchParams.delete("pagina");
+    else url.searchParams.set("pagina", String(page));
+    const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+    if (replace) window.history.replaceState({}, "", nextUrl);
+    else window.history.pushState({}, "", nextUrl);
+  }, []);
+
+  useLayoutEffect(() => {
+    const readPageFromUrl = () => {
+      const value = Number(new URLSearchParams(window.location.search).get("pagina") ?? "1");
+      setCurrentPage(Number.isSafeInteger(value) && value > 0 ? value : 1);
+    };
+    readPageFromUrl();
+    setHasInitializedPageFromUrl(true);
+    window.addEventListener("popstate", readPageFromUrl);
+    return () => window.removeEventListener("popstate", readPageFromUrl);
+  }, []);
+
+  useLayoutEffect(() => {
+    const container = tableWrapRef.current;
+    if (!container) return;
+    const measure = () => {
+      const table = container.querySelector("table.orders");
+      const head = table?.querySelector("thead");
+      const firstRow = table?.querySelector("tbody tr");
+      if (!table || !head || !firstRow) { setPageSize(10); setHasMeasuredPageSize(true); return; }
+      const availableHeight = container.clientHeight - head.getBoundingClientRect().height;
+      const rowHeight = firstRow.getBoundingClientRect().height;
+      if (availableHeight > 0 && rowHeight > 0) { setPageSize(Math.max(1, Math.floor((availableHeight + 1) / rowHeight))); setHasMeasuredPageSize(true); }
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+    const table = container.querySelector("table.orders");
+    if (table) observer.observe(table);
+    return () => observer.disconnect();
+  }, [filtered.length, loading, active, query]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = hasMeasuredPageSize ? Math.min(currentPage, pageCount) : currentPage;
+  const paginatedOrders = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  useEffect(() => {
+    if (!loading && hasInitializedPageFromUrl && hasMeasuredPageSize && currentPage !== safePage) { setCurrentPage(safePage); updatePageInUrl(safePage, true); }
+  }, [currentPage, safePage, loading, hasMeasuredPageSize, hasInitializedPageFromUrl, updatePageInUrl]);
   const activeCount = orders.filter((order) => !["entregadas", "rechazadas"].includes(order.status)).length;
+
+  if (loading || !roleReady || !minimumLoadingElapsed) {
+    return <ModuleLoadingSkeleton module={isOrdersPage ? "orders" : "dashboard"} />;
+  }
 
   return (
     <div className="shell">
@@ -200,7 +266,7 @@ export function Dashboard() {
           <span aria-hidden="true">↪</span><span>Salir</span>
         </button>
       </nav>
-      <main className="main">
+      <main className={`main ${isOrdersPage ? "orders-main" : ""}`}>
         <header className="topbar">
           <div><div className="eyebrow">FERPROMAQ / OPERACIONES</div><h1 className="heading">{isOrdersPage ? "Órdenes de servicio" : "Panel de servicio técnico"}</h1></div>
           <div className="user-chip"><div><strong>{userLabel}</strong><div className="eyebrow">Servicio técnico</div></div><div className="avatar">{userLabel.slice(0, 1).toUpperCase()}</div></div>
@@ -217,19 +283,19 @@ export function Dashboard() {
           ))}
         </section>}
 
-        <section className="card orders-card" id="ordenes">
+        <section className={`card orders-card ${isOrdersPage ? "orders-card-paged" : ""}`} id="ordenes">
           <div className="section-head">
             <div><h2>Órdenes de servicio</h2><p>Seguimiento de equipos y trabajos en taller</p></div>
             <div className="section-actions">{(role==="admin"||role==="supervisor")&&<button type="button" className="primary new-order-button" onClick={() => setShowNewOrder(true)}>＋ Nueva orden</button>}<button className="secondary" onClick={() => void loadOrders()} disabled={loading}><RefreshCw size={15} /> Actualizar</button></div>
           </div>
           <div className="toolbar">
-            <div className="tabs">{ORDER_STATUSES.map((tab) => <button key={tab.value} onClick={() => setActive(tab.value)} className={`tab ${active === tab.value ? "active" : ""}`}>{tab.label}{tab.value === "todas" ? <span className="tab-count">{orders.length}</span> : <span className="tab-count">{count(tab.value)}</span>}</button>)}</div>
-            <label className="search-wrap"><Search size={16}/><input className="search" placeholder="Buscar orden, cliente o equipo…" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+            <div className="tabs">{ORDER_STATUSES.map((tab) => <button key={tab.value} onClick={() => { setActive(tab.value); setCurrentPage(1); updatePageInUrl(1, true); }} className={`tab ${active === tab.value ? "active" : ""}`}>{tab.label}{tab.value === "todas" ? <span className="tab-count">{orders.length}</span> : <span className="tab-count">{count(tab.value)}</span>}</button>)}</div>
+            <label className="search-wrap"><Search size={16}/><input className="search" placeholder="Buscar orden, cliente o equipo…" value={query} onChange={(event) => { setQuery(event.target.value); setCurrentPage(1); updatePageInUrl(1, true); }} /></label>
           </div>
 
           {error && <div className="notice error"><AlertCircle size={17}/><div><strong>No se pudieron cargar las órdenes</strong><p>{error}</p><button onClick={() => void loadOrders()}>Reintentar</button></div></div>}
-          <div className="tablewrap"><table className="orders"><thead><tr><th>Orden</th><th>Cliente</th><th>Equipo</th><th>Estado</th><th>Prioridad</th><th>Ingreso</th></tr></thead>
-            <tbody>{filtered.map((order) => <tr key={order.id} onClick={() => openOrderSummary(order)}>
+          <div className="tablewrap" ref={tableWrapRef}><table className="orders"><thead><tr><th>Orden</th><th>Cliente</th><th>Equipo</th><th>Estado</th><th>Prioridad</th><th>Ingreso</th></tr></thead>
+            <tbody>{paginatedOrders.map((order) => <tr key={order.id} onClick={() => openOrderSummary(order)}>
               <td className="orderid">#{order.order_number}</td>
               <td><div className="client">{order.clients?.name ?? "Cliente sin nombre"}</div><div className="subline">{order.clients?.rut ?? "—"}</div></td>
               <td><div>{[order.machines?.brand, order.machines?.model].filter(Boolean).join(" ") || order.machines?.equipment_type || "Equipo no especificado"}</div><div className="subline">{order.machines?.serial_number ?? ""}</div></td>
@@ -241,7 +307,7 @@ export function Dashboard() {
           {!loading && !error && filtered.length === 0 && <div className="empty"><ClipboardList size={28}/><strong>{orders.length === 0 ? "Todavía no hay órdenes registradas" : "No encontramos resultados"}</strong><p>{orders.length === 0 ? "Cuando se registren órdenes en Supabase aparecerán en este listado." : "Prueba con otro término o estado."}</p></div>}
           {loading && <div className="empty"><span className="loader"/>Cargando órdenes desde Supabase…</div>}
           </div>
-          <div className="list-footer"><span>{filtered.length} de {orders.length} órdenes</span><span>Datos sincronizados desde Supabase</span></div>
+          <div className="list-footer"><span>{filtered.length === 0 ? 0 : (safePage - 1) * pageSize + 1}–{Math.min(safePage * pageSize, filtered.length)} de {filtered.length} órdenes · {pageSize} por página</span><div className="pagination" aria-label="Paginación de órdenes"><button type="button" className="secondary" disabled={safePage <= 1} onClick={() => { const next = safePage - 1; setCurrentPage(next); updatePageInUrl(next); }}>Anterior</button><span className="pagination-current">Página {safePage} de {pageCount}</span><button type="button" className="secondary" disabled={safePage >= pageCount} onClick={() => { const next = safePage + 1; setCurrentPage(next); updatePageInUrl(next); }}>Siguiente</button></div></div>
         </section>
         <div className="footer">Ferpromaq · Plataforma de servicio técnico</div>
       </main>

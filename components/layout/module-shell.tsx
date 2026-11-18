@@ -3,8 +3,23 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ClipboardList, Users, Wrench, Cog, Package, CreditCard, BarChart3, LogOut } from "lucide-react";
+import { ClipboardList, Users, Wrench, Cog, Package, CreditCard, BarChart3, LogOut, HandCoins } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { ModuleLoadingSkeleton, type SkeletonModule } from "@/components/layout/module-loading-skeleton";
+
+function loadingModuleForPath(path: string): SkeletonModule {
+  if (path.startsWith("/clientes")) return "clients";
+  if (path.startsWith("/equipos")) return "machines";
+  if (path.startsWith("/repuestos")) return "parts";
+  if (path.startsWith("/pagos")) return "payments";
+  if (path.startsWith("/cobros")) return "brand-charges";
+  if (path.startsWith("/usuarios")) return "users";
+  if (path.startsWith("/reportes")) return "reports";
+  if (path.startsWith("/ordenes/nueva")) return "order-form";
+  if (path.startsWith("/ordenes/")) return "order-detail";
+  if (path.startsWith("/ordenes")) return "orders";
+  return "dashboard";
+}
 
 // El middleware ya valida la sesión y los permisos en el servidor. Esta caché evita
 // repetir la consulta de perfil en cada navegación cliente entre módulos.
@@ -38,6 +53,7 @@ const links = [
   { href: "/equipos", label: "Equipos", icon: Cog },
   { href: "/repuestos", label: "Repuestos", icon: Package },
   { href: "/pagos", label: "Pagos", icon: CreditCard },
+  { href: "/cobros", label: "Cobros", icon: HandCoins },
   { href: "/usuarios", label: "Usuarios y técnicos", icon: Users, admin: true },
   { href: "/reportes", label: "Reportes", icon: BarChart3 },
 ];
@@ -45,9 +61,16 @@ const links = [
 export function ModuleShell({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
   const path = usePathname();
   const router = useRouter();
+  const [minimumLoadingElapsed, setMinimumLoadingElapsed] = useState(false);
   const [role, setRole] = useState("");
   const [roleReady, setRoleReady] = useState(false);
   const [profileWarning, setProfileWarning] = useState("");
+
+  useEffect(() => {
+    setMinimumLoadingElapsed(false);
+    const timeout = window.setTimeout(() => setMinimumLoadingElapsed(true), 450);
+    return () => window.clearTimeout(timeout);
+  }, [path]);
 
   useEffect(() => {
     const client = supabase;
@@ -106,6 +129,10 @@ export function ModuleShell({ title, description, children }: { title: string; d
       || (role === "supervisor" && !item.admin)
       || (role === "tecnico" && item.href === "/ordenes")
   ));
+
+  if (!roleReady || !minimumLoadingElapsed) {
+    return <ModuleLoadingSkeleton module={loadingModuleForPath(path)} />;
+  }
 
   return (
     <div className="shell">

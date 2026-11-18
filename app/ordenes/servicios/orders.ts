@@ -17,7 +17,7 @@ export const ORDER_STATUSES = [
   { value: "recepcion", label: "Recepción" },
   { value: "diagnostico", label: "Diagnóstico" },
   { value: "en_reparacion", label: "En reparación" },
-  { value: "listas", label: "Listas" },
+  { value: "listas", label: "Lista para entrega" },
   { value: "entregadas", label: "Entregadas" },
   { value: "rechazadas", label: "Rechazadas" },
 ] as const;
@@ -27,7 +27,7 @@ export async function getServiceOrders(): Promise<ServiceOrder[]> {
   const { data, error } = await supabase
     .from("service_orders")
     .select("id,order_number,status,priority,problem_description,received_at,clients(name,rut),machines(equipment_type,brand,model,serial_number),assigned:profiles!service_orders_assigned_technician_fkey(full_name)")
-    .order("received_at", { ascending: false });
+    .order("order_number", { ascending: false });
   if (error) throw error;
   return (data ?? []) as unknown as ServiceOrder[];
 }
