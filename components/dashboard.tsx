@@ -10,6 +10,7 @@ import NewOrderModal from "@/app/ordenes/componentes/new-order-modal";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderPriorityClass, orderPriorityLabel, orderStatusClass, orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
 import { getOrderWorkflow, type OrderEvent } from "@/app/ordenes/servicios/order-workflow";
 import { useDrawerTransition } from "@/hooks/use-drawer-transition";
+import { ModuleLoadingSkeleton } from "@/components/layout/module-loading-skeleton";
 
 const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: boolean }[] = [
   { label: "Panel general", icon: ClipboardList, href: "/" },
@@ -30,6 +31,7 @@ export function Dashboard() {
   const [active, setActive] = useState<string>("todas");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [minimumLoadingElapsed, setMinimumLoadingElapsed] = useState(false);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<ServiceOrder | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -113,16 +115,22 @@ export function Dashboard() {
   }, []);
 
   useEffect(() => {
+    setMinimumLoadingElapsed(false);
+    const timeout = window.setTimeout(() => setMinimumLoadingElapsed(true), 450);
+    return () => window.clearTimeout(timeout);
+  }, [pathname]);
+
+  useEffect(() => {
     void loadOrders();
     const client = supabase;
-    if (!client) return;
+    if (!client) { setRoleReady(true); return; }
     void client.auth.getUser().then(async ({ data }) => {
       if (!data.user) { setRoleReady(true); return; }
       const { data: profile } = await client.from("profiles").select("full_name,role").eq("id", data.user.id).maybeSingle();
       if (profile?.full_name) setUserLabel(profile.full_name);
       if (profile?.role) setRole(profile.role);
       setRoleReady(true);
-    });
+    }).catch(() => setRoleReady(true));
   }, [loadOrders]);
 
   useEffect(() => {
@@ -224,6 +232,10 @@ export function Dashboard() {
     if (!loading && hasInitializedPageFromUrl && hasMeasuredPageSize && currentPage !== safePage) { setCurrentPage(safePage); updatePageInUrl(safePage, true); }
   }, [currentPage, safePage, loading, hasMeasuredPageSize, hasInitializedPageFromUrl, updatePageInUrl]);
   const activeCount = orders.filter((order) => !["entregadas", "rechazadas"].includes(order.status)).length;
+
+  if (loading || !roleReady || !minimumLoadingElapsed) {
+    return <ModuleLoadingSkeleton module={isOrdersPage ? "orders" : "dashboard"} />;
+  }
 
   return (
     <div className="shell">
