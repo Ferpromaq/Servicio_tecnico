@@ -43,7 +43,8 @@ begin
       case when r.warranty then now() else null end,
       case when r.warranty then r.brand else null end)
     returning id into v_order;
-    update public.service_orders set diagnosis_receipt_type=case when not r.warranty then r.receipt_type end,
+    update public.service_orders set diagnosis=case when v_idx=7 then null else 'DEMO: evaluación inicial de funcionamiento y revisión de componentes.' end,
+      diagnosis_receipt_type=case when not r.warranty then r.receipt_type end,
       diagnosis_receipt_number=case when not r.warranty then r.receipt_number end,
       diagnosis_receipt_amount=case when not r.warranty then r.payment_amount else null end
     where id=v_order;
@@ -72,6 +73,7 @@ begin
       insert into public.parts_requests(order_id,description,quantity,unit_price,status,warranty_covered,client_contacted)
       values(v_order,'Repuesto demo - filtro / bujía',1,18000,'comprado',false,true)
       returning id into v_part;
+      update public.parts_requests set received_at=now() where id=v_part;
       if v_idx=3 then
         insert into public.payments(order_id,payment_type,amount,method,reference,receipt_received)
         values(v_order,'repuestos',9000,'Transferencia','BOLETA DEMO REP-003',true);
