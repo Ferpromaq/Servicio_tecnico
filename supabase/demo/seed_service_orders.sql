@@ -1,6 +1,7 @@
 -- DATOS DEMO FERPRO MAQ. Ejecutar una sola vez en Supabase SQL Editor.
 -- Se insertan órdenes reales en la base de datos con demo_batch_id fijo.
 -- No se emiten boletas/facturas tributarias: los folios son referencias ficticias.
+-- Las solicitudes de repuestos se crean pendientes, respetando la autorización real.
 do $$
 declare
   v_batch uuid := 'd3a00000-0000-4000-8000-000000000025';
@@ -71,9 +72,8 @@ begin
     end if;
     if v_idx in (3,4,6) then
       insert into public.parts_requests(order_id,description,quantity,unit_price,status,warranty_covered,client_contacted)
-      values(v_order,'Repuesto demo - filtro / bujía',1,18000,'comprado',false,true)
+      values(v_order,'Repuesto demo - filtro / bujía',1,18000,'pendiente',false,true)
       returning id into v_part;
-      update public.parts_requests set received_at=now() where id=v_part;
       if v_idx=3 then
         insert into public.payments(order_id,payment_type,amount,method,reference,receipt_received)
         values(v_order,'repuestos',9000,'Transferencia','BOLETA DEMO REP-003',true);
