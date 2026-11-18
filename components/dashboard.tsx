@@ -47,6 +47,7 @@ export function Dashboard() {
   const [roleReady, setRoleReady] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [hasMeasuredPageSize, setHasMeasuredPageSize] = useState(false);
   const tableWrapRef = useRef<HTMLDivElement | null>(null);
 
   const syncDrawerFromUrl = useCallback(() => {
@@ -200,10 +201,10 @@ export function Dashboard() {
       const table = container.querySelector("table.orders");
       const head = table?.querySelector("thead");
       const firstRow = table?.querySelector("tbody tr");
-      if (!table || !head || !firstRow) { setPageSize(10); return; }
+      if (!table || !head || !firstRow) { setPageSize(10); setHasMeasuredPageSize(true); return; }
       const availableHeight = container.clientHeight - head.getBoundingClientRect().height;
       const rowHeight = firstRow.getBoundingClientRect().height;
-      if (availableHeight > 0 && rowHeight > 0) setPageSize(Math.max(1, Math.floor((availableHeight + 1) / rowHeight)));
+      if (availableHeight > 0 && rowHeight > 0) { setPageSize(Math.max(1, Math.floor((availableHeight + 1) / rowHeight))); setHasMeasuredPageSize(true); }
     };
     measure();
     const observer = new ResizeObserver(measure);
@@ -214,12 +215,12 @@ export function Dashboard() {
   }, [filtered.length, loading, active, query]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const safePage = Math.min(currentPage, pageCount);
+  const safePage = hasMeasuredPageSize ? Math.min(currentPage, pageCount) : currentPage;
   const paginatedOrders = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   useEffect(() => {
-    if (currentPage !== safePage) { setCurrentPage(safePage); updatePageInUrl(safePage, true); }
-  }, [currentPage, safePage, updatePageInUrl]);
+    if (hasMeasuredPageSize && currentPage !== safePage) { setCurrentPage(safePage); updatePageInUrl(safePage, true); }
+  }, [currentPage, safePage, hasMeasuredPageSize, updatePageInUrl]);
   const activeCount = orders.filter((order) => !["entregadas", "rechazadas"].includes(order.status)).length;
 
   return (
