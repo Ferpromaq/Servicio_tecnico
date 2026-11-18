@@ -193,11 +193,6 @@ export function Dashboard() {
     return () => window.removeEventListener("popstate", readPageFromUrl);
   }, []);
 
-  useEffect(() => {
-    setCurrentPage(1);
-    updatePageInUrl(1, true);
-  }, [active, query, updatePageInUrl]);
-
   useLayoutEffect(() => {
     const container = tableWrapRef.current;
     if (!container) return;
@@ -279,8 +274,8 @@ export function Dashboard() {
             <div className="section-actions">{(role==="admin"||role==="supervisor")&&<button type="button" className="primary new-order-button" onClick={() => setShowNewOrder(true)}>＋ Nueva orden</button>}<button className="secondary" onClick={() => void loadOrders()} disabled={loading}><RefreshCw size={15} /> Actualizar</button></div>
           </div>
           <div className="toolbar">
-            <div className="tabs">{ORDER_STATUSES.map((tab) => <button key={tab.value} onClick={() => setActive(tab.value)} className={`tab ${active === tab.value ? "active" : ""}`}>{tab.label}{tab.value === "todas" ? <span className="tab-count">{orders.length}</span> : <span className="tab-count">{count(tab.value)}</span>}</button>)}</div>
-            <label className="search-wrap"><Search size={16}/><input className="search" placeholder="Buscar orden, cliente o equipo…" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+            <div className="tabs">{ORDER_STATUSES.map((tab) => <button key={tab.value} onClick={() => { setActive(tab.value); setCurrentPage(1); updatePageInUrl(1, true); }} className={`tab ${active === tab.value ? "active" : ""}`}>{tab.label}{tab.value === "todas" ? <span className="tab-count">{orders.length}</span> : <span className="tab-count">{count(tab.value)}</span>}</button>)}</div>
+            <label className="search-wrap"><Search size={16}/><input className="search" placeholder="Buscar orden, cliente o equipo…" value={query} onChange={(event) => { setQuery(event.target.value); setCurrentPage(1); updatePageInUrl(1, true); }} /></label>
           </div>
 
           {error && <div className="notice error"><AlertCircle size={17}/><div><strong>No se pudieron cargar las órdenes</strong><p>{error}</p><button onClick={() => void loadOrders()}>Reintentar</button></div></div>}
