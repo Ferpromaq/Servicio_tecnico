@@ -32,11 +32,16 @@ begin
     values(v_client,r.equipment,r.brand,r.model,r.serial) returning id into v_machine;
     insert into public.service_orders(client_id,machine_id,problem_description,priority,status,warranty_entry,
       warranty_covers_damage,receipt_type,receipt_number,receipt_date,diagnosis_amount,installation_amount,
-      commissioning,demo_batch_id)
+      commissioning,demo_batch_id,damage_caused_by_client,diagnosis_covered_by_brand,parts_covered_by_brand,
+      warranty_evaluation_completed_at,warranty_policy_brand)
     values(v_client,v_machine,r.problem,'normal',
       case when v_idx=7 then 'recepcion'::public.order_status when v_idx in (3,4) then 'en_reparacion'::public.order_status else 'diagnostico'::public.order_status end,
       r.warranty,r.warranty and not r.customer_damage,r.receipt_type,r.receipt_number,current_date-30,
-      r.diagnosis_amount,case when v_idx=4 then 15000 else 0 end,v_idx=7,v_batch)
+      r.diagnosis_amount,case when v_idx=4 then 15000 else 0 end,v_idx=7,v_batch,
+      case when r.warranty then r.customer_damage else null end,
+      r.warranty and not r.customer_damage,r.warranty and not r.customer_damage,
+      case when r.warranty then now() else null end,
+      case when r.warranty then r.brand else null end)
     returning id into v_order;
     update public.service_orders set diagnosis_receipt_type=case when not r.warranty then r.receipt_type end,
       diagnosis_receipt_number=case when not r.warranty then r.receipt_number end,
@@ -44,6 +49,13 @@ begin
     where id=v_order;
     insert into public.order_events(order_id,event_type,description,metadata)
     values(v_order,'demo','Orden de demostración creada',jsonb_build_object('demo_batch_id',v_batch,'scenario',r.problem));
+    if v_idx=5 then
+      insert into public.brand_charges(order_id,brand_name,service_type,amount,status,notes)
+      values(v_order,r.brand,'diagnostico',35000,'por_preparar','DEMO: honorarios de diagnóstico cubiertos por garantía');
+    elsif v_idx=7 then
+      insert into public.brand_charges(order_id,brand_name,service_type,amount,status,notes)
+      values(v_order,r.brand,'puesta_en_marcha',50000,'enviado','DEMO: tarifa manual de puesta en marcha para equipo nuevo');
+    end if;
     if r.payment_amount>0 then
       insert into public.payments(order_id,payment_type,amount,method,reference,receipt_received)
       values(v_order,r.payment_type::public.payment_type,r.payment_amount,
