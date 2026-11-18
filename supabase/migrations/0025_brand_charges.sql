@@ -70,6 +70,10 @@ drop policy if exists "finance create brand charge events" on public.brand_charg
 create policy "finance create brand charge events" on public.brand_charge_events
   for insert to authenticated with check (public.current_role() in ('admin','supervisor'));
 
+grant select, insert, update on public.brand_charges to authenticated;
+grant select, insert on public.brand_charge_payments to authenticated;
+grant select, insert on public.brand_charge_events to authenticated;
+
 create index if not exists brand_charges_status_idx on public.brand_charges(status, created_at desc);
 create index if not exists brand_charges_order_idx on public.brand_charges(order_id);
 create index if not exists brand_charge_payments_charge_idx on public.brand_charge_payments(charge_id, paid_at desc);
