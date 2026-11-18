@@ -4,7 +4,7 @@
 do $$
 declare
   v_batch uuid := 'd3a00000-0000-4000-8000-000000000025';
-  v_client uuid; v_machine uuid; v_order uuid; v_part uuid;
+  v_client uuid; v_machine uuid; v_order uuid; v_part uuid; v_charge uuid;
   v_idx integer := 0;
   v_paid numeric;
   r record;
@@ -54,13 +54,19 @@ begin
       values(v_order,r.brand,'diagnostico',35000,'por_preparar','DEMO: honorarios de diagnóstico cubiertos por garantía');
     elsif v_idx=7 then
       insert into public.brand_charges(order_id,brand_name,service_type,amount,status,notes)
-      values(v_order,r.brand,'puesta_en_marcha',50000,'enviado','DEMO: tarifa manual de puesta en marcha para equipo nuevo');
+      values(v_order,r.brand,'puesta_en_marcha',50000,'enviado','DEMO: tarifa manual de puesta en marcha para equipo nuevo') returning id into v_charge;
+      insert into public.brand_charge_payments(charge_id,amount,method,reference,notes)
+      values(v_charge,20000,'Transferencia','DEMO-ABONO-MARCA-007','Abono parcial de prueba');
     end if;
     if r.payment_amount>0 then
       insert into public.payments(order_id,payment_type,amount,method,reference,receipt_received)
       values(v_order,r.payment_type::public.payment_type,r.payment_amount,
         case when v_idx%2=0 then 'Transferencia' else 'Débito' end,
         r.receipt_type||' DEMO '||r.receipt_number,true);
+      if v_idx=2 then
+        insert into public.payments(order_id,payment_type,amount,method,reference,receipt_received)
+        values(v_order,'abono',5000,'Efectivo','FACTURA DEMO ABONO-002',true);
+      end if;
     end if;
     if v_idx in (3,4,6) then
       insert into public.parts_requests(order_id,description,quantity,unit_price,status,warranty_covered,client_contacted)
