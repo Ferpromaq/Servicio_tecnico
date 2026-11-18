@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import OrderDetailPage from "@/app/ordenes/componentes/order-detail-page";
-import { AlertCircle, CalendarDays, ClipboardList, RefreshCw, Search, Wrench, Users, UserRound, Cog, Package, CreditCard, BarChart3, Hash } from "lucide-react";
+import { AlertCircle, CalendarDays, ClipboardList, RefreshCw, Search, Wrench, Users, UserRound, Cog, Package, CreditCard, BarChart3, Hash, HandCoins } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import NewOrderModal from "@/app/ordenes/componentes/new-order-modal";
 import { formatOrderDate, getServiceOrders, ORDER_STATUSES, orderPriorityClass, orderPriorityLabel, orderStatusClass, orderStatusLabel, type ServiceOrder } from "@/app/ordenes/servicios/orders";
@@ -18,6 +18,7 @@ const nav: { label: string; icon: typeof ClipboardList; href: string; admin?: bo
   { label: "Equipos", icon: Cog, href: "/equipos" },
   { label: "Repuestos", icon: Package, href: "/repuestos" },
   { label: "Pagos", icon: CreditCard, href: "/pagos" },
+  { label: "Cobros", icon: HandCoins, href: "/cobros" },
   { label: "Usuarios y técnicos", icon: Users, href: "/usuarios", admin: true },
   { label: "Reportes", icon: BarChart3, href: "/reportes" },
 ];
