@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-type SkeletonModule = "dashboard" | "orders" | "clients" | "machines" | "parts" | "payments" | "brand-charges" | "users" | "reports" | "order-form" | "order-detail";
+export type SkeletonModule = "dashboard" | "orders" | "clients" | "machines" | "parts" | "payments" | "brand-charges" | "users" | "reports" | "order-form" | "order-detail";
 
 const nav = [
   ["Panel general", "/"],
