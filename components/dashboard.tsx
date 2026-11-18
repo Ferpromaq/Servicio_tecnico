@@ -221,8 +221,8 @@ export function Dashboard() {
   const paginatedOrders = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   useEffect(() => {
-    if (hasInitializedPageFromUrl && hasMeasuredPageSize && currentPage !== safePage) { setCurrentPage(safePage); updatePageInUrl(safePage, true); }
-  }, [currentPage, safePage, hasMeasuredPageSize, hasInitializedPageFromUrl, updatePageInUrl]);
+    if (!loading && hasInitializedPageFromUrl && hasMeasuredPageSize && currentPage !== safePage) { setCurrentPage(safePage); updatePageInUrl(safePage, true); }
+  }, [currentPage, safePage, loading, hasMeasuredPageSize, hasInitializedPageFromUrl, updatePageInUrl]);
   const activeCount = orders.filter((order) => !["entregadas", "rechazadas"].includes(order.status)).length;
 
   return (
