@@ -48,6 +48,7 @@ export function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [hasMeasuredPageSize, setHasMeasuredPageSize] = useState(false);
+  const [hasInitializedPageFromUrl, setHasInitializedPageFromUrl] = useState(false);
   const tableWrapRef = useRef<HTMLDivElement | null>(null);
 
   const syncDrawerFromUrl = useCallback(() => {
@@ -184,12 +185,13 @@ export function Dashboard() {
     else window.history.pushState({}, "", nextUrl);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const readPageFromUrl = () => {
       const value = Number(new URLSearchParams(window.location.search).get("pagina") ?? "1");
       setCurrentPage(Number.isSafeInteger(value) && value > 0 ? value : 1);
     };
     readPageFromUrl();
+    setHasInitializedPageFromUrl(true);
     window.addEventListener("popstate", readPageFromUrl);
     return () => window.removeEventListener("popstate", readPageFromUrl);
   }, []);
@@ -219,8 +221,8 @@ export function Dashboard() {
   const paginatedOrders = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   useEffect(() => {
-    if (hasMeasuredPageSize && currentPage !== safePage) { setCurrentPage(safePage); updatePageInUrl(safePage, true); }
-  }, [currentPage, safePage, hasMeasuredPageSize, updatePageInUrl]);
+    if (hasInitializedPageFromUrl && hasMeasuredPageSize && currentPage !== safePage) { setCurrentPage(safePage); updatePageInUrl(safePage, true); }
+  }, [currentPage, safePage, hasMeasuredPageSize, hasInitializedPageFromUrl, updatePageInUrl]);
   const activeCount = orders.filter((order) => !["entregadas", "rechazadas"].includes(order.status)).length;
 
   return (
